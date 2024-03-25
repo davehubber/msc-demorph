@@ -31,12 +31,18 @@ class Diffusion:
                 t = (torch.ones(n) * i).long().to(self.device)
                 predicted_image = model(x, t).to(self.device) 
                 if sampling_method == "cold_diffusion":
-                    other_image = (x - (self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (1-self.alteration_per_t * t)[:, None, None, None]
+                    other_image = 2.0 * (images * 0.5 + added_images * 0.5) - predicted_image
                     x_t = self.noise_images(other_image, predicted_image, t-1) + x - self.noise_images(other_image, predicted_image, t)
                 elif sampling_method == "cold_diffusion_original":
-                    other_image = (x - (1 - self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (self.alteration_per_t * t)[:, None, None, None]
+                    other_image = 2.0 * (images * 0.5 + added_images * 0.5) - predicted_image
                     x_t = self.noise_images(predicted_image, other_image, t-1) + x - self.noise_images(predicted_image, other_image, t)
-                elif sampling_method == "unaveraging_error":
+                elif sampling_method == 'one_step':
+                    x = predicted_image
+                    break
+                elif sampling_method == 'added':
+                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
+                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image
+                elif sampling_method == "added_error":
                     error = 0
                     other_image = (x - (self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (1-self.alteration_per_t * t)[:, None, None, None]
                     if i != self.init_sampling_timestep:
@@ -45,21 +51,21 @@ class Diffusion:
                     
                     delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
                     x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image - error
-                elif sampling_method == 'one_step':
-                    x = predicted_image
-                    break
                 elif sampling_method == 'original':
-                    if i == 100:
-                        other_image = 2.0 * (images * 0.5 + added_images * 0.5) - predicted_image
-                        #other_image = (x - (1 - self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (self.alteration_per_t * t)[:, None, None, None] 
-                        x_t = x + (self.alteration_per_t * t)[:, None, None, None] * predicted_image - (self.alteration_per_t * t)[:, None, None, None] * other_image
-                        break
-                    
-                    delta = (self.alteration_per_t * (t - 1)) / (self.alteration_per_t * t)
-                    x_t = delta[:, None, None, None] * x + (1 - delta)[:, None, None, None] * predicted_image
-                elif sampling_method == 'unaveraging':
+                    other_image = (x - (1-self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (self.alteration_per_t * t)[:, None, None, None]
                     delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
-                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image
+                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image
+                elif sampling_method == 'original_error':
+                    other_image = 2.0 * (images * 0.5 + added_images * 0.5) - predicted_image
+                    #other_image = (x - (1-self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (self.alteration_per_t * t)[:, None, None, None]
+                    
+                    error = 0
+                    if i != self.init_sampling_timestep:
+                        error = (0.5 * predicted_image + 0.5 * other_image) - (images * 0.5 + added_images * 0.5)
+                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (0.5 - self.alteration_per_t * t))[:, None, None, None]
+                    
+                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
+                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image - error
                 if i == self.init_sampling_timestep - 1:
                     images_to_save = torch.cat((x, x_t), axis=0)
                 x = x_t
@@ -209,9 +215,9 @@ def launch():
     args.image_size = (64, 64)
     args.dataset_path = r"/Oxford102Flowers/jpg"
     args.partition_file = r"csvs/flower_pairs.csv"
-    # cold_diffusion, cold_diffusion_original, unaveraging_error, one_step, unaveraging, original
-    args.sampling_method = r"unaveraging"
-    args.sampling_name = r"unaveraging"
+    # cold_diffusion, cold_diffusion_original, one_step, added, added_error, original, original_error
+    args.sampling_method = r"added"
+    args.sampling_name = r"added"
     print(args.sampling_method, flush=True)
     args.device = "cuda"
     args.lr = 3e-4
