@@ -43,12 +43,12 @@ class Diffusion:
                     x = x + predicted_image
 
                 elif prediction == "original" and sampling_method == "with_error_removal":
-                    other_image = (x - (1-alpha_init)[:, None, None, None] * predicted_image) / (alpha_init)[:, None, None, None] 
+                    other_image = (x - (1-alpha_init) * predicted_image) / (alpha_init) 
                     
                     error = 0
                     if i != init_timestep:
-                        error = (self.weight * predicted_image + (1.-self.weight) * other_image) - superimposed_image
-                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (self.weight - self.alteration_per_t * t))[:, None, None, None]
+                        error = (alpha_init * predicted_image + (1.-alpha_init) * other_image) - superimposed_image
+                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (alpha_init - self.alteration_per_t * t))[:, None, None, None]
                     
                     delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
                     x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image - error
@@ -58,14 +58,14 @@ class Diffusion:
                 
                     error = 0
                     if i != self.init_sampling_timestep:
-                        error = (self.weight * predicted_image + (1.-self.weight) * other_image) - superimposed_image
-                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (self.weight - self.alteration_per_t * t))[:, None, None, None]
+                        error = (alpha_init * predicted_image + (1.-alpha_init) * other_image) - superimposed_image
+                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (alpha_init - self.alteration_per_t * t))[:, None, None, None]
                     
                     delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
                     x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image - error
                 
                 elif sampling_method == "cold_diffusion":
-                    other_image = (x - (alpha_init)[:, None, None, None] * predicted_image) / (1.-alpha_init)[:, None, None, None] 
+                    other_image = (x - (alpha_init) * predicted_image) / (1.-alpha_init)
                     if prediction == "added":
                         x_t = self.noise_images(other_image, predicted_image, t-1) + x - self.noise_images(other_image, predicted_image, t)
                     elif prediction == "original":
@@ -82,13 +82,13 @@ class Diffusion:
                     delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
                     x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image
                 else:
-                    print("Invalid prediction/sampling_method combination.")
+                    print(f"Invalid prediction - {prediction} - and sampling_method - {sampling_method} - combination.")
                     exit(-1)
                 
                 x = x_t
         
         model.train()
-        other_image = ((superimposed_image - (1 - self.weight) * x) / self.weight).to(self.device)
+        other_image = ((superimposed_image - (1 - alpha_init) * x) / alpha_init).to(self.device)
         other_image = (other_image.clamp(-1, 1) + 1) / 2
         other_image = (other_image * 255).type(torch.uint8)
         x = (x.clamp(-1, 1) + 1) / 2
@@ -209,19 +209,17 @@ def launch():
     parser.add_argument('--dataset_path', help='Path to dataset', required=True)
     parser.add_argument('--run_name', help='Name of the experiment for saving models and results', required=True)
     parser.add_argument('--partition_file', help='CSV file with test indexes', required=True)
-    parser.add_argument('--prediction', default='original', help='The prediction of the model, choose between [added, original, differences]', required=True)
-    parser.add_argument('--sampling_method', default='added', help='Choose between [cold_diffusion, with_error, one_step, without_error, differences]', required=True)
-    parser.add_argument('--alpha_max', default=0.8, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max')
-    parser.add_argument('--alpha_init', default=0.5, help='Weight of the added image: alpha_init', required=True)
-    parser.add_argument('--image_size', default=64, help='Dimension of the images', required=True)
-    parser.add_argument('--batch_size', default=16, help='Batch size', required=True)
-    parser.add_argument('--epochs', default=1000, help='Number of epochs', required=True)
-    parser.add_argument('--lr', default=3e-4, help='Learning rate', required=True)
-    parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]')
+    parser.add_argument('--prediction', default='original', help='The prediction of the model, choose between [added, original, differences]', required=False)
+    parser.add_argument('--sampling_method', default='with_error_removal', help='Choose between [cold_diffusion, with_error_removal, one_step, without_error_removal, differences]', required=False)
+    parser.add_argument('--alpha_max', default=0.8, type=float, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max', required=False)
+    parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
+    parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
+    parser.add_argument('--batch_size', default=16, help='Batch size', type=int, required=False)
+    parser.add_argument('--epochs', default=1000, help='Number of epochs', type=int, required=False)
+    parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
+    parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
     args = parser.parse_args()
-    args.image_size = (int(args.image_size), int(args.image_size))
-    args.alpha_max = float(args.alpha_max)
-    args.alpha_init = float(args.alpha_init)
+    args.image_size = (args.image_size, args.image_size)
     args.sampling_name = args.run_name
     train(args)
     eval(args)
