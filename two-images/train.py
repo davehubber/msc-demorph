@@ -1,5 +1,6 @@
 import os, torch, numpy as np, math
 import torch.nn as nn
+import wandb
 from torch import optim
 from utils import *
 from modules import UNet
@@ -102,8 +103,18 @@ def train(args):
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     mse = nn.MSELoss()
     diffusion = Diffusion(img_size=args.image_size, device=device)
+
+    wandb.init(
+        project="demorph_testrun",
+        name=args.run_name,
+        config=vars(args)
+    )
+    wandb.watch(model, log="all") 
+    
+    global_step = 0
+
     for epoch in range(args.epochs):
-        for i, (images, images_add) in enumerate(train_dataloader):
+        for _, (images, images_add) in enumerate(train_dataloader):
             images = images.to(device)
             images_add = images_add.to(device)
             t = diffusion.sample_timesteps(images.shape[0]).to(device)
@@ -124,7 +135,15 @@ def train(args):
             loss.backward()
             optimizer.step()
 
-        for i, (images, images_add) in enumerate(test_dataloader):
+            global_step += 1
+            if global_step % 1000 == 0:
+                wandb.log({
+                    "train_loss": loss.item(),
+                    "epoch": epoch,
+                    "global_step": global_step
+                })
+
+        for _, (images, images_add) in enumerate(test_dataloader):
             images = images.to(device)
             images_add = images_add.to(device)
             sampled_images, other_images = diffusion.sample(model, (images + images_add) / 2., prediction=args.prediction, sampling_method=args.sampling_method)
