@@ -115,7 +115,7 @@ def train(args):
                 loss = mse(images_add, predicted_image)
             elif args.prediction == "original":
                 loss = mse(images, predicted_image)
-            elif args.prediction == "":
+            elif args.prediction == "differences":
                 x_diff = diffusion.noise_images(images, images_add, t-1) - x_t
                 loss = mse(x_diff, predicted_image)
             else:
