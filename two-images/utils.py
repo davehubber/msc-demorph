@@ -34,6 +34,10 @@ class TheDataset(Dataset):
         self.partition = partition
         
         csv_file = pd.read_csv(csv_file, sep=",")
+
+        if 'partition' in csv_file.columns:
+            csv_file = csv_file[csv_file['partition'] == partition]
+
         self.image_paths_1 = np.asarray(csv_file['Image1'].values)
         self.image_paths_2 = np.asarray(csv_file['Image2'].values)
 
