@@ -64,10 +64,12 @@ class Diffusion:
                     x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image - error
                 
                 elif sampling_method == "cold_diffusion":
-                    other_image = (x - (alpha_init) * predicted_image) / (1.-alpha_init)
+                    current_alpha = self.alteration_per_t * t
                     if prediction == "added":
+                        other_image = (x - current_alpha * predicted_image) / (1 - current_alpha)
                         x_t = self.noise_images(other_image, predicted_image, t-1) + x - self.noise_images(other_image, predicted_image, t)
                     elif prediction == "original":
+                        other_image = (x - (1 - current_alpha) * predicted_image) / current_alpha
                         x_t = self.noise_images(predicted_image, other_image, t-1) + x - self.noise_images(predicted_image, other_image, t)
                     else:
                         print("Invalid prediction/sampling_method combination.")
