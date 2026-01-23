@@ -8,4 +8,4 @@
 
 # Commands / scripts to run (e.g., python3 train.py)
 
-python train.py --run_name "demorph_test_2" --dataset_path "Oxford102Flowers" --partition_file "partition.csv" --epochs 800 --sampling_method 'cold_diffusion'
+python train.py --run_name "demorph_test_2" --dataset_path "Oxford102Flowers/jpg" --partition_file "partition.csv" --epochs 800 --sampling_method 'cold_diffusion'
