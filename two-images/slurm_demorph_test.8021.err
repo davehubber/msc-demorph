@@ -1,0 +1,14 @@
+wandb: Currently logged in as: davcordeiro03 (davcordeiro03-inesc-tec) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run i11kv5r5
+wandb: Tracking run with wandb version 0.23.1
+wandb: Run data is saved locally in /nas-ctm01/homes/dacordeiro/msc-demorph/two-images/wandb/run-20251227_223657-i11kv5r5
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run demorph_test
+wandb: ⭐️ View project at https://wandb.ai/davcordeiro03-inesc-tec/demorph_testrun
+wandb: 🚀 View run at https://wandb.ai/davcordeiro03-inesc-tec/demorph_testrun/runs/i11kv5r5
+/nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/torchvision/models/_utils.py:135: UserWarning: Using 'weights' as positional parameter(s) is deprecated since 0.13 and may be removed in the future. Please use keyword parameter(s) instead.
+  warnings.warn(
+/nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+  0%|          | 0.00/233M [00:00<?, ?B/s]  1%|          | 2.75M/233M [00:00<00:08, 28.5MB/s]  7%|▋         | 16.0M/233M [00:00<00:02, 93.0MB/s] 16%|█▋        | 38.1M/233M [00:00<00:01, 156MB/s]  26%|██▋       | 61.4M/233M [00:00<00:00, 190MB/s] 36%|███▌      | 82.9M/233M [00:00<00:00, 203MB/s] 44%|████▍     | 102M/233M [00:00<00:00, 200MB/s]  52%|█████▏    | 121M/233M [00:00<00:00, 194MB/s] 62%|██████▏   | 145M/233M [00:00<00:00, 210MB/s] 72%|███████▏  | 168M/233M [00:00<00:00, 221MB/s] 82%|████████▏ | 192M/233M [00:01<00:00, 229MB/s] 92%|█████████▏| 215M/233M [00:01<00:00, 233MB/s]100%|██████████| 233M/233M [00:01<00:00, 204MB/s]
+  0%|          | 0.00/5.87k [00:00<?, ?B/s]100%|██████████| 5.87k/5.87k [00:00<00:00, 2.18MB/s]

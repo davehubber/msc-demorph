@@ -1,0 +1,16 @@
+Size of train: 6551
+Size of test: 1638
+Size of test: 1638
+Downloading: "https://download.pytorch.org/models/alexnet-owt-7be5be79.pth" to /nas-ctm01/homes/dacordeiro/.cache/torch/hub/checkpoints/alexnet-owt-7be5be79.pth
+Downloading: "https://raw.githubusercontent.com/richzhang/PerceptualSimilarity/master/lpips/weights/v0.1/alex.pth" to /nas-ctm01/homes/dacordeiro/.cache/torch/hub/checkpoints/alex.pth
+
+Metrics organized by original images:
+SSIM Original: 0.399310137478728
+SSIM Added: 0.3995608727058131
+PSNR Original: 13.052267047371542
+PSNR Added: 13.060848335821412
+LPIPS Original: 0.2267718
+LPIPS Added: 0.22406402
+[1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mdemorph_test[0m at: [34m[0m
+[1;34mwandb[0m: Find logs at: [1;35mwandb/run-20251227_223657-i11kv5r5/logs[0m
