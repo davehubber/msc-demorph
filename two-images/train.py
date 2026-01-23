@@ -109,7 +109,6 @@ def train(args):
         name=args.run_name,
         config=vars(args)
     )
-    wandb.watch(model, log="all") 
     
     global_step = 0
 
@@ -139,8 +138,7 @@ def train(args):
             if global_step % 1000 == 0:
                 wandb.log({
                     "train_loss": loss.item(),
-                    "epoch": epoch,
-                    "global_step": global_step
+                    "epoch": epoch
                 })
 
         for _, (images, images_add) in enumerate(test_dataloader):
@@ -211,14 +209,31 @@ def eval(args):
             psnr_a.append(pa)
             lpips_o.append(lo.to('cpu').numpy())
             lpips_a.append(la.to('cpu').numpy())
-            
+
+    avg_ssim_o = np.average(ssim_o)
+    avg_ssim_a = np.average(ssim_a)
+    avg_psnr_o = np.average(psnr_o)
+    avg_psnr_a = np.average(psnr_a)
+    avg_lpips_o = np.average(lpips_o)
+    avg_lpips_a = np.average(lpips_a)
+
     print('\nMetrics organized by original images:')
-    print('SSIM Original: ' + str(np.average(ssim_o)))
-    print('SSIM Added: ' + str(np.average(ssim_a)))
-    print('PSNR Original: ' + str(np.average(psnr_o)))
-    print('PSNR Added: ' + str(np.average(psnr_a)))
-    print('LPIPS Original: ' + str(np.average(lpips_o)))
-    print('LPIPS Added: ' + str(np.average(lpips_a)))
+
+    wandb.log({
+        "test_ssim_original": avg_ssim_o,
+        "test_ssim_added":    avg_ssim_a,
+        "test_psnr_original": avg_psnr_o,
+        "test_psnr_added":    avg_psnr_a,
+        "test_lpips_original": avg_lpips_o,
+        "test_lpips_added":    avg_lpips_a
+    })
+
+    print('SSIM Original: ' + str(np.average(avg_ssim_o)))
+    print('SSIM Added: ' + str(np.average(avg_ssim_a)))
+    print('PSNR Original: ' + str(np.average(avg_psnr_o)))
+    print('PSNR Added: ' + str(np.average(avg_psnr_a)))
+    print('LPIPS Original: ' + str(np.average(avg_lpips_o)))
+    print('LPIPS Added: ' + str(np.average(avg_lpips_a)))
 
 def launch():
     import argparse
