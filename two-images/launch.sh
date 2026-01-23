@@ -8,4 +8,4 @@
 
 # Commands / scripts to run (e.g., python3 train.py)
 
-python train.py --run_name "demorph_test" --dataset_path "/nas-ctm01/datasets/public/Oxford102Flowers/jpg/" --partition_file "partition.csv" --epochs 800
+python train.py --run_name "demorph_test_2" --dataset_path "/nas-ctm01/datasets/public/Oxford102Flowers/jpg/" --partition_file "partition.csv" --epochs 800 --batch_size 32 --sampling_method 'cold_diffusion'
