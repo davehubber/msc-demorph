@@ -114,7 +114,7 @@ def train(args):
     
     global_step = 0
 
-    scaler = torch.cuda.amp.GradScaler("cuda")
+    scaler = torch.amp.GradScaler("cuda")
 
     for epoch in range(args.epochs):
         for _, (images, images_add) in enumerate(train_dataloader):
@@ -122,7 +122,7 @@ def train(args):
             images_add = images_add.to(device)
             t = diffusion.sample_timesteps(images.shape[0]).to(device)
 
-            with torch.cuda.amp.autocast("cuda"):
+            with torch.amp.autocast("cuda"):
                 x_t = diffusion.noise_images(images, images_add, t)
                 predicted_image = model(x_t, t)
                 if args.prediction == "added":
