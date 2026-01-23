@@ -114,27 +114,33 @@ def train(args):
     
     global_step = 0
 
+    scaler = torch.cuda.amp.GradScaler("cuda")
+
     for epoch in range(args.epochs):
         for _, (images, images_add) in enumerate(train_dataloader):
             images = images.to(device)
             images_add = images_add.to(device)
             t = diffusion.sample_timesteps(images.shape[0]).to(device)
-            x_t = diffusion.noise_images(images, images_add, t)
-            predicted_image = model(x_t, t)
-            if args.prediction == "added":
-                loss = mse(images_add, predicted_image)
-            elif args.prediction == "original":
-                loss = mse(images, predicted_image)
-            elif args.prediction == "differences":
-                x_diff = diffusion.noise_images(images, images_add, t-1) - x_t
-                loss = mse(x_diff, predicted_image)
-            else:
-                print("Invalid model prediction.")
-                exit(-1)
+
+            with torch.cuda.amp.autocast("cuda"):
+                x_t = diffusion.noise_images(images, images_add, t)
+                predicted_image = model(x_t, t)
+                if args.prediction == "added":
+                    loss = mse(images_add, predicted_image)
+                elif args.prediction == "original":
+                    loss = mse(images, predicted_image)
+                elif args.prediction == "differences":
+                    x_diff = diffusion.noise_images(images, images_add, t-1) - x_t
+                    loss = mse(x_diff, predicted_image)
+                else:
+                    print("Invalid model prediction.")
+                    exit(-1)
 
             optimizer.zero_grad(set_to_none=True)
-            loss.backward()
-            optimizer.step()
+
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             global_step += 1
             if global_step % 1000 == 0:

@@ -1,3 +1,4 @@
-__pycache__
+__pycache__/
 models/
 wandb/
+Oxford102Flowers/
