@@ -8,4 +8,4 @@
 
 # Commands / scripts to run (e.g., python3 train.py)
 
-python train.py --run_name "less_timesteps" --dataset_path "Oxford102Flowers/jpg" --partition_file "partition.csv" --epochs 1000 --sampling_method 'cold_diffusion'
+python train.py --run_name "less_timesteps" --dataset_path "Oxford102Flowers/jpg" --partition_file "partition.csv" --epochs 1000 --batch_size 20 --sampling_method 'cold_diffusion'
