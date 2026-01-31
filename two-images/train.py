@@ -8,7 +8,7 @@ from skimage.metrics import structural_similarity, peak_signal_noise_ratio
 from lpips_pytorch import lpips
 
 class Diffusion:
-    def __init__(self, max_timesteps=1000, alpha_start=0., alpha_max=0.8, img_size=256, device="cuda"):
+    def __init__(self, max_timesteps=500, alpha_start=0., alpha_max=0.8, img_size=256, device="cuda"):
         self.max_timesteps = max_timesteps
         self.img_size = img_size
         self.device = device
