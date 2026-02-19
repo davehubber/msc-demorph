@@ -91,7 +91,7 @@ def train(args):
     diffusion = Diffusion(img_size=args.image_size, device=device)
 
     wandb.init(
-        project="demorph_testrun",
+        project="demorph",
         name=args.run_name,
         config=vars(args)
     )
