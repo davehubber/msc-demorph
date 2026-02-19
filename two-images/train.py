@@ -6,6 +6,7 @@ from utils import *
 from modules import UNet
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
 from lpips_pytorch import lpips
+import matplotlib.pyplot as plt
 
 class Diffusion:
     def __init__(self, max_timesteps=500, alpha_start=0., alpha_max=0.8, img_size=256, device="cuda"):
@@ -52,6 +53,33 @@ class Diffusion:
         x = (x * 255).type(torch.uint8)
         return x, other_image
 
+def save_labeled_grid(sampled, other, orig, added, filepath):
+    """Saves a grid of images with adequate column labels."""
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    n = min(4, orig.shape[0]) # Limit to 4 rows to prevent massive grids
+    fig, axes = plt.subplots(n, 4, figsize=(12, 3 * n))
+    titles = ['Original Image', 'Added Image', 'Sampled (Original)', 'Sampled (Added)']
+    
+    for i in range(n):
+        for j, img_set in enumerate([orig, added, sampled, other]):
+            ax = axes[i, j] if n > 1 else axes[j]
+            img = img_set[i].cpu().permute(1, 2, 0).numpy()
+            ax.imshow(img)
+            ax.axis('off')
+            if i == 0:
+                ax.set_title(titles[j], fontsize=14, fontweight='bold')
+                
+    plt.tight_layout()
+    plt.savefig(filepath)
+    plt.close()
+
+def calculate_metrics(image, add_image, result_ori_image, result_add_image):
+    ssim_original = structural_similarity(image, result_ori_image, data_range=255, channel_axis=-1)
+    ssim_added = structural_similarity(add_image, result_add_image, data_range=255, channel_axis=-1)
+    psnr_original = peak_signal_noise_ratio(image, result_ori_image, data_range=255)
+    psnr_added = peak_signal_noise_ratio(add_image, result_add_image, data_range=255)
+    return ssim_original, ssim_added, psnr_original, psnr_added
+
 def train(args):
     setup_logging(args.run_name)
     device = args.device
@@ -69,7 +97,6 @@ def train(args):
     )
     
     global_step = 0
-
     scaler = torch.amp.GradScaler("cuda")
 
     for epoch in range(args.epochs):
@@ -85,15 +112,11 @@ def train(args):
                     loss = mse(images_add, predicted_image)
                 elif args.prediction == "original":
                     loss = mse(images, predicted_image)
-                elif args.prediction == "differences":
-                    x_diff = diffusion.noise_images(images, images_add, t-1) - x_t
-                    loss = mse(x_diff, predicted_image)
                 else:
                     print("Invalid model prediction.")
                     exit(-1)
 
             optimizer.zero_grad(set_to_none=True)
-
             scaler.scale(loss).backward()
             scaler.step(optimizer)
             scaler.update()
@@ -105,25 +128,66 @@ def train(args):
                     "epoch": epoch
                 })
 
-        for _, (images, images_add) in enumerate(test_dataloader):
-            images = images.to(device)
-            images_add = images_add.to(device)
-            sampled_images, other_images = diffusion.sample(model, (images + images_add) / 2., prediction=args.prediction)
-            images = (images.clamp(-1, 1) + 1) / 2
-            images = (images * 255).type(torch.uint8)
-            images_add = (images_add.clamp(-1, 1) + 1) / 2
-            images_add = (images_add * 255).type(torch.uint8)
-            save_images(sampled_images, other_images, images, images_add, os.path.join("results", args.run_name, f"{epoch+1}.jpg"))
-            break
+        # Sample, calculate metrics, and save images every 10 epochs
+        if (epoch + 1) % 10 == 0:
+            val_ssim_o, val_ssim_a, val_psnr_o, val_psnr_a = [], [], [], []
+            val_lpips_o, val_lpips_a = [], []
+
+            for _, (images, images_add) in enumerate(test_dataloader):
+                images = images.to(device)
+                images_add = images_add.to(device)
+                sampled_images, other_images = diffusion.sample(model, (images + images_add) / 2., prediction=args.prediction)
+                
+                # Format to uint8 for evaluation and saving
+                images_eval = (images.clamp(-1, 1) + 1) / 2
+                images_eval = (images_eval * 255).type(torch.uint8)
+                images_add_eval = (images_add.clamp(-1, 1) + 1) / 2
+                images_add_eval = (images_add_eval * 255).type(torch.uint8)
+
+                images_np = images_eval.cpu().permute(0, 2, 3, 1).numpy()
+                images_add_np = images_add_eval.cpu().permute(0, 2, 3, 1).numpy()
+                sampled_np = sampled_images.cpu().permute(0, 2, 3, 1).numpy()
+                other_np = other_images.cpu().permute(0, 2, 3, 1).numpy()
+
+                for k in range(len(images_np)):
+                    ssim_1 = structural_similarity(images_np[k], sampled_np[k], data_range=255, channel_axis=-1)
+                    ssim_2 = structural_similarity(images_add_np[k], sampled_np[k], data_range=255, channel_axis=-1)
+                    
+                    if ssim_1 > ssim_2:
+                        so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_np[k], other_np[k])
+                        lo = lpips((images[k] - 127.5) / 127.5, (sampled_images[k] - 127.5) / 127.5, net_type='alex', version='0.1')
+                        la = lpips((images_add[k] - 127.5) / 127.5, (other_images[k] - 127.5) / 127.5, net_type='alex', version='0.1')
+                    else:
+                        so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], other_np[k], sampled_np[k])
+                        lo = lpips((images[k] - 127.5) / 127.5, (other_images[k] - 127.5) / 127.5, net_type='alex', version='0.1')
+                        la = lpips((images_add[k] - 127.5) / 127.5, (sampled_images[k] - 127.5) / 127.5, net_type='alex', version='0.1')
+
+                    val_ssim_o.append(so)
+                    val_ssim_a.append(sa)
+                    val_psnr_o.append(po)
+                    val_psnr_a.append(pa)
+                    val_lpips_o.append(lo.cpu().numpy())
+                    val_lpips_a.append(la.cpu().numpy())
+
+                # Log metrics to wandb
+                wandb.log({
+                    "val_ssim_original": np.average(val_ssim_o),
+                    "val_ssim_added": np.average(val_ssim_a),
+                    "val_psnr_original": np.average(val_psnr_o),
+                    "val_psnr_added": np.average(val_psnr_a),
+                    "val_lpips_original": np.average(val_lpips_o),
+                    "val_lpips_added": np.average(val_lpips_a),
+                    "epoch": epoch
+                })
+
+                # Save labeled grid
+                save_labeled_grid(sampled_images, other_images, images_eval, images_add_eval, 
+                                  os.path.join("results", args.run_name, f"{epoch+1}.jpg"))
+                
+                # Only evaluate one batch during training validation
+                break
         
         torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
-
-def calculate_metrics(image, add_image, result_ori_image, result_add_image):
-    ssim_original = structural_similarity(image, result_ori_image, data_range=255, channel_axis=-1)
-    ssim_added = structural_similarity(add_image, result_add_image, data_range=255, channel_axis=-1)
-    psnr_original = peak_signal_noise_ratio(image, result_ori_image, data_range=255)
-    psnr_added = peak_signal_noise_ratio(add_image, result_add_image, data_range=255)
-    return ssim_original, ssim_added, psnr_original, psnr_added
 
 def eval(args):
     device = args.device
@@ -133,31 +197,33 @@ def eval(args):
     model.to(device)
     model.eval()
     diffusion = Diffusion(img_size=args.image_size, device=device)
-    ssim_o = []
-    ssim_a = []
-    lpips_o = []
-    lpips_a = []
-    psnr_o = []
-    psnr_a = []
+    
+    ssim_o, ssim_a = [], []
+    lpips_o, lpips_a = [], []
+    psnr_o, psnr_a = [], []
+    
     for i, (images, images_add) in enumerate(test_dataloader):
         images = images.to(device)
         images_add = images_add.to(device)
         sampled_images, sampled_other_image = diffusion.sample(model, images * (1-args.alpha_init) + images_add * args.alpha_init, args.alpha_init, prediction=args.prediction)
-        images = (images.clamp(-1, 1) + 1) / 2
-        images = (images * 255).type(torch.uint8)
-        images_add = (images_add.clamp(-1, 1) + 1) / 2
-        images_add = (images_add * 255).type(torch.uint8)
-        sampled_images.to(device)
-        save_images(sampled_images, sampled_other_image, images, images_add, os.path.join("samples", args.sampling_name, f"{i}.jpg"))
+        
+        images_eval = (images.clamp(-1, 1) + 1) / 2
+        images_eval = (images_eval * 255).type(torch.uint8)
+        images_add_eval = (images_add.clamp(-1, 1) + 1) / 2
+        images_add_eval = (images_add_eval * 255).type(torch.uint8)
+        
+        save_labeled_grid(sampled_images, sampled_other_image, images_eval, images_add_eval, 
+                          os.path.join("samples", args.sampling_name, f"{i}.jpg"))
 
-        images_np = images.to('cpu').permute(0, 2, 3, 1).numpy()
-        sampled_images_np = sampled_images.to('cpu').permute(0, 2, 3, 1).numpy()
-        images_add_np = images_add.to('cpu').permute(0, 2, 3, 1).numpy()
-        sampled_other_image_np = sampled_other_image.to('cpu').permute(0, 2, 3, 1).numpy()
+        images_np = images_eval.cpu().permute(0, 2, 3, 1).numpy()
+        sampled_images_np = sampled_images.cpu().permute(0, 2, 3, 1).numpy()
+        images_add_np = images_add_eval.cpu().permute(0, 2, 3, 1).numpy()
+        sampled_other_image_np = sampled_other_image.cpu().permute(0, 2, 3, 1).numpy()
         
         for k in range(len(images_np)):
             ssim_1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
             ssim_2 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+            
             if ssim_1 > ssim_2:
                 so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_images_np[k], sampled_other_image_np[k])
                 lo = lpips((images[k] - 127.5) / 127.5, (sampled_images[k] - 127.5) / 127.5, net_type='alex', version='0.1')
@@ -171,8 +237,8 @@ def eval(args):
             ssim_a.append(sa)
             psnr_o.append(po)
             psnr_a.append(pa)
-            lpips_o.append(lo.to('cpu').numpy())
-            lpips_a.append(la.to('cpu').numpy())
+            lpips_o.append(lo.cpu().numpy())
+            lpips_a.append(la.cpu().numpy())
 
     avg_ssim_o = np.average(ssim_o)
     avg_ssim_a = np.average(ssim_a)
@@ -180,8 +246,6 @@ def eval(args):
     avg_psnr_a = np.average(psnr_a)
     avg_lpips_o = np.average(lpips_o)
     avg_lpips_a = np.average(lpips_a)
-
-    print('\nMetrics organized by original images:')
 
     wandb.log({
         "test_ssim_original": avg_ssim_o,
@@ -192,12 +256,25 @@ def eval(args):
         "test_lpips_added":    avg_lpips_a
     })
 
-    print('SSIM Original: ' + str(np.average(avg_ssim_o)))
-    print('SSIM Added: ' + str(np.average(avg_ssim_a)))
-    print('PSNR Original: ' + str(np.average(avg_psnr_o)))
-    print('PSNR Added: ' + str(np.average(avg_psnr_a)))
-    print('LPIPS Original: ' + str(np.average(avg_lpips_o)))
-    print('LPIPS Added: ' + str(np.average(avg_lpips_a)))
+    # Prepare string payload
+    metrics_report = (
+        f"Metrics organized by original images:\n"
+        f"SSIM Original: {avg_ssim_o}\n"
+        f"SSIM Added: {avg_ssim_a}\n"
+        f"PSNR Original: {avg_psnr_o}\n"
+        f"PSNR Added: {avg_psnr_a}\n"
+        f"LPIPS Original: {avg_lpips_o}\n"
+        f"LPIPS Added: {avg_lpips_a}\n"
+    )
+    
+    # Print to console
+    print(metrics_report)
+    
+    # Store to a .txt file
+    results_dir = os.path.join("results", args.run_name)
+    os.makedirs(results_dir, exist_ok=True)
+    with open(os.path.join(results_dir, "final_metrics.txt"), "w") as f:
+        f.write(metrics_report)
 
 def launch():
     import argparse
@@ -205,7 +282,7 @@ def launch():
     parser.add_argument('--dataset_path', help='Path to dataset', required=True)
     parser.add_argument('--run_name', help='Name of the experiment for saving models and results', required=True)
     parser.add_argument('--partition_file', help='CSV file with test indexes', required=True)
-    parser.add_argument('--prediction', default='original', help='The prediction of the model, choose between [added, original, differences]', required=False)
+    parser.add_argument('--prediction', default='original', help='The prediction of the model, choose between [added, original]', required=False)
     parser.add_argument('--alpha_max', default=0.8, type=float, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max', required=False)
     parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
     parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
