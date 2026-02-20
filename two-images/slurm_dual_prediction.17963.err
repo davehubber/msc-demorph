@@ -1,0 +1,9 @@
+wandb: Currently logged in as: davcordeiro03 (davcordeiro03-inesc-tec) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run 0tzf40om
+wandb: Tracking run with wandb version 0.23.1
+wandb: Run data is saved locally in /nas-ctm01/homes/dacordeiro/msc-demorph/two-images/wandb/run-20260220_213640-0tzf40om
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run dual_prediction
+wandb: ⭐️ View project at https://wandb.ai/davcordeiro03-inesc-tec/demorph
+wandb: 🚀 View run at https://wandb.ai/davcordeiro03-inesc-tec/demorph/runs/0tzf40om
+slurmstepd-01.ctm-deep-05: error: *** JOB 17963 ON 01.ctm-deep-05 CANCELLED AT 2026-02-20T23:52:07 ***
