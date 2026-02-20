@@ -216,7 +216,7 @@ def launch():
     parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
     parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
     parser.add_argument('--batch_size', default=16, help='Batch size', type=int, required=False)
-    parser.add_argument('--epochs', default=1000, help='Number of epochs', type=int, required=False)
+    parser.add_argument('--epochs', default=800, help='Number of epochs', type=int, required=False)
     parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
     parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
     args = parser.parse_args()
