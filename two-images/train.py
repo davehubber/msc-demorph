@@ -183,15 +183,6 @@ def eval(args):
 
     print('\nMetrics organized by original images:')
 
-    wandb.log({
-        "test_ssim_original": avg_ssim_o,
-        "test_ssim_added":    avg_ssim_a,
-        "test_psnr_original": avg_psnr_o,
-        "test_psnr_added":    avg_psnr_a,
-        "test_lpips_original": avg_lpips_o,
-        "test_lpips_added":    avg_lpips_a
-    })
-
     print('SSIM Original: ' + str(np.average(avg_ssim_o)))
     print('SSIM Added: ' + str(np.average(avg_ssim_a)))
     print('PSNR Original: ' + str(np.average(avg_psnr_o)))
