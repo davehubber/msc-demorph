@@ -14,10 +14,12 @@ def plot_images(images):
     plt.show()
 
 
-def save_images(images, obtained_images, original_images, added_images, path, **kwargs):
-    input_images = (original_images*0.5 + added_images*0.5).type(torch.uint8)
-    all_images = torch.cat((original_images, added_images, input_images, images, obtained_images), axis=0)
-    grid = torchvision.utils.make_grid(all_images, nrow=len(images), **kwargs)
+def save_images(sampled_A, sampled_B, original_images, added_images, path, **kwargs):
+    input_images = (original_images.float() * 0.5 + added_images.float() * 0.5).type(torch.uint8)
+    
+    all_images = torch.cat((original_images, added_images, input_images, sampled_A, sampled_B), axis=0)
+    
+    grid = torchvision.utils.make_grid(all_images, nrow=len(sampled_A), **kwargs)
     ndarr = grid.permute(1, 2, 0).to('cpu').numpy()
     im = Image.fromarray(ndarr)
     im.save(path)
@@ -50,7 +52,7 @@ class TheDataset(Dataset):
         if self.transform is not None:
             x1 = self.transform(x1)
             x2 = self.transform(x2)
-        return x2, x1
+        return x1, x2
     
     def __len__(self):
         return len(self.image_paths_1)
