@@ -1,5 +1,5 @@
 import os, torch, numpy as np, math
-import torch.nn as nn
+import torch.nn.functional as F
 import wandb
 from torch import optim
 from utils import *
@@ -39,19 +39,19 @@ class Diffusion:
                 pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
-                mse_A_straight = nn.F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
-                                 nn.F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
-                mse_A_crossed  = nn.F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
-                                 nn.F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                mse_A_straight = F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                mse_A_crossed  = F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
                 
                 swap_mask_A = (mse_A_crossed < mse_A_straight).view(-1, 1, 1, 1)
                 pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
                 pA_2_aligned = torch.where(swap_mask_A, pA_1, pA_2)
 
-                mse_B_straight = nn.F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
-                                 nn.F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
-                mse_B_crossed  = nn.F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
-                                 nn.F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                mse_B_straight = F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                mse_B_crossed  = F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
                 
                 swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
                 pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
@@ -112,11 +112,11 @@ def train(args):
                 predicted_both = model(x_t, t)
                 pred_1, pred_2 = torch.chunk(predicted_both, 2, dim=1)
 
-                mse_straight = nn.F.mse_loss(pred_1, images, reduction='none').view(images.shape[0], -1).mean(dim=1) + \
-                               nn.F.mse_loss(pred_2, images_add, reduction='none').view(images.shape[0], -1).mean(dim=1)
+                mse_straight = F.mse_loss(pred_1, images, reduction='none').view(images.shape[0], -1).mean(dim=1) + \
+                               F.mse_loss(pred_2, images_add, reduction='none').view(images.shape[0], -1).mean(dim=1)
                 
-                mse_crossed = nn.F.mse_loss(pred_1, images_add, reduction='none').view(images.shape[0], -1).mean(dim=1) + \
-                              nn.F.mse_loss(pred_2, images, reduction='none').view(images.shape[0], -1).mean(dim=1)
+                mse_crossed = F.mse_loss(pred_1, images_add, reduction='none').view(images.shape[0], -1).mean(dim=1) + \
+                              F.mse_loss(pred_2, images, reduction='none').view(images.shape[0], -1).mean(dim=1)
                 
                 loss = torch.min(mse_straight, mse_crossed).mean()
 
