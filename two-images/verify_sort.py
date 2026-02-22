@@ -88,6 +88,6 @@ def verify_partition_csv(csv_path, folder_path):
 if __name__ == "__main__":
     # Specify your paths here
     CSV_FILE_PATH = "partition.csv"
-    IMAGE_FOLDER_PATH = "Oxford102Flowers/jpg"
+    IMAGE_FOLDER_PATH = "/nas-ctm01/datasets/public/Oxford102Flowers/jpg"
     
     verify_partition_csv(CSV_FILE_PATH, IMAGE_FOLDER_PATH)

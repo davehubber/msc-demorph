@@ -37,5 +37,5 @@ def generate_partition_csv(folder_path, output_csv="partition.csv"):
     print(f"Successfully saved {output_csv} with {len(df)} total pairs.")
 
 if __name__ == "__main__":
-    IMAGE_FOLDER_PATH = "Oxford102Flowers/jpg"
+    IMAGE_FOLDER_PATH = "/nas-ctm01/datasets/public/Oxford102Flowers/jpg"
     generate_partition_csv(IMAGE_FOLDER_PATH)
