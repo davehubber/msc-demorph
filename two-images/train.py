@@ -29,49 +29,57 @@ class Diffusion:
             x_A = superimposed_image.clone().to(self.device)
             x_B = superimposed_image.clone().to(self.device)
 
-            t_init_tensor = (torch.ones(n) * init_timestep).long().to(self.device)
-            pred_both = model(x_A, t_init_tensor)
-            anchor_A, anchor_B = torch.chunk(pred_both, 2, dim=1)
-
-            for i in reversed(range(1, init_timestep)):
+            for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
 
-                pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
-                pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
+                if i == init_timestep:
+                    p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
+                    
+                    pA_1_aligned, pA_2_aligned = p_1, p_2
+                    
+                    pB_1_aligned, pB_2_aligned = p_2, p_1 
+                    
+                    anchor_A = pA_1_aligned.clamp(-1.0, 1.0).clone()
+                    anchor_B = pB_1_aligned.clamp(-1.0, 1.0).clone()
+                    
+                else:
+                    pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
+                    pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
-                mse_A_straight = F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
-                                 F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
-                mse_A_crossed  = F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
-                                 F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                    mse_A_straight = F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                     F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                    mse_A_crossed  = F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                     F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                    
+                    swap_mask_A = (mse_A_crossed < mse_A_straight).view(-1, 1, 1, 1)
+                    pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
+                    pA_2_aligned = torch.where(swap_mask_A, pA_1, pA_2)
+
+                    mse_B_straight = F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                     F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                    mse_B_crossed  = F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                     F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                    
+                    swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
+                    pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
+                    pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
+                    
+                    anchor_A = pA_1_aligned.clamp(-1.0, 1.0).clone()
+                    anchor_B = pB_1_aligned.clamp(-1.0, 1.0).clone()
+
+                pA_1_c, pA_2_c = pA_1_aligned.clamp(-1.0, 1.0), pA_2_aligned.clamp(-1.0, 1.0)
+                pB_1_c, pB_2_c = pB_1_aligned.clamp(-1.0, 1.0), pB_2_aligned.clamp(-1.0, 1.0)
+
+                x_A = x_A - self.noise_images(pA_1_c, pA_2_c, t) + self.noise_images(pA_1_c, pA_2_c, t-1)
                 
-                swap_mask_A = (mse_A_crossed < mse_A_straight).view(-1, 1, 1, 1)
-                pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
-                pA_2_aligned = torch.where(swap_mask_A, pA_1, pA_2)
-
-                mse_B_straight = F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
-                                 F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
-                mse_B_crossed  = F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
-                                 F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
-                
-                swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
-                pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
-                pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
-
-                pred_A_strong = pA_1_aligned.clamp(-1.0, 1.0)
-                pred_B_strong = pB_2_aligned.clamp(-1.0, 1.0)
-
-                anchor_A = pred_A_strong.clone()
-                anchor_B = pred_B_strong.clone()
-
-                x_A = x_A - self.noise_images(pred_A_strong, pred_B_strong, t) + self.noise_images(pred_A_strong, pred_B_strong, t-1)
-                x_B = x_B - self.noise_images(pred_B_strong, pred_A_strong, t) + self.noise_images(pred_B_strong, pred_A_strong, t-1)
+                x_B = x_B - self.noise_images(pB_1_c, pB_2_c, t) + self.noise_images(pB_1_c, pB_2_c, t-1)
         
         model.train()
 
-        final_A = (pred_A_strong.clamp(-1, 1) + 1) / 2
+        final_A = (pA_1_aligned.clamp(-1.0, 1.0) + 1) / 2
         final_A = (final_A * 255).type(torch.uint8)
         
-        final_B = (pred_B_strong.clamp(-1, 1) + 1) / 2
+        final_B = (pB_1_aligned.clamp(-1.0, 1.0) + 1) / 2
         final_B = (final_B * 255).type(torch.uint8)
 
         return final_A, final_B
@@ -162,30 +170,40 @@ def eval(args):
     device = args.device
     test_dataloader = get_data(args, 'test')
 
-    model = UNet(c_in=3, c_out=6).to(device)
+    model = UNet(c_in=3, c_out=6, device=device).to(device)
     model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
-    model.to(device)
     model.eval()
 
     diffusion = Diffusion(img_size=args.image_size, device=device)
 
-    results = {"ssim_o": [], "ssim_a": [], "psnr_o": [], "psnr_a": [], "lpips_o": [], "lpips_a": []}
+    results = {
+        "ssim": [], "psnr": [], "lpips": [], 
+        "success_count": 0, "total_images": 0
+    }
+    
+    saved_grid = False
 
     for i, (images, images_add) in enumerate(test_dataloader):
         images = images.to(device)
         images_add = images_add.to(device)
 
         superimposed = (images + images_add) / 2.
+        superimposed_np = ((superimposed.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8).cpu().permute(0, 2, 3, 1).numpy()
+
         sampled_A, sampled_B = diffusion.sample(model, superimposed, args.alpha_init)
         
         gt_A_eval = ((images.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
         gt_B_eval = ((images_add.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
+
+        batch_s_A = []
+        batch_s_B = []
 
         for k in range(len(images)):
             cur_gt_A = gt_A_eval[k].cpu().permute(1, 2, 0).numpy()
             cur_gt_B = gt_B_eval[k].cpu().permute(1, 2, 0).numpy()
             cur_s_A = sampled_A[k].cpu().permute(1, 2, 0).numpy()
             cur_s_B = sampled_B[k].cpu().permute(1, 2, 0).numpy()
+            cur_super = superimposed_np[k]
 
             mse_straight = np.mean((cur_s_A - cur_gt_A)**2) + np.mean((cur_s_B - cur_gt_B)**2)
             mse_crossed  = np.mean((cur_s_A - cur_gt_B)**2) + np.mean((cur_s_B - cur_gt_A)**2)
@@ -196,20 +214,54 @@ def eval(args):
             else:
                 tensor_s_A, tensor_s_B = sampled_A[k], sampled_B[k]
 
-            so, sa, po, pa = calculate_metrics(cur_gt_A, cur_gt_B, cur_s_A, cur_s_B)
-            
-            lo = lpips((images[k]), (tensor_s_A.float() / 127.5) - 1.0, net_type='alex')
-            la = lpips((images_add[k]), (tensor_s_B.float() / 127.5) - 1.0, net_type='alex')
-            
-            results["ssim_o"].append(so); results["ssim_a"].append(sa)
-            results["psnr_o"].append(po); results["psnr_a"].append(pa)
-            results["lpips_o"].append(lo.item()); results["lpips_a"].append(la.item())
+            if not saved_grid:
+                batch_s_A.append(tensor_s_A)
+                batch_s_B.append(tensor_s_B)
 
-        if i == 0:
-            save_images(sampled_A, sampled_B, gt_A_eval, gt_B_eval, 
+            s_A = structural_similarity(cur_gt_A, cur_s_A, data_range=255, channel_axis=-1)
+            s_B = structural_similarity(cur_gt_B, cur_s_B, data_range=255, channel_axis=-1)
+            
+            p_A = peak_signal_noise_ratio(cur_gt_A, cur_s_A, data_range=255)
+            p_B = peak_signal_noise_ratio(cur_gt_B, cur_s_B, data_range=255)
+
+            l_A = lpips((images[k]), (tensor_s_A.float() / 127.5) - 1.0, net_type='alex').item()
+            l_B = lpips((images_add[k]), (tensor_s_B.float() / 127.5) - 1.0, net_type='alex').item()
+
+            results["ssim"].append((s_A + s_B) / 2)
+            results["psnr"].append((p_A + p_B) / 2)
+            results["lpips"].append((l_A + l_B) / 2)
+
+            ssim_avg_A = structural_similarity(cur_gt_A, cur_super, data_range=255, channel_axis=-1)
+            ssim_avg_B = structural_similarity(cur_gt_B, cur_super, data_range=255, channel_axis=-1)
+
+            if s_A > ssim_avg_A:
+                results["success_count"] += 1
+            
+            if s_B > ssim_avg_B:
+                results["success_count"] += 1
+            
+            results["total_images"] += 2
+
+        if i == 0 and not saved_grid:
+            aligned_A_stack = torch.stack(batch_s_A)
+            aligned_B_stack = torch.stack(batch_s_B)
+            
+            save_images(aligned_A_stack, aligned_B_stack, gt_A_eval, gt_B_eval, 
                         os.path.join("samples", args.sampling_name, "eval_grid.jpg"))
+            saved_grid = True
 
-    metrics_report = "\n".join([f"Avg {k}: {np.mean(v)}" for k, v in results.items()])
+    avg_ssim = np.mean(results["ssim"])
+    avg_psnr = np.mean(results["psnr"])
+    avg_lpips = np.mean(results["lpips"])
+    success_rate = (results["success_count"] / results["total_images"]) * 100
+
+    metrics_report = (
+        f"SSIM: {avg_ssim:.4f}\n"
+        f"PSNR: {avg_psnr:.4f}\n"
+        f"LPIPS: {avg_lpips:.4f}\n"
+        f"Success Rate (%S): {success_rate:.2f}%"
+    )
+    
     print(metrics_report)
     with open(os.path.join("results", args.run_name, "final_metrics.txt"), "w") as f:
         f.write(metrics_report)
