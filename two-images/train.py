@@ -214,6 +214,53 @@ def eval(args):
     with open(os.path.join("results", args.run_name, "final_metrics.txt"), "w") as f:
         f.write(metrics_report)
 
+def one_shot_eval(args):
+    device = args.device
+    test_dataloader = get_data(args, 'test')
+
+    model = UNet(c_in=3, c_out=6, device=device).to(device)
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.eval()
+
+    diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+    
+    init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+    
+    os.makedirs(os.path.join("samples", args.run_name, "one_shot"), exist_ok=True)
+
+    with torch.no_grad():
+        for i, (images, images_add) in enumerate(test_dataloader):
+            images = images.to(device)
+            images_add = images_add.to(device)
+
+            superimposed = (images + images_add) / 2.
+            n = len(superimposed)
+
+            t_init_tensor = (torch.ones(n) * init_timestep).long().to(device)
+            
+            pred_both = model(superimposed, t_init_tensor)
+            pred_A, pred_B = torch.chunk(pred_both, 2, dim=1)
+            
+            mse_straight = F.mse_loss(pred_A, images, reduction='none').view(n, -1).mean(dim=1) + \
+                           F.mse_loss(pred_B, images_add, reduction='none').view(n, -1).mean(dim=1)
+            mse_crossed  = F.mse_loss(pred_A, images_add, reduction='none').view(n, -1).mean(dim=1) + \
+                           F.mse_loss(pred_B, images, reduction='none').view(n, -1).mean(dim=1)
+            
+            swap_mask = (mse_crossed < mse_straight).view(-1, 1, 1, 1)
+            pred_A_aligned = torch.where(swap_mask, pred_B, pred_A)
+            pred_B_aligned = torch.where(swap_mask, pred_A, pred_B)
+
+            final_A = ((pred_A_aligned.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
+            final_B = ((pred_B_aligned.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
+            
+            gt_A = ((images.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
+            gt_B = ((images_add.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
+
+            save_path = os.path.join("samples", args.run_name, "one_shot", f"batch_{i}.jpg")
+            save_images(final_A, final_B, gt_A, gt_B, save_path)
+            
+            print(f"Saved one-shot batch {i} to {save_path}")
+
 def launch():
     import argparse
     parser = argparse.ArgumentParser()
@@ -227,11 +274,18 @@ def launch():
     parser.add_argument('--epochs', default=800, help='Number of epochs', type=int, required=False)
     parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
     parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
+    parser.add_argument('--mode', default='train', choices=['train', 'eval', 'one_shot'], help='Mode to run')
     args = parser.parse_args()
     args.image_size = (args.image_size, args.image_size)
     args.sampling_name = args.run_name
-    train(args)
-    eval(args)
+
+    if args.mode == 'train':
+        train(args)
+        eval(args)
+    elif args.mode == 'eval':
+        eval(args)
+    elif args.mode == 'one_shot':
+        one_shot_eval(args)
 
 if __name__ == '__main__':
     launch()
