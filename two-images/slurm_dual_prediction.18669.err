@@ -1,0 +1,12 @@
+/nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/torchvision/models/_utils.py:135: UserWarning: Using 'weights' as positional parameter(s) is deprecated since 0.13 and may be removed in the future. Please use keyword parameter(s) instead.
+  warnings.warn(
+/nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/torchvision/models/_utils.py:223: UserWarning: Arguments other than a weight enum or `None` for 'weights' are deprecated since 0.13 and may be removed in the future. The current behavior is equivalent to passing `weights=AlexNet_Weights.IMAGENET1K_V1`. You can also use `weights=AlexNet_Weights.DEFAULT` to get the most up-to-date weights.
+  warnings.warn(msg)
+Traceback (most recent call last):
+  File "/nas-ctm01/homes/dacordeiro/msc-demorph/two-images/train.py", line 343, in <module>
+    launch()
+  File "/nas-ctm01/homes/dacordeiro/msc-demorph/two-images/train.py", line 338, in launch
+    eval(args)
+  File "/nas-ctm01/homes/dacordeiro/msc-demorph/two-images/train.py", line 266, in eval
+    with open(os.path.join("results", args.run_name, "final_metrics.txt"), "w") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'results/dual_prediction_fixed/final_metrics.txt'
