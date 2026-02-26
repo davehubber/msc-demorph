@@ -35,12 +35,10 @@ class Diffusion:
                 if i == init_timestep:
                     p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
                     
-                    pA_1_aligned, pA_2_aligned = p_1, p_2
+                    best_pred_1, best_pred_1 = p_1, p_2
                     
-                    pB_1_aligned, pB_2_aligned = p_2, p_1 
-                    
-                    anchor_A = pA_1_aligned.clamp(-1.0, 1.0).clone()
-                    anchor_B = pB_1_aligned.clamp(-1.0, 1.0).clone()
+                    anchor_A = best_pred_1.clamp(-1.0, 1.0).clone()
+                    anchor_B = best_pred_2.clamp(-1.0, 1.0).clone()
                     
                 else:
                     pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
