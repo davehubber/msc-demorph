@@ -21,7 +21,7 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, gt_1, gt_2, alpha_init = 0.5):
+    def sample(self, model, superimposed_image, gt_1, gt_2, alpha_init=0.5):
         n = len(superimposed_image)
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
@@ -30,8 +30,8 @@ class Diffusion:
             x_A = superimposed_image.clone().to(self.device)
             x_B = superimposed_image.clone().to(self.device)
             
-            gt_1 = gt_1.to(self.device)
-            gt_2 = gt_2.to(self.device)
+            gt_1 = gt_1.to(self.device).clamp(-1.0, 1.0)
+            gt_2 = gt_2.to(self.device).clamp(-1.0, 1.0)
 
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
@@ -44,6 +44,17 @@ class Diffusion:
                     
                     anchor_A = best_pred_1.clone()
                     anchor_B = best_pred_2.clone()
+                    
+                    # Align Ground Truths with the newly established anchors
+                    mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
+                                      F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
+                    mse_gt_crossed  = F.mse_loss(anchor_A, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
+                                      F.mse_loss(anchor_B, gt_1, reduction='none').view(n, -1).mean(dim=1)
+                    
+                    swap_mask_gt = (mse_gt_crossed < mse_gt_straight).view(-1, 1, 1, 1)
+                    
+                    aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
+                    aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
                     
                 else:
                     pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
@@ -73,10 +84,10 @@ class Diffusion:
                     anchor_A = best_pred_1.clone()
                     anchor_B = best_pred_2.clone()
 
-                # Renoising using the ground truth instead of best_pred_1 and best_pred_2
-                x_A = x_A - self.noise_images(best_pred_1, gt_2, t) + self.noise_images(best_pred_1, gt_2, t-1)
+                # Renoising: Respective best prediction is noised by the corresponding ground truth
+                x_A = x_A - self.noise_images(best_pred_1, aligned_gt_2, t) + self.noise_images(best_pred_1, aligned_gt_2, t-1)
                 
-                x_B = x_B - self.noise_images(best_pred_2, gt_1, t) + self.noise_images(best_pred_2, gt_1, t-1)
+                x_B = x_B - self.noise_images(best_pred_2, aligned_gt_1, t) + self.noise_images(best_pred_2, aligned_gt_1, t-1)
         
         model.train()
 
