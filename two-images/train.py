@@ -6,6 +6,7 @@ from utils import *
 from modules import UNet
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
 from lpips_pytorch import lpips
+from torchvision.utils import save_image
 
 class Diffusion:
     def __init__(self, max_timesteps=300, alpha_start=0., alpha_max=0.5, img_size=256, device="cuda"):
@@ -321,7 +322,7 @@ def one_shot_eval(args):
             images = images.to(device)
             images_add = images_add.to(device)
 
-            superimposed = images * 0.9 + images_add * 0.1
+            superimposed = images * 0.5 + images_add * 0.5
             n = len(superimposed)
 
             t_init_tensor = (torch.ones(n) * init_timestep).long().to(device)
@@ -348,6 +349,87 @@ def one_shot_eval(args):
             save_images(final_A, final_B, gt_A, gt_B, save_path)
             
             print(f"Saved one-shot batch {i} to {save_path}")
+
+def one_shot_eval_with_diff(args):
+    device = args.device
+    test_dataloader = get_data(args, 'test')
+
+    model = UNet(c_in=3, c_out=6, device=device).to(device)
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.eval()
+
+    diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+    
+    init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+    
+    save_dir = os.path.join("samples", args.run_name, "one_shot_diff")
+    os.makedirs(save_dir, exist_ok=True)
+
+    with torch.no_grad():
+        for i, (images, images_add) in enumerate(test_dataloader):
+            images = images.to(device)
+            images_add = images_add.to(device)
+
+            # Replicating original one_shot forward pass
+            superimposed = images * 0.5 + images_add * 0.5
+            n = len(superimposed)
+
+            t_init_tensor = (torch.ones(n) * init_timestep).long().to(device)
+            
+            pred_both = model(superimposed, t_init_tensor)
+            pred_A, pred_B = torch.chunk(pred_both, 2, dim=1)
+            
+            # Align predictions with ground truth
+            mse_straight = F.mse_loss(pred_A, images, reduction='none').view(n, -1).mean(dim=1) + \
+                           F.mse_loss(pred_B, images_add, reduction='none').view(n, -1).mean(dim=1)
+            mse_crossed  = F.mse_loss(pred_A, images_add, reduction='none').view(n, -1).mean(dim=1) + \
+                           F.mse_loss(pred_B, images, reduction='none').view(n, -1).mean(dim=1)
+            
+            swap_mask = (mse_crossed < mse_straight).view(-1, 1, 1, 1)
+            pred_A_aligned = torch.where(swap_mask, pred_B, pred_A)
+            pred_B_aligned = torch.where(swap_mask, pred_A, pred_B)
+
+            # --- New Logic: Averages and Differences ---
+            
+            # Max timestep corresponding to the perfect average
+            t_max_tensor = (torch.ones(n) * diffusion.max_timesteps).long().to(device)
+            
+            # Recreate the predicted and actual averages using diffusion.noise_images
+            pred_superimposed = diffusion.noise_images(pred_A_aligned, pred_B_aligned, t_max_tensor)
+            gt_superimposed = diffusion.noise_images(images, images_add, t_max_tensor)
+
+            # Convert all tensors to [0, 1] range for visualization and difference math
+            pred_A_01 = (pred_A_aligned.clamp(-1, 1) + 1) / 2
+            pred_B_01 = (pred_B_aligned.clamp(-1, 1) + 1) / 2
+            gt_A_01 = (images.clamp(-1, 1) + 1) / 2
+            gt_B_01 = (images_add.clamp(-1, 1) + 1) / 2
+            
+            pred_super_01 = (pred_superimposed.clamp(-1, 1) + 1) / 2
+            gt_super_01 = (gt_superimposed.clamp(-1, 1) + 1) / 2
+            
+            # Calculate the absolute difference between GT average and predicted average
+            diff_01 = torch.abs(gt_super_01 - pred_super_01)
+
+            # Create a combined flat list of images so we can build a 6-column grid 
+            # Columns: [GT A | GT B | Pred A | Pred B | Pred Average | Difference]
+            grid_images = []
+            for b_idx in range(n):
+                grid_images.extend([
+                    gt_A_01[b_idx], gt_B_01[b_idx], 
+                    pred_A_01[b_idx], pred_B_01[b_idx], 
+                    pred_super_01[b_idx], diff_01[b_idx]
+                ])
+            
+            grid_tensor = torch.stack(grid_images)
+            save_path = os.path.join(save_dir, f"batch_{i}_detailed_analysis.png")
+            
+            # Save using torchvision to guarantee grid structure
+            save_image(grid_tensor, save_path, nrow=6)
+            
+            print(f"Saved detailed one-shot analysis for batch {i} to {save_path}")
+            
+            # Stop after 1 batch per the requirements
+            break
 
 def launch():
     import argparse
