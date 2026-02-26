@@ -333,6 +333,16 @@ def one_shot_eval(args):
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
     os.makedirs(os.path.join("samples", args.run_name, "one_shot"), exist_ok=True)
+    os.makedirs(os.path.join("results", args.run_name), exist_ok=True)
+
+    # 1. Initialize metrics dictionary
+    results = {
+        "ssim_1": [], "ssim_2": [], 
+        "psnr_1": [], "psnr_2": [], 
+        "lpips_1": [], "lpips_2": [], 
+        "success_count_1": 0, "success_count_2": 0, 
+        "total_pairs": 0
+    }
 
     with torch.no_grad():
         for i, (images, images_add) in enumerate(test_dataloader):
@@ -341,6 +351,9 @@ def one_shot_eval(args):
 
             superimposed = images * 0.5 + images_add * 0.5
             n = len(superimposed)
+            
+            # Prepare baseline for success metric calculation
+            superimposed_np = ((superimposed.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8).cpu().permute(0, 2, 3, 1).numpy()
 
             t_init_tensor = (torch.ones(n) * init_timestep).long().to(device)
             
@@ -367,86 +380,66 @@ def one_shot_eval(args):
             
             print(f"Saved one-shot batch {i} to {save_path}")
 
-def one_shot_eval_with_diff(args):
-    device = args.device
-    test_dataloader = get_data(args, 'test')
+            # 2. Iterate through batch to calculate metrics
+            for k in range(n):
+                cur_gt_A = gt_A[k].cpu().permute(1, 2, 0).numpy()
+                cur_gt_B = gt_B[k].cpu().permute(1, 2, 0).numpy()
+                cur_s_A = final_A[k].cpu().permute(1, 2, 0).numpy()
+                cur_s_B = final_B[k].cpu().permute(1, 2, 0).numpy()
+                cur_super = superimposed_np[k]
 
-    model = UNet(c_in=3, c_out=6, device=device).to(device)
-    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
-    model.eval()
+                s_A = structural_similarity(cur_gt_A, cur_s_A, data_range=255, channel_axis=-1)
+                s_B = structural_similarity(cur_gt_B, cur_s_B, data_range=255, channel_axis=-1)
+                
+                p_A = peak_signal_noise_ratio(cur_gt_A, cur_s_A, data_range=255)
+                p_B = peak_signal_noise_ratio(cur_gt_B, cur_s_B, data_range=255)
 
-    diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+                l_A = lpips((images[k]), (final_A[k].float() / 127.5) - 1.0, net_type='alex').item()
+                l_B = lpips((images_add[k]), (final_B[k].float() / 127.5) - 1.0, net_type='alex').item()
+
+                # Append metrics independently
+                results["ssim_1"].append(s_A)
+                results["ssim_2"].append(s_B)
+                results["psnr_1"].append(p_A)
+                results["psnr_2"].append(p_B)
+                results["lpips_1"].append(l_A)
+                results["lpips_2"].append(l_B)
+
+                ssim_avg_A = structural_similarity(cur_gt_A, cur_super, data_range=255, channel_axis=-1)
+                ssim_avg_B = structural_similarity(cur_gt_B, cur_super, data_range=255, channel_axis=-1)
+
+                # Track success independently
+                if s_A > ssim_avg_A:
+                    results["success_count_1"] += 1
+                if s_B > ssim_avg_B:
+                    results["success_count_2"] += 1
+                
+                results["total_pairs"] += 1
+
+    # 3. Calculate final averages and write report
+    avg_ssim_1, avg_ssim_2 = np.mean(results["ssim_1"]), np.mean(results["ssim_2"])
+    avg_psnr_1, avg_psnr_2 = np.mean(results["psnr_1"]), np.mean(results["psnr_2"])
+    avg_lpips_1, avg_lpips_2 = np.mean(results["lpips_1"]), np.mean(results["lpips_2"])
     
-    init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+    success_rate_1 = (results["success_count_1"] / results["total_pairs"]) * 100
+    success_rate_2 = (results["success_count_2"] / results["total_pairs"]) * 100
+
+    metrics_report = (
+        f"--- One-Shot Image 1 Metrics ---\n"
+        f"SSIM: {avg_ssim_1:.4f}\n"
+        f"PSNR: {avg_psnr_1:.4f}\n"
+        f"LPIPS: {avg_lpips_1:.4f}\n"
+        f"Success Rate: {success_rate_1:.2f}%\n\n"
+        f"--- One-Shot Image 2 Metrics ---\n"
+        f"SSIM: {avg_ssim_2:.4f}\n"
+        f"PSNR: {avg_psnr_2:.4f}\n"
+        f"LPIPS: {avg_lpips_2:.4f}\n"
+        f"Success Rate: {success_rate_2:.2f}%"
+    )
     
-    save_dir = os.path.join("samples", args.run_name, "one_shot_diff")
-    os.makedirs(save_dir, exist_ok=True)
-
-    with torch.no_grad():
-        for i, (images, images_add) in enumerate(test_dataloader):
-            images = images.to(device)
-            images_add = images_add.to(device)
-
-            # Replicating original one_shot forward pass
-            superimposed = images * 0.5 + images_add * 0.5
-            n = len(superimposed)
-
-            t_init_tensor = (torch.ones(n) * init_timestep).long().to(device)
-            
-            pred_both = model(superimposed, t_init_tensor)
-            pred_A, pred_B = torch.chunk(pred_both, 2, dim=1)
-            
-            # Align predictions with ground truth
-            mse_straight = F.mse_loss(pred_A, images, reduction='none').view(n, -1).mean(dim=1) + \
-                           F.mse_loss(pred_B, images_add, reduction='none').view(n, -1).mean(dim=1)
-            mse_crossed  = F.mse_loss(pred_A, images_add, reduction='none').view(n, -1).mean(dim=1) + \
-                           F.mse_loss(pred_B, images, reduction='none').view(n, -1).mean(dim=1)
-            
-            swap_mask = (mse_crossed < mse_straight).view(-1, 1, 1, 1)
-            pred_A_aligned = torch.where(swap_mask, pred_B, pred_A)
-            pred_B_aligned = torch.where(swap_mask, pred_A, pred_B)
-
-            # --- New Logic: Averages and Differences ---
-            
-            # Max timestep corresponding to the perfect average
-            t_max_tensor = (torch.ones(n) * diffusion.max_timesteps).long().to(device)
-            
-            # Recreate the predicted and actual averages using diffusion.noise_images
-            pred_superimposed = diffusion.noise_images(pred_A_aligned, pred_B_aligned, t_max_tensor)
-            gt_superimposed = diffusion.noise_images(images, images_add, t_max_tensor)
-
-            # Convert all tensors to [0, 1] range for visualization and difference math
-            pred_A_01 = (pred_A_aligned.clamp(-1, 1) + 1) / 2
-            pred_B_01 = (pred_B_aligned.clamp(-1, 1) + 1) / 2
-            gt_A_01 = (images.clamp(-1, 1) + 1) / 2
-            gt_B_01 = (images_add.clamp(-1, 1) + 1) / 2
-            
-            pred_super_01 = (pred_superimposed.clamp(-1, 1) + 1) / 2
-            gt_super_01 = (gt_superimposed.clamp(-1, 1) + 1) / 2
-            
-            # Calculate the absolute difference between GT average and predicted average
-            diff_01 = torch.abs(gt_super_01 - pred_super_01)
-
-            # Create a combined flat list of images so we can build a 6-column grid 
-            # Columns: [GT A | GT B | Pred A | Pred B | Pred Average | Difference]
-            grid_images = []
-            for b_idx in range(n):
-                grid_images.extend([
-                    gt_A_01[b_idx], gt_B_01[b_idx], 
-                    pred_A_01[b_idx], pred_B_01[b_idx], 
-                    pred_super_01[b_idx], diff_01[b_idx]
-                ])
-            
-            grid_tensor = torch.stack(grid_images)
-            save_path = os.path.join(save_dir, f"batch_{i}_detailed_analysis.png")
-            
-            # Save using torchvision to guarantee grid structure
-            save_image(grid_tensor, save_path, nrow=6)
-            
-            print(f"Saved detailed one-shot analysis for batch {i} to {save_path}")
-            
-            # Stop after 1 batch per the requirements
-            break
+    print("\n" + metrics_report)
+    with open(os.path.join("results", args.run_name, "one_shot_metrics.txt"), "w") as f:
+        f.write(metrics_report)
 
 def launch():
     import argparse
@@ -472,7 +465,7 @@ def launch():
     elif args.mode == 'eval':
         eval(args)
     elif args.mode == 'one_shot':
-        one_shot_eval_with_diff(args)
+        one_shot_eval(args)
 
 if __name__ == '__main__':
     launch()
