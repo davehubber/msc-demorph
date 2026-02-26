@@ -175,12 +175,24 @@ def eval(args):
 
     diffusion = Diffusion(img_size=args.image_size, device=device)
 
+    # 1. Track metrics separately for Image 1 and Image 2
     results = {
-        "ssim": [], "psnr": [], "lpips": [], 
-        "success_count": 0, "total_images": 0
+        "ssim_1": [], "ssim_2": [], 
+        "psnr_1": [], "psnr_2": [], 
+        "lpips_1": [], "lpips_2": [], 
+        "success_count_1": 0, "success_count_2": 0, 
+        "total_pairs": 0
     }
     
     saved_grid = False
+
+    # Ensure output directories exist before writing files
+    os.makedirs(os.path.join("samples", args.sampling_name), exist_ok=True)
+    os.makedirs(os.path.join("results", args.run_name), exist_ok=True)
+    
+    # Create a directory specifically for the individual separated images
+    ind_dir = os.path.join("samples", args.sampling_name, "individual")
+    os.makedirs(ind_dir, exist_ok=True)
 
     for i, (images, images_add) in enumerate(test_dataloader):
         images = images.to(device)
@@ -226,39 +238,64 @@ def eval(args):
             l_A = lpips((images[k]), (tensor_s_A.float() / 127.5) - 1.0, net_type='alex').item()
             l_B = lpips((images_add[k]), (tensor_s_B.float() / 127.5) - 1.0, net_type='alex').item()
 
-            results["ssim"].append((s_A + s_B) / 2)
-            results["psnr"].append((p_A + p_B) / 2)
-            results["lpips"].append((l_A + l_B) / 2)
+            # Append metrics independently
+            results["ssim_1"].append(s_A)
+            results["ssim_2"].append(s_B)
+            results["psnr_1"].append(p_A)
+            results["psnr_2"].append(p_B)
+            results["lpips_1"].append(l_A)
+            results["lpips_2"].append(l_B)
 
             ssim_avg_A = structural_similarity(cur_gt_A, cur_super, data_range=255, channel_axis=-1)
             ssim_avg_B = structural_similarity(cur_gt_B, cur_super, data_range=255, channel_axis=-1)
 
+            # Track success independently
             if s_A > ssim_avg_A:
-                results["success_count"] += 1
-            
+                results["success_count_1"] += 1
             if s_B > ssim_avg_B:
-                results["success_count"] += 1
+                results["success_count_2"] += 1
             
-            results["total_images"] += 2
+            results["total_pairs"] += 1
 
         if i == 0 and not saved_grid:
+            from PIL import Image
+            
             aligned_A_stack = torch.stack(batch_s_A)
             aligned_B_stack = torch.stack(batch_s_B)
             
+            # Still save the grid for a quick overview
             save_images(aligned_A_stack, aligned_B_stack, gt_A_eval, gt_B_eval, 
                         os.path.join("samples", args.sampling_name, "eval_grid.jpg"))
+            
+            # 2. Save individual image files
+            for b_idx in range(len(batch_s_A)):
+                img_A_np = batch_s_A[b_idx].cpu().permute(1, 2, 0).numpy()
+                img_B_np = batch_s_B[b_idx].cpu().permute(1, 2, 0).numpy()
+                
+                Image.fromarray(img_A_np).save(os.path.join(ind_dir, f"sample_{b_idx}_img1.jpg"))
+                Image.fromarray(img_B_np).save(os.path.join(ind_dir, f"sample_{b_idx}_img2.jpg"))
+
             saved_grid = True
 
-    avg_ssim = np.mean(results["ssim"])
-    avg_psnr = np.mean(results["psnr"])
-    avg_lpips = np.mean(results["lpips"])
-    success_rate = (results["success_count"] / results["total_images"]) * 100
+    # Calculate final averages
+    avg_ssim_1, avg_ssim_2 = np.mean(results["ssim_1"]), np.mean(results["ssim_2"])
+    avg_psnr_1, avg_psnr_2 = np.mean(results["psnr_1"]), np.mean(results["psnr_2"])
+    avg_lpips_1, avg_lpips_2 = np.mean(results["lpips_1"]), np.mean(results["lpips_2"])
+    
+    success_rate_1 = (results["success_count_1"] / results["total_pairs"]) * 100
+    success_rate_2 = (results["success_count_2"] / results["total_pairs"]) * 100
 
     metrics_report = (
-        f"SSIM: {avg_ssim:.4f}\n"
-        f"PSNR: {avg_psnr:.4f}\n"
-        f"LPIPS: {avg_lpips:.4f}\n"
-        f"Success Rate (%S): {success_rate:.2f}%"
+        f"--- Image 1 Metrics ---\n"
+        f"SSIM: {avg_ssim_1:.4f}\n"
+        f"PSNR: {avg_psnr_1:.4f}\n"
+        f"LPIPS: {avg_lpips_1:.4f}\n"
+        f"Success Rate: {success_rate_1:.2f}%\n\n"
+        f"--- Image 2 Metrics ---\n"
+        f"SSIM: {avg_ssim_2:.4f}\n"
+        f"PSNR: {avg_psnr_2:.4f}\n"
+        f"LPIPS: {avg_lpips_2:.4f}\n"
+        f"Success Rate: {success_rate_2:.2f}%"
     )
     
     print(metrics_report)
