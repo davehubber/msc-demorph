@@ -285,7 +285,7 @@ def one_shot_eval(args):
             images = images.to(device)
             images_add = images_add.to(device)
 
-            superimposed = (images + images_add) / 2.
+            superimposed = images * 0.9 + images_add * 0.1
             n = len(superimposed)
 
             t_init_tensor = (torch.ones(n) * init_timestep).long().to(device)
