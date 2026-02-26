@@ -63,16 +63,16 @@ class Diffusion:
                     swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
                     pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
                     pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
+
+                    best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
+                    best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
                     
-                    anchor_A = pA_1_aligned.clamp(-1.0, 1.0).clone()
-                    anchor_B = pB_1_aligned.clamp(-1.0, 1.0).clone()
+                    anchor_A = best_pred_1.clone()
+                    anchor_B = best_pred_2.clone()
 
-                pA_1_c, pA_2_c = pA_1_aligned.clamp(-1.0, 1.0), pA_2_aligned.clamp(-1.0, 1.0)
-                pB_1_c, pB_2_c = pB_1_aligned.clamp(-1.0, 1.0), pB_2_aligned.clamp(-1.0, 1.0)
-
-                x_A = x_A - self.noise_images(pA_1_c, pA_2_c, t) + self.noise_images(pA_1_c, pA_2_c, t-1)
+                x_A = x_A - self.noise_images(best_pred_1, best_pred_2, t) + self.noise_images(best_pred_1, best_pred_2, t-1)
                 
-                x_B = x_B - self.noise_images(pB_1_c, pB_2_c, t) + self.noise_images(pB_1_c, pB_2_c, t-1)
+                x_B = x_B - self.noise_images(best_pred_2, best_pred_1, t) + self.noise_images(best_pred_2, best_pred_1, t-1)
         
         model.train()
 
