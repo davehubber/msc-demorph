@@ -21,7 +21,7 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, alpha_init = 0.5):
+    def sample(self, model, superimposed_image, gt_1, gt_2, alpha_init = 0.5):
         n = len(superimposed_image)
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
@@ -29,6 +29,9 @@ class Diffusion:
         with torch.no_grad():
             x_A = superimposed_image.clone().to(self.device)
             x_B = superimposed_image.clone().to(self.device)
+            
+            gt_1 = gt_1.to(self.device)
+            gt_2 = gt_2.to(self.device)
 
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
@@ -39,8 +42,8 @@ class Diffusion:
                     best_pred_1 = p_1.clamp(-1.0, 1.0)
                     best_pred_2 = p_2.clamp(-1.0, 1.0)
                     
-                    anchor_A = best_pred_1.clamp(-1.0, 1.0).clone()
-                    anchor_B = best_pred_2.clamp(-1.0, 1.0).clone()
+                    anchor_A = best_pred_1.clone()
+                    anchor_B = best_pred_2.clone()
                     
                 else:
                     pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
@@ -70,9 +73,10 @@ class Diffusion:
                     anchor_A = best_pred_1.clone()
                     anchor_B = best_pred_2.clone()
 
-                x_A = x_A - self.noise_images(best_pred_1, best_pred_2, t) + self.noise_images(best_pred_1, best_pred_2, t-1)
+                # Renoising using the ground truth instead of best_pred_1 and best_pred_2
+                x_A = x_A - self.noise_images(best_pred_1, gt_2, t) + self.noise_images(best_pred_1, gt_2, t-1)
                 
-                x_B = x_B - self.noise_images(best_pred_2, best_pred_1, t) + self.noise_images(best_pred_2, best_pred_1, t-1)
+                x_B = x_B - self.noise_images(best_pred_2, gt_1, t) + self.noise_images(best_pred_2, gt_1, t-1)
         
         model.train()
 
@@ -147,7 +151,8 @@ def train(args):
                 images_add = images_add.to(device)
 
                 superimposed = (images + images_add) / 2.
-                sampled_A, sampled_B = diffusion.sample(model, superimposed, alpha_init=args.alpha_init)
+                # Passed ground truth images here
+                sampled_A, sampled_B = diffusion.sample(model, superimposed, images, images_add, alpha_init=args.alpha_init)
 
                 images = (images.clamp(-1, 1) + 1) / 2
                 images = (images * 255).type(torch.uint8)
@@ -202,7 +207,8 @@ def eval(args):
         superimposed = (images + images_add) / 2.
         superimposed_np = ((superimposed.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8).cpu().permute(0, 2, 3, 1).numpy()
 
-        sampled_A, sampled_B = diffusion.sample(model, superimposed, args.alpha_init)
+        # Passed ground truth images here
+        sampled_A, sampled_B = diffusion.sample(model, superimposed, images, images_add, args.alpha_init)
         
         gt_A_eval = ((images.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
         gt_B_eval = ((images_add.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
