@@ -455,7 +455,7 @@ def launch():
     elif args.mode == 'eval':
         eval(args)
     elif args.mode == 'one_shot':
-        one_shot_eval(args)
+        one_shot_eval_with_diff(args)
 
 if __name__ == '__main__':
     launch()
