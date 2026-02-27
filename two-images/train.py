@@ -457,7 +457,7 @@ def save_transitions(args):
     images = images[[0, 2]].to(device)
     images_add = images_add[[0, 2]].to(device)
 
-    superimposed = (images + images_add) / 2.
+    superimposed = images * 0.4 + images_add * 0.6
     n = len(superimposed)
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
@@ -599,7 +599,7 @@ def launch():
     parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
     parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
     parser.add_argument('--mode', default='train', choices=['train', 'eval', 'one_shot', 'transition'], help='Mode to run')
-    parser.add_argument('--sampling_steps', default=2, type=int, help='Number of strided steps for sampling')
+    parser.add_argument('--sampling_steps', default=50, type=int, help='Number of strided steps for sampling')
 
     args = parser.parse_args()
     args.image_size = (args.image_size, args.image_size)
