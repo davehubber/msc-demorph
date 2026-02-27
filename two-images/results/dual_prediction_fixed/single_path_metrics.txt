@@ -1,0 +1,11 @@
+--- Single-Path Image 1 Metrics ---
+SSIM: 0.6405
+PSNR: 20.3479
+LPIPS: 0.2126
+Success Rate: 55.20%
+
+--- Single-Path Image 2 Metrics ---
+SSIM: 0.6413
+PSNR: 20.3696
+LPIPS: 0.2140
+Success Rate: 54.90%
