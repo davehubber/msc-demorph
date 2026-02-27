@@ -566,8 +566,8 @@ def save_transitions(args):
                 anchors_B[b_idx].append(ancB_show)
 
             # Renoising (Prepares x_A and x_B for the NEXT iteration using the residuals)
-            x_A = corr_A + diffusion.noise_images(best_pred_1, aligned_gt_2, t-1)
-            x_B = corr_B + diffusion.noise_images(best_pred_2, aligned_gt_1, t-1)
+            x_A = corr_A + diffusion.noise_images(best_pred_1, pB_1_aligned, t-1)
+            x_B = corr_B + diffusion.noise_images(best_pred_2, pA_1_aligned, t-1)
             
     # 5. Output Image Grids
     save_dir = os.path.join("results", args.run_name, "transitions")
