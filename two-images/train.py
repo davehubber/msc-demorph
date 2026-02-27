@@ -441,6 +441,108 @@ def one_shot_eval(args):
     with open(os.path.join("results", args.run_name, "one_shot_metrics.txt"), "w") as f:
         f.write(metrics_report)
 
+def save_transitions(args):
+    device = args.device
+    test_dataloader = get_data(args, 'test')
+
+    model = UNet(c_in=3, c_out=6, device=device).to(device)
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.eval()
+
+    diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+
+    images, images_add = next(iter(test_dataloader))
+    images = images[[0, 2]].to(device)
+    images_add = images_add[[0, 2]].to(device)
+
+    superimposed = (images + images_add) / 2.
+    n = len(superimposed)
+    init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+    
+    transitions_A = {0: [], 1: []}
+    transitions_B = {0: [], 1: []}
+
+    with torch.no_grad():
+        x_A = superimposed.clone()
+        x_B = superimposed.clone()
+        
+        gt_1 = images.clamp(-1.0, 1.0)
+        gt_2 = images_add.clamp(-1.0, 1.0)
+        
+        for i in reversed(range(1, init_timestep + 1)):
+            t = (torch.ones(n) * i).long().to(device)
+            
+            if i == init_timestep:
+                p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
+                
+                best_pred_1 = p_1.clamp(-1.0, 1.0)
+                best_pred_2 = p_2.clamp(-1.0, 1.0)
+                
+                anchor_A = best_pred_1.clone()
+                anchor_B = best_pred_2.clone()
+                
+                mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
+                                  F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
+                mse_gt_crossed  = F.mse_loss(anchor_A, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
+                                  F.mse_loss(anchor_B, gt_1, reduction='none').view(n, -1).mean(dim=1)
+                
+                swap_mask_gt = (mse_gt_crossed < mse_gt_straight).view(-1, 1, 1, 1)
+                aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
+                aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
+                
+            else:
+                pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
+                pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
+
+                mse_A_straight = F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                mse_A_crossed  = F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                
+                swap_mask_A = (mse_A_crossed < mse_A_straight).view(-1, 1, 1, 1)
+                pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
+                pA_2_aligned = torch.where(swap_mask_A, pA_1, pA_2)
+
+                mse_B_straight = F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                mse_B_crossed  = F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                
+                swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
+                pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
+                pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
+
+                best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
+                best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
+                
+                anchor_A = best_pred_1.clone()
+                anchor_B = best_pred_2.clone()
+
+            for b_idx in range(n):
+                img1_show = (best_pred_1[b_idx].clone() + 1) / 2
+                img2_show = (best_pred_2[b_idx].clone() + 1) / 2
+                transitions_A[b_idx].append(img1_show)
+                transitions_B[b_idx].append(img2_show)
+
+            x_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t) + diffusion.noise_images(best_pred_1, aligned_gt_2, t-1)
+            x_B = x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t) + diffusion.noise_images(best_pred_2, aligned_gt_1, t-1)
+            
+    save_dir = os.path.join("results", args.run_name, "transitions")
+    os.makedirs(save_dir, exist_ok=True)
+    original_indices = [1, 3]
+    
+    for b_idx, real_idx in enumerate(original_indices):
+        pair_sequence = []
+        for step_idx in range(len(transitions_A[b_idx])):
+            pair_sequence.append(transitions_A[b_idx][step_idx])
+            pair_sequence.append(transitions_B[b_idx][step_idx])
+            
+        grid_tensor = torch.stack(pair_sequence)
+        save_path = os.path.join(save_dir, f"pair_{real_idx}_transition.jpg")
+        
+        save_image(grid_tensor, save_path, nrow=2)
+        print(f"Saved transition grid for Pair {real_idx} to {save_path}")
+
 def launch():
     import argparse
     parser = argparse.ArgumentParser()
@@ -454,7 +556,8 @@ def launch():
     parser.add_argument('--epochs', default=800, help='Number of epochs', type=int, required=False)
     parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
     parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
-    parser.add_argument('--mode', default='train', choices=['train', 'eval', 'one_shot'], help='Mode to run')
+    parser.add_argument('--mode', default='train', choices=['train', 'eval', 'one_shot', 'transition'], help='Mode to run')
+
     args = parser.parse_args()
     args.image_size = (args.image_size, args.image_size)
     args.sampling_name = args.run_name
@@ -466,6 +569,8 @@ def launch():
         eval(args)
     elif args.mode == 'one_shot':
         one_shot_eval(args)
+    elif args.mode == 'transition':
+        save_transitions(args)
 
 if __name__ == '__main__':
     launch()
