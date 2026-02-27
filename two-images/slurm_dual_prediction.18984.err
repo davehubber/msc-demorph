@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/nas-ctm01/homes/dacordeiro/msc-demorph/two-images/train.py", line 627, in <module>
+    launch()
+  File "/nas-ctm01/homes/dacordeiro/msc-demorph/two-images/train.py", line 624, in launch
+    save_transitions(args)
+  File "/nas-ctm01/homes/dacordeiro/msc-demorph/two-images/train.py", line 569, in save_transitions
+    x_A = corr_A + diffusion.noise_images(best_pred_1, pB_1_aligned, t-1)
+UnboundLocalError: local variable 'pB_1_aligned' referenced before assignment
