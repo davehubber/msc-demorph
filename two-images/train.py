@@ -535,8 +535,8 @@ def save_transitions(args):
                 anchor_B = best_pred_2.clone()
 
             # --- Calculate the TACOS correction (Residuals) ---
-            corr_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t)
-            corr_B = x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t)
+            corr_A = x_A - diffusion.noise_images(best_pred_1, pA_2_aligned, t)
+            corr_B = x_B - diffusion.noise_images(best_pred_2, pB_2_aligned, t)
 
             # 4. Save current timestep visuals
             for b_idx in range(n):
@@ -563,8 +563,8 @@ def save_transitions(args):
                 anchors_B[b_idx].append(ancB_show)
 
             # Renoising (Prepares x_A and x_B for the NEXT iteration using the residuals)
-            x_A = corr_A + diffusion.noise_images(best_pred_1, aligned_gt_2, t-1)
-            x_B = corr_B + diffusion.noise_images(best_pred_2, aligned_gt_1, t-1)
+            x_A = corr_A + diffusion.noise_images(best_pred_1, pA_2_aligned, t-1)
+            x_B = corr_B + diffusion.noise_images(best_pred_2, pB_2_aligned, t-1)
             
     # 5. Output Image Grids
     save_dir = os.path.join("results", args.run_name, "transitions")
