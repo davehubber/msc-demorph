@@ -445,12 +445,14 @@ def save_transitions(args):
     device = args.device
     test_dataloader = get_data(args, 'test')
 
+    # 1. Setup Model & Diffusion
     model = UNet(c_in=3, c_out=6, device=device).to(device)
     model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
     model.eval()
 
     diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
 
+    # 2. Extract strictly the first batch and slice the 1st and 3rd pairs
     images, images_add = next(iter(test_dataloader))
     images = images[[0, 2]].to(device)
     images_add = images_add[[0, 2]].to(device)
@@ -459,9 +461,13 @@ def save_transitions(args):
     n = len(superimposed)
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
+    # Trackers for the outputs AND the anchors
     transitions_A = {0: [], 1: []}
     transitions_B = {0: [], 1: []}
+    anchors_A = {0: [], 1: []}
+    anchors_B = {0: [], 1: []}
 
+    # 3. Custom Loop: Reverse Path Diffusion
     with torch.no_grad():
         x_A = superimposed.clone()
         x_B = superimposed.clone()
@@ -481,6 +487,10 @@ def save_transitions(args):
                 anchor_A = best_pred_1.clone()
                 anchor_B = best_pred_2.clone()
                 
+                # Record the newly established anchors for the first step
+                step_anchor_A = anchor_A.clone()
+                step_anchor_B = anchor_B.clone()
+                
                 mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
                                   F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
                 mse_gt_crossed  = F.mse_loss(anchor_A, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
@@ -491,6 +501,10 @@ def save_transitions(args):
                 aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
                 
             else:
+                # Capture the anchors from the PREVIOUS step that will guide THIS step's alignment
+                step_anchor_A = anchor_A.clone()
+                step_anchor_B = anchor_B.clone()
+
                 pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
@@ -515,18 +529,27 @@ def save_transitions(args):
                 best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
                 best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
                 
+                # Update anchors for the NEXT step
                 anchor_A = best_pred_1.clone()
                 anchor_B = best_pred_2.clone()
 
+            # 4. Save current timestep predictions and anchors (converted to 0-1 range)
             for b_idx in range(n):
                 img1_show = (best_pred_1[b_idx].clone() + 1) / 2
                 img2_show = (best_pred_2[b_idx].clone() + 1) / 2
+                ancA_show = (step_anchor_A[b_idx].clone() + 1) / 2
+                ancB_show = (step_anchor_B[b_idx].clone() + 1) / 2
+
                 transitions_A[b_idx].append(img1_show)
                 transitions_B[b_idx].append(img2_show)
+                anchors_A[b_idx].append(ancA_show)
+                anchors_B[b_idx].append(ancB_show)
 
+            # Renoising
             x_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t) + diffusion.noise_images(best_pred_1, aligned_gt_2, t-1)
             x_B = x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t) + diffusion.noise_images(best_pred_2, aligned_gt_1, t-1)
             
+    # 5. Output Image Grids
     save_dir = os.path.join("results", args.run_name, "transitions")
     os.makedirs(save_dir, exist_ok=True)
     original_indices = [1, 3]
@@ -534,13 +557,17 @@ def save_transitions(args):
     for b_idx, real_idx in enumerate(original_indices):
         pair_sequence = []
         for step_idx in range(len(transitions_A[b_idx])):
+            # Layout per row: Pred 1 | Anchor A | Anchor B | Pred 2
             pair_sequence.append(transitions_A[b_idx][step_idx])
+            pair_sequence.append(anchors_A[b_idx][step_idx])
+            pair_sequence.append(anchors_B[b_idx][step_idx])
             pair_sequence.append(transitions_B[b_idx][step_idx])
             
         grid_tensor = torch.stack(pair_sequence)
-        save_path = os.path.join(save_dir, f"pair_{real_idx}_transition.jpg")
+        save_path = os.path.join(save_dir, f"pair_{real_idx}_transition_with_anchors.jpg")
         
-        save_image(grid_tensor, save_path, nrow=2)
+        # nrow=4 matches our 4 appended images per timestep
+        save_image(grid_tensor, save_path, nrow=4)
         print(f"Saved transition grid for Pair {real_idx} to {save_path}")
 
 def launch():
