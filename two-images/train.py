@@ -461,15 +461,22 @@ def save_transitions(args):
     n = len(superimposed)
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
-    # Trackers for all 8 columns
+    # Check for custom sampling steps, default to full schedule if not provided
+    sampling_steps = getattr(args, 'sampling_steps', init_timestep)
+    if sampling_steps is None:
+        sampling_steps = init_timestep
+
+    # Generate the strided timeline and target jump steps
+    times = torch.linspace(init_timestep, 1, sampling_steps).round().long().tolist()
+    times_next = times[1:] + [0]
+    
+    # Trackers for the 6 columns
     inputs_A = {0: [], 1: []}
     inputs_B = {0: [], 1: []}
     corrections_A = {0: [], 1: []}
     corrections_B = {0: [], 1: []}
     transitions_A = {0: [], 1: []}
     transitions_B = {0: [], 1: []}
-    anchors_A = {0: [], 1: []}
-    anchors_B = {0: [], 1: []}
 
     # 3. Custom Loop: Reverse Path Diffusion
     with torch.no_grad():
@@ -479,23 +486,18 @@ def save_transitions(args):
         gt_1 = images.clamp(-1.0, 1.0)
         gt_2 = images_add.clamp(-1.0, 1.0)
         
-        for i in reversed(range(1, init_timestep + 1)):
+        for i, next_i in zip(times, times_next):
             t = (torch.ones(n) * i).long().to(device)
+            t_next = (torch.ones(n) * next_i).long().to(device)
             
-            if i == init_timestep:
+            if i == times[0]:
                 p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 
                 best_pred_1 = p_1.clamp(-1.0, 1.0)
                 best_pred_2 = p_2.clamp(-1.0, 1.0)
 
-                pA_2_aligned = best_pred_2.clone()
-                pB_2_aligned = best_pred_1.clone()
-                
                 anchor_A = best_pred_1.clone()
                 anchor_B = best_pred_2.clone()
-                
-                step_anchor_A = anchor_A.clone()
-                step_anchor_B = anchor_B.clone()
                 
                 mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
                                   F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
@@ -507,9 +509,6 @@ def save_transitions(args):
                 aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
                 
             else:
-                step_anchor_A = anchor_A.clone()
-                step_anchor_B = anchor_B.clone()
-
                 pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
@@ -537,24 +536,20 @@ def save_transitions(args):
                 anchor_A = best_pred_1.clone()
                 anchor_B = best_pred_2.clone()
 
-            # --- Calculate the TACOS correction (Residuals) ---
-            corr_A = x_A - diffusion.noise_images(best_pred_1, pA_2_aligned, t)
-            corr_B = x_B - diffusion.noise_images(best_pred_2, pB_2_aligned, t)
+            # --- Calculate the TACOS correction (Residuals) using current t ---
+            corr_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t)
+            corr_B = x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t)
 
             # 4. Save current timestep visuals
             for b_idx in range(n):
                 inA_show = (x_A[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
                 inB_show = (x_B[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
                 
-                # We clamp the correction just in case it spikes, but it centers at 0.5 (gray)
                 cA_show = (corr_A[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
                 cB_show = (corr_B[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
                 
                 img1_show = (best_pred_1[b_idx].clone() + 1) / 2
                 img2_show = (best_pred_2[b_idx].clone() + 1) / 2
-                
-                ancA_show = (step_anchor_A[b_idx].clone() + 1) / 2
-                ancB_show = (step_anchor_B[b_idx].clone() + 1) / 2
 
                 inputs_A[b_idx].append(inA_show)
                 inputs_B[b_idx].append(inB_show)
@@ -562,12 +557,10 @@ def save_transitions(args):
                 corrections_B[b_idx].append(cB_show)
                 transitions_A[b_idx].append(img1_show)
                 transitions_B[b_idx].append(img2_show)
-                anchors_A[b_idx].append(ancA_show)
-                anchors_B[b_idx].append(ancB_show)
 
-            # Renoising (Prepares x_A and x_B for the NEXT iteration using the residuals)
-            x_A = corr_A + diffusion.noise_images(best_pred_1, pB_1_aligned, t-1)
-            x_B = corr_B + diffusion.noise_images(best_pred_2, pA_1_aligned, t-1)
+            # Renoising: Jumps directly to t_next
+            x_A = corr_A + diffusion.noise_images(best_pred_1, aligned_gt_2, t_next)
+            x_B = corr_B + diffusion.noise_images(best_pred_2, aligned_gt_1, t_next)
             
     # 5. Output Image Grids
     save_dir = os.path.join("results", args.run_name, "transitions")
@@ -577,12 +570,10 @@ def save_transitions(args):
     for b_idx, real_idx in enumerate(original_indices):
         pair_sequence = []
         for step_idx in range(len(transitions_A[b_idx])):
-            # Layout: x_A | Corr A | Pred 1 | Anchor A || Anchor B | Pred 2 | Corr B | x_B
+            # Layout: x_A | Corr A | Pred 1 || Pred 2 | Corr B | x_B
             pair_sequence.append(inputs_A[b_idx][step_idx])
             pair_sequence.append(corrections_A[b_idx][step_idx])
             pair_sequence.append(transitions_A[b_idx][step_idx])
-            pair_sequence.append(anchors_A[b_idx][step_idx])
-            pair_sequence.append(anchors_B[b_idx][step_idx])
             pair_sequence.append(transitions_B[b_idx][step_idx])
             pair_sequence.append(corrections_B[b_idx][step_idx])
             pair_sequence.append(inputs_B[b_idx][step_idx])
@@ -590,8 +581,8 @@ def save_transitions(args):
         grid_tensor = torch.stack(pair_sequence)
         save_path = os.path.join(save_dir, f"pair_{real_idx}_full_transition.jpg")
         
-        # nrow=8 accommodates all our columns
-        save_image(grid_tensor, save_path, nrow=8)
+        # nrow=6 matches our 6 columns
+        save_image(grid_tensor, save_path, nrow=6)
         print(f"Saved full transition grid for Pair {real_idx} to {save_path}")
 
 def launch():
@@ -608,6 +599,7 @@ def launch():
     parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
     parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
     parser.add_argument('--mode', default='train', choices=['train', 'eval', 'one_shot', 'transition'], help='Mode to run')
+    parser.add_argument('--sampling_steps', default=50, type=int, help='Number of strided steps for sampling')
 
     args = parser.parse_args()
     args.image_size = (args.image_size, args.image_size)
