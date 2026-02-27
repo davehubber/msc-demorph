@@ -599,7 +599,7 @@ def launch():
     parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
     parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
     parser.add_argument('--mode', default='train', choices=['train', 'eval', 'one_shot', 'transition'], help='Mode to run')
-    parser.add_argument('--sampling_steps', default=10, type=int, help='Number of strided steps for sampling')
+    parser.add_argument('--sampling_steps', default=2, type=int, help='Number of strided steps for sampling')
 
     args = parser.parse_args()
     args.image_size = (args.image_size, args.image_size)
