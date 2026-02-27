@@ -461,7 +461,9 @@ def save_transitions(args):
     n = len(superimposed)
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
-    # Trackers for the outputs AND the anchors
+    # Trackers for the inputs, outputs, AND the anchors
+    inputs_A = {0: [], 1: []}
+    inputs_B = {0: [], 1: []}
     transitions_A = {0: [], 1: []}
     transitions_B = {0: [], 1: []}
     anchors_A = {0: [], 1: []}
@@ -533,19 +535,24 @@ def save_transitions(args):
                 anchor_A = best_pred_1.clone()
                 anchor_B = best_pred_2.clone()
 
-            # 4. Save current timestep predictions and anchors (converted to 0-1 range)
+            # 4. Save current timestep inputs, predictions, and anchors (converted to 0-1 range)
             for b_idx in range(n):
+                # Clamp inputs as they can slightly exceed bounds due to noise
+                inA_show = (x_A[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
+                inB_show = (x_B[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
                 img1_show = (best_pred_1[b_idx].clone() + 1) / 2
                 img2_show = (best_pred_2[b_idx].clone() + 1) / 2
                 ancA_show = (step_anchor_A[b_idx].clone() + 1) / 2
                 ancB_show = (step_anchor_B[b_idx].clone() + 1) / 2
 
+                inputs_A[b_idx].append(inA_show)
+                inputs_B[b_idx].append(inB_show)
                 transitions_A[b_idx].append(img1_show)
                 transitions_B[b_idx].append(img2_show)
                 anchors_A[b_idx].append(ancA_show)
                 anchors_B[b_idx].append(ancB_show)
 
-            # Renoising
+            # Renoising (Prepares x_A and x_B for the NEXT iteration)
             x_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t) + diffusion.noise_images(best_pred_1, aligned_gt_2, t-1)
             x_B = x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t) + diffusion.noise_images(best_pred_2, aligned_gt_1, t-1)
             
@@ -557,18 +564,20 @@ def save_transitions(args):
     for b_idx, real_idx in enumerate(original_indices):
         pair_sequence = []
         for step_idx in range(len(transitions_A[b_idx])):
-            # Layout per row: Pred 1 | Anchor A | Anchor B | Pred 2
+            # Layout per row: x_A | Pred 1 | Anchor A || Anchor B | Pred 2 | x_B
+            pair_sequence.append(inputs_A[b_idx][step_idx])
             pair_sequence.append(transitions_A[b_idx][step_idx])
             pair_sequence.append(anchors_A[b_idx][step_idx])
             pair_sequence.append(anchors_B[b_idx][step_idx])
             pair_sequence.append(transitions_B[b_idx][step_idx])
+            pair_sequence.append(inputs_B[b_idx][step_idx])
             
         grid_tensor = torch.stack(pair_sequence)
-        save_path = os.path.join(save_dir, f"pair_{real_idx}_transition_with_anchors.jpg")
+        save_path = os.path.join(save_dir, f"pair_{real_idx}_full_transition.jpg")
         
-        # nrow=4 matches our 4 appended images per timestep
-        save_image(grid_tensor, save_path, nrow=4)
-        print(f"Saved transition grid for Pair {real_idx} to {save_path}")
+        # nrow=6 matches our 6 appended images per timestep
+        save_image(grid_tensor, save_path, nrow=6)
+        print(f"Saved full transition grid for Pair {real_idx} to {save_path}")
 
 def launch():
     import argparse
