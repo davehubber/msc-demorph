@@ -487,6 +487,9 @@ def save_transitions(args):
                 
                 best_pred_1 = p_1.clamp(-1.0, 1.0)
                 best_pred_2 = p_2.clamp(-1.0, 1.0)
+
+                pA_2_aligned = best_pred_2.clone()
+                pB_2_aligned = best_pred_1.clone()
                 
                 anchor_A = best_pred_1.clone()
                 anchor_B = best_pred_2.clone()
