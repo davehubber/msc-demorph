@@ -457,7 +457,7 @@ def save_transitions(args):
     images = images[[0, 2]].to(device)
     images_add = images_add[[0, 2]].to(device)
 
-    superimposed = images * 0.4 + images_add * 0.6
+    superimposed = images * 0.5 + images_add * 0.5
     n = len(superimposed)
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
@@ -585,6 +585,159 @@ def save_transitions(args):
         save_image(grid_tensor, save_path, nrow=6)
         print(f"Saved full transition grid for Pair {real_idx} to {save_path}")
 
+def eval_single_path(args):
+    device = args.device
+    test_dataloader = get_data(args, 'test')
+
+    model = UNet(c_in=3, c_out=6, device=device).to(device)
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.eval()
+
+    diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+    init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+
+    results = {
+        "ssim_1": [], "ssim_2": [], 
+        "psnr_1": [], "psnr_2": [], 
+        "lpips_1": [], "lpips_2": [], 
+        "success_count_1": 0, "success_count_2": 0, 
+        "total_pairs": 0
+    }
+    
+    os.makedirs(os.path.join("samples", args.sampling_name, "single_path"), exist_ok=True)
+    os.makedirs(os.path.join("results", args.run_name), exist_ok=True)
+
+    for i, (images, images_add) in enumerate(test_dataloader):
+        images = images.to(device)
+        images_add = images_add.to(device)
+
+        # Generate superimposed exactly via alpha_init
+        superimposed = images * (1.0 - args.alpha_init) + images_add * args.alpha_init
+        n = len(superimposed)
+        superimposed_np = ((superimposed.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8).cpu().permute(0, 2, 3, 1).numpy()
+
+        with torch.no_grad():
+            x = superimposed.clone().to(device)
+            gt_1 = images.clamp(-1.0, 1.0)
+            gt_2 = images_add.clamp(-1.0, 1.0)
+            
+            for step in reversed(range(1, init_timestep + 1)):
+                t = (torch.ones(n) * step).long().to(device)
+                
+                p_1, p_2 = torch.chunk(model(x, t), 2, dim=1)
+                p_1 = p_1.clamp(-1.0, 1.0)
+                p_2 = p_2.clamp(-1.0, 1.0)
+                
+                if step == init_timestep:
+                    # Align to figure out which prediction maps to which GT
+                    mse_gt_straight = F.mse_loss(p_1, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
+                                      F.mse_loss(p_2, gt_2, reduction='none').view(n, -1).mean(dim=1)
+                    mse_gt_crossed  = F.mse_loss(p_1, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
+                                      F.mse_loss(p_2, gt_1, reduction='none').view(n, -1).mean(dim=1)
+                    
+                    swap_mask_gt = (mse_gt_crossed < mse_gt_straight).view(-1, 1, 1, 1)
+                    aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
+                    aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
+                    
+                    # Determine which image the model reconstructed best
+                    mse_1 = F.mse_loss(p_1, aligned_gt_1, reduction='none').view(n, -1).mean(dim=1)
+                    mse_2 = F.mse_loss(p_2, aligned_gt_2, reduction='none').view(n, -1).mean(dim=1)
+                    
+                    mask_best_1 = (mse_1 < mse_2).view(-1, 1, 1, 1)
+                    
+                    # Set up the tracked path
+                    best_pred = torch.where(mask_best_1, p_1, p_2)
+                    opposing_gt = torch.where(mask_best_1, aligned_gt_2, aligned_gt_1)
+                    anchor = best_pred.clone()
+                    
+                else:
+                    # Keep aligning the single path to its running anchor
+                    mse_straight = F.mse_loss(p_1, anchor, reduction='none').view(n, -1).mean(dim=1)
+                    mse_crossed  = F.mse_loss(p_2, anchor, reduction='none').view(n, -1).mean(dim=1)
+                    
+                    swap_mask = (mse_crossed < mse_straight).view(-1, 1, 1, 1)
+                    best_pred = torch.where(swap_mask, p_2, p_1)
+                    anchor = best_pred.clone()
+                
+                # Reverse step strictly for the best path
+                x = x - diffusion.noise_images(best_pred, opposing_gt, t) + diffusion.noise_images(best_pred, opposing_gt, t-1)
+
+        # Logic to map 'best_pred' back to original Image 1 (A) or Image 2 (B)
+        best_is_A = mask_best_1 ^ swap_mask_gt
+        best_is_B = ~best_is_A
+
+        # Calculate the opposing image mathematically
+        pred_A = torch.where(best_is_A, 
+                             best_pred, 
+                             (superimposed - best_pred * args.alpha_init) / (1.0 - args.alpha_init))
+                             
+        pred_B = torch.where(best_is_B, 
+                             best_pred, 
+                             (superimposed - best_pred * (1.0 - args.alpha_init)) / args.alpha_init)
+
+        final_A = ((pred_A.clamp(-1.0, 1.0) + 1) / 2 * 255).type(torch.uint8)
+        final_B = ((pred_B.clamp(-1.0, 1.0) + 1) / 2 * 255).type(torch.uint8)
+        
+        gt_A = ((images.clamp(-1.0, 1.0) + 1) / 2 * 255).type(torch.uint8)
+        gt_B = ((images_add.clamp(-1.0, 1.0) + 1) / 2 * 255).type(torch.uint8)
+
+        # Calculate Evaluation Metrics
+        for k in range(n):
+            cur_gt_A = gt_A[k].cpu().permute(1, 2, 0).numpy()
+            cur_gt_B = gt_B[k].cpu().permute(1, 2, 0).numpy()
+            cur_s_A = final_A[k].cpu().permute(1, 2, 0).numpy()
+            cur_s_B = final_B[k].cpu().permute(1, 2, 0).numpy()
+            cur_super = superimposed_np[k]
+
+            s_A = structural_similarity(cur_gt_A, cur_s_A, data_range=255, channel_axis=-1)
+            s_B = structural_similarity(cur_gt_B, cur_s_B, data_range=255, channel_axis=-1)
+            p_A = peak_signal_noise_ratio(cur_gt_A, cur_s_A, data_range=255)
+            p_B = peak_signal_noise_ratio(cur_gt_B, cur_s_B, data_range=255)
+            l_A = lpips((images[k]), (final_A[k].float() / 127.5) - 1.0, net_type='alex').item()
+            l_B = lpips((images_add[k]), (final_B[k].float() / 127.5) - 1.0, net_type='alex').item()
+
+            results["ssim_1"].append(s_A)
+            results["ssim_2"].append(s_B)
+            results["psnr_1"].append(p_A)
+            results["psnr_2"].append(p_B)
+            results["lpips_1"].append(l_A)
+            results["lpips_2"].append(l_B)
+
+            ssim_avg_A = structural_similarity(cur_gt_A, cur_super, data_range=255, channel_axis=-1)
+            ssim_avg_B = structural_similarity(cur_gt_B, cur_super, data_range=255, channel_axis=-1)
+
+            if s_A > ssim_avg_A: results["success_count_1"] += 1
+            if s_B > ssim_avg_B: results["success_count_2"] += 1
+            results["total_pairs"] += 1
+
+        # Quick save of the first batch for visual inspection
+        if i == 0:
+            save_images(final_A, final_B, gt_A, gt_B, os.path.join("samples", args.sampling_name, "single_path", "eval_grid.jpg"))
+
+    # Summary Report
+    avg_ssim_1, avg_ssim_2 = np.mean(results["ssim_1"]), np.mean(results["ssim_2"])
+    avg_psnr_1, avg_psnr_2 = np.mean(results["psnr_1"]), np.mean(results["psnr_2"])
+    avg_lpips_1, avg_lpips_2 = np.mean(results["lpips_1"]), np.mean(results["lpips_2"])
+    success_rate_1 = (results["success_count_1"] / results["total_pairs"]) * 100
+    success_rate_2 = (results["success_count_2"] / results["total_pairs"]) * 100
+
+    metrics_report = (
+        f"--- Single-Path Image 1 Metrics ---\n"
+        f"SSIM: {avg_ssim_1:.4f}\n"
+        f"PSNR: {avg_psnr_1:.4f}\n"
+        f"LPIPS: {avg_lpips_1:.4f}\n"
+        f"Success Rate: {success_rate_1:.2f}%\n\n"
+        f"--- Single-Path Image 2 Metrics ---\n"
+        f"SSIM: {avg_ssim_2:.4f}\n"
+        f"PSNR: {avg_psnr_2:.4f}\n"
+        f"LPIPS: {avg_lpips_2:.4f}\n"
+        f"Success Rate: {success_rate_2:.2f}%"
+    )
+    
+    print("\n" + metrics_report)
+    with open(os.path.join("results", args.run_name, "single_path_metrics.txt"), "w") as f:
+        f.write(metrics_report)
+
 def launch():
     import argparse
     parser = argparse.ArgumentParser()
@@ -609,7 +762,7 @@ def launch():
         train(args)
         eval(args)
     elif args.mode == 'eval':
-        eval(args)
+        eval_single_path(args)
     elif args.mode == 'one_shot':
         one_shot_eval(args)
     elif args.mode == 'transition':
