@@ -1,642 +1,516 @@
-Verification of TACOS Step (t=300 -> t=299)
-==================================================
+Size of test: 1000
 Pair 0: 
   MSE (Sampled Avg vs GT Avg): 0.0008202948956750
   MSE (Sampled x_A vs GT x_A): 0.1656805872917175
   MSE (Sampled x_B vs GT x_B): 0.1605811864137650
-
 Pair 1: 
   MSE (Sampled Avg vs GT Avg): 0.0008255575667135
   MSE (Sampled x_A vs GT x_A): 0.0988539755344391
   MSE (Sampled x_B vs GT x_B): 0.0836704000830650
-
 Pair 2: 
   MSE (Sampled Avg vs GT Avg): 0.0008235501009040
   MSE (Sampled x_A vs GT x_A): 0.0456706807017326
   MSE (Sampled x_B vs GT x_B): 0.0459565147757530
-
 Pair 3: 
   MSE (Sampled Avg vs GT Avg): 0.0004544359399006
   MSE (Sampled x_A vs GT x_A): 0.0256972424685955
   MSE (Sampled x_B vs GT x_B): 0.0264280810952187
-
 Pair 4: 
   MSE (Sampled Avg vs GT Avg): 0.0010911342687905
   MSE (Sampled x_A vs GT x_A): 0.0746903568506241
   MSE (Sampled x_B vs GT x_B): 0.0735103115439415
-
 Pair 5: 
   MSE (Sampled Avg vs GT Avg): 0.0006377268000506
   MSE (Sampled x_A vs GT x_A): 0.1283630132675171
   MSE (Sampled x_B vs GT x_B): 0.1239833459258080
-
 Pair 6: 
   MSE (Sampled Avg vs GT Avg): 0.0012150206603110
   MSE (Sampled x_A vs GT x_A): 0.0473213791847229
   MSE (Sampled x_B vs GT x_B): 0.0579857826232910
-
 Pair 7: 
   MSE (Sampled Avg vs GT Avg): 0.0006231225561351
   MSE (Sampled x_A vs GT x_A): 0.0417843163013458
   MSE (Sampled x_B vs GT x_B): 0.0418335497379303
-
 Pair 8: 
   MSE (Sampled Avg vs GT Avg): 0.0007904765661806
   MSE (Sampled x_A vs GT x_A): 0.0821265578269958
   MSE (Sampled x_B vs GT x_B): 0.0889366492629051
-
 Pair 9: 
   MSE (Sampled Avg vs GT Avg): 0.0011399446520954
   MSE (Sampled x_A vs GT x_A): 0.0790597274899483
   MSE (Sampled x_B vs GT x_B): 0.0806754752993584
-
 Pair 10: 
   MSE (Sampled Avg vs GT Avg): 0.0011400121729821
   MSE (Sampled x_A vs GT x_A): 0.0843535065650940
   MSE (Sampled x_B vs GT x_B): 0.0932150632143021
-
 Pair 11: 
   MSE (Sampled Avg vs GT Avg): 0.0005564430030063
   MSE (Sampled x_A vs GT x_A): 0.0508734099566936
   MSE (Sampled x_B vs GT x_B): 0.0451203659176826
-
 Pair 12: 
   MSE (Sampled Avg vs GT Avg): 0.0007400051690638
   MSE (Sampled x_A vs GT x_A): 0.1294907629489899
   MSE (Sampled x_B vs GT x_B): 0.1304367035627365
-
 Pair 13: 
   MSE (Sampled Avg vs GT Avg): 0.0008281762711704
   MSE (Sampled x_A vs GT x_A): 0.0454691872000694
   MSE (Sampled x_B vs GT x_B): 0.0405684262514114
-
 Pair 14: 
   MSE (Sampled Avg vs GT Avg): 0.0008897019433789
   MSE (Sampled x_A vs GT x_A): 0.1232502162456512
   MSE (Sampled x_B vs GT x_B): 0.1195811927318573
-
 Pair 15: 
   MSE (Sampled Avg vs GT Avg): 0.0010890670819208
   MSE (Sampled x_A vs GT x_A): 0.0808788463473320
   MSE (Sampled x_B vs GT x_B): 0.0846584886312485
-
 Pair 16: 
   MSE (Sampled Avg vs GT Avg): 0.0009345686412416
   MSE (Sampled x_A vs GT x_A): 0.0854305848479271
   MSE (Sampled x_B vs GT x_B): 0.0842963084578514
-
 Pair 17: 
   MSE (Sampled Avg vs GT Avg): 0.0008459528908134
   MSE (Sampled x_A vs GT x_A): 0.1624856591224670
   MSE (Sampled x_B vs GT x_B): 0.1457352191209793
-
 Pair 18: 
   MSE (Sampled Avg vs GT Avg): 0.0008509331382811
   MSE (Sampled x_A vs GT x_A): 0.0932431519031525
   MSE (Sampled x_B vs GT x_B): 0.0861983746290207
-
 Pair 19: 
   MSE (Sampled Avg vs GT Avg): 0.0007885986706242
   MSE (Sampled x_A vs GT x_A): 0.0671493858098984
   MSE (Sampled x_B vs GT x_B): 0.0607130043208599
-
 Pair 20: 
   MSE (Sampled Avg vs GT Avg): 0.0013790398370475
   MSE (Sampled x_A vs GT x_A): 0.1020086109638214
   MSE (Sampled x_B vs GT x_B): 0.1172655150294304
-
 Pair 21: 
   MSE (Sampled Avg vs GT Avg): 0.0008828674908727
   MSE (Sampled x_A vs GT x_A): 0.0247537754476070
   MSE (Sampled x_B vs GT x_B): 0.0259619168937206
-
 Pair 22: 
   MSE (Sampled Avg vs GT Avg): 0.0003921687020920
   MSE (Sampled x_A vs GT x_A): 0.0242398381233215
   MSE (Sampled x_B vs GT x_B): 0.0261196978390217
-
 Pair 23: 
   MSE (Sampled Avg vs GT Avg): 0.0009758407250047
   MSE (Sampled x_A vs GT x_A): 0.0882815718650818
   MSE (Sampled x_B vs GT x_B): 0.0787025541067123
-
 Pair 24: 
   MSE (Sampled Avg vs GT Avg): 0.0007693385705352
   MSE (Sampled x_A vs GT x_A): 0.1047140955924988
   MSE (Sampled x_B vs GT x_B): 0.1091085299849510
-
 Pair 25: 
   MSE (Sampled Avg vs GT Avg): 0.0007123587420210
   MSE (Sampled x_A vs GT x_A): 0.1315628737211227
   MSE (Sampled x_B vs GT x_B): 0.1303847432136536
-
 Pair 26: 
   MSE (Sampled Avg vs GT Avg): 0.0006451541557908
   MSE (Sampled x_A vs GT x_A): 0.0476452931761742
   MSE (Sampled x_B vs GT x_B): 0.0460592471063137
-
 Pair 27: 
   MSE (Sampled Avg vs GT Avg): 0.0020464507397264
   MSE (Sampled x_A vs GT x_A): 0.0520627424120903
   MSE (Sampled x_B vs GT x_B): 0.0546892397105694
-
 Pair 28: 
   MSE (Sampled Avg vs GT Avg): 0.0009881923906505
   MSE (Sampled x_A vs GT x_A): 0.0757958516478539
   MSE (Sampled x_B vs GT x_B): 0.0747764632105827
-
 Pair 29: 
   MSE (Sampled Avg vs GT Avg): 0.0004055281169713
   MSE (Sampled x_A vs GT x_A): 0.0353823639452457
   MSE (Sampled x_B vs GT x_B): 0.0339229404926300
-
 Pair 30: 
   MSE (Sampled Avg vs GT Avg): 0.0007388339145109
   MSE (Sampled x_A vs GT x_A): 0.0603936873376369
   MSE (Sampled x_B vs GT x_B): 0.0634368434548378
-
 Pair 31: 
   MSE (Sampled Avg vs GT Avg): 0.0006813065847382
   MSE (Sampled x_A vs GT x_A): 0.0616380572319031
   MSE (Sampled x_B vs GT x_B): 0.0658496990799904
-
 Pair 32: 
   MSE (Sampled Avg vs GT Avg): 0.0012585357762873
   MSE (Sampled x_A vs GT x_A): 0.0351912826299667
   MSE (Sampled x_B vs GT x_B): 0.0308926068246365
-
 Pair 33: 
   MSE (Sampled Avg vs GT Avg): 0.0009158804896288
   MSE (Sampled x_A vs GT x_A): 0.1498116254806519
   MSE (Sampled x_B vs GT x_B): 0.1440153121948242
-
 Pair 34: 
   MSE (Sampled Avg vs GT Avg): 0.0010901418281719
   MSE (Sampled x_A vs GT x_A): 0.0832573622465134
   MSE (Sampled x_B vs GT x_B): 0.0797997862100601
-
 Pair 35: 
   MSE (Sampled Avg vs GT Avg): 0.0012855713721365
   MSE (Sampled x_A vs GT x_A): 0.0946655273437500
   MSE (Sampled x_B vs GT x_B): 0.1118954345583916
-
 Pair 36: 
   MSE (Sampled Avg vs GT Avg): 0.0009154872968793
   MSE (Sampled x_A vs GT x_A): 0.0262988414615393
   MSE (Sampled x_B vs GT x_B): 0.0302006583660841
-
 Pair 37: 
   MSE (Sampled Avg vs GT Avg): 0.0007235197117552
   MSE (Sampled x_A vs GT x_A): 0.1262790858745575
   MSE (Sampled x_B vs GT x_B): 0.1375141590833664
-
 Pair 38: 
   MSE (Sampled Avg vs GT Avg): 0.0010269604390487
   MSE (Sampled x_A vs GT x_A): 0.0527930483222008
   MSE (Sampled x_B vs GT x_B): 0.0561428032815456
-
 Pair 39: 
   MSE (Sampled Avg vs GT Avg): 0.0006797434180044
   MSE (Sampled x_A vs GT x_A): 0.1720030754804611
   MSE (Sampled x_B vs GT x_B): 0.1620476841926575
-
 Pair 40: 
   MSE (Sampled Avg vs GT Avg): 0.0013067873660475
   MSE (Sampled x_A vs GT x_A): 0.0716265887022018
   MSE (Sampled x_B vs GT x_B): 0.0793410688638687
-
 Pair 41: 
   MSE (Sampled Avg vs GT Avg): 0.0008917278610170
   MSE (Sampled x_A vs GT x_A): 0.0392646305263042
   MSE (Sampled x_B vs GT x_B): 0.0393351167440414
-
 Pair 42: 
   MSE (Sampled Avg vs GT Avg): 0.0013230377808213
   MSE (Sampled x_A vs GT x_A): 0.0534773841500282
   MSE (Sampled x_B vs GT x_B): 0.0560610443353653
-
 Pair 43: 
   MSE (Sampled Avg vs GT Avg): 0.0008101157145575
   MSE (Sampled x_A vs GT x_A): 0.0344219133257866
   MSE (Sampled x_B vs GT x_B): 0.0304244421422482
-
 Pair 44: 
   MSE (Sampled Avg vs GT Avg): 0.0008511409978382
   MSE (Sampled x_A vs GT x_A): 0.0516916215419769
   MSE (Sampled x_B vs GT x_B): 0.0549383722245693
-
 Pair 45: 
   MSE (Sampled Avg vs GT Avg): 0.0009264277759939
   MSE (Sampled x_A vs GT x_A): 0.1670945584774017
   MSE (Sampled x_B vs GT x_B): 0.1567735970020294
-
 Pair 46: 
   MSE (Sampled Avg vs GT Avg): 0.0011223047040403
   MSE (Sampled x_A vs GT x_A): 0.0982961878180504
   MSE (Sampled x_B vs GT x_B): 0.0943668335676193
-
 Pair 47: 
   MSE (Sampled Avg vs GT Avg): 0.0010951756266877
   MSE (Sampled x_A vs GT x_A): 0.0668451935052872
   MSE (Sampled x_B vs GT x_B): 0.0824418142437935
-
 Pair 48: 
   MSE (Sampled Avg vs GT Avg): 0.0006551791448146
   MSE (Sampled x_A vs GT x_A): 0.0715786665678024
   MSE (Sampled x_B vs GT x_B): 0.0730833187699318
-
 Pair 49: 
   MSE (Sampled Avg vs GT Avg): 0.0011317699681967
   MSE (Sampled x_A vs GT x_A): 0.0370433516800404
   MSE (Sampled x_B vs GT x_B): 0.0435468666255474
-
 Pair 50: 
   MSE (Sampled Avg vs GT Avg): 0.0009193572914228
   MSE (Sampled x_A vs GT x_A): 0.0223237089812756
   MSE (Sampled x_B vs GT x_B): 0.0251331534236670
-
 Pair 51: 
   MSE (Sampled Avg vs GT Avg): 0.0007990802405402
   MSE (Sampled x_A vs GT x_A): 0.1014537438750267
   MSE (Sampled x_B vs GT x_B): 0.1131983995437622
-
 Pair 52: 
   MSE (Sampled Avg vs GT Avg): 0.0011869717855006
   MSE (Sampled x_A vs GT x_A): 0.0532823614776134
   MSE (Sampled x_B vs GT x_B): 0.0610934607684612
-
 Pair 53: 
   MSE (Sampled Avg vs GT Avg): 0.0007298204000108
   MSE (Sampled x_A vs GT x_A): 0.0405458062887192
   MSE (Sampled x_B vs GT x_B): 0.0404441989958286
-
 Pair 54: 
   MSE (Sampled Avg vs GT Avg): 0.0013622976839542
   MSE (Sampled x_A vs GT x_A): 0.0297102853655815
   MSE (Sampled x_B vs GT x_B): 0.0266258921474218
-
 Pair 55: 
   MSE (Sampled Avg vs GT Avg): 0.0008797687478364
   MSE (Sampled x_A vs GT x_A): 0.0390847176313400
   MSE (Sampled x_B vs GT x_B): 0.0348620191216469
-
 Pair 56: 
   MSE (Sampled Avg vs GT Avg): 0.0006758053787053
   MSE (Sampled x_A vs GT x_A): 0.0139276115223765
   MSE (Sampled x_B vs GT x_B): 0.0137546136975288
-
 Pair 57: 
   MSE (Sampled Avg vs GT Avg): 0.0010722081642598
   MSE (Sampled x_A vs GT x_A): 0.0992532595992088
   MSE (Sampled x_B vs GT x_B): 0.0982208475470543
-
 Pair 58: 
   MSE (Sampled Avg vs GT Avg): 0.0012619046028703
   MSE (Sampled x_A vs GT x_A): 0.0700614005327225
   MSE (Sampled x_B vs GT x_B): 0.0778906941413879
-
 Pair 59: 
   MSE (Sampled Avg vs GT Avg): 0.0008642172906548
   MSE (Sampled x_A vs GT x_A): 0.0221620872616768
   MSE (Sampled x_B vs GT x_B): 0.0223220046609640
-
 Pair 60: 
   MSE (Sampled Avg vs GT Avg): 0.0005891216569580
   MSE (Sampled x_A vs GT x_A): 0.0573444627225399
   MSE (Sampled x_B vs GT x_B): 0.0546059310436249
-
 Pair 61: 
   MSE (Sampled Avg vs GT Avg): 0.0011016910430044
   MSE (Sampled x_A vs GT x_A): 0.1137679070234299
   MSE (Sampled x_B vs GT x_B): 0.1133249849081039
-
 Pair 62: 
   MSE (Sampled Avg vs GT Avg): 0.0006831847131252
   MSE (Sampled x_A vs GT x_A): 0.0517785213887691
   MSE (Sampled x_B vs GT x_B): 0.0504111312329769
-
 Pair 63: 
   MSE (Sampled Avg vs GT Avg): 0.0019401836907491
   MSE (Sampled x_A vs GT x_A): 0.1484036892652512
   MSE (Sampled x_B vs GT x_B): 0.1508097350597382
-
 Pair 64: 
   MSE (Sampled Avg vs GT Avg): 0.0010010012192652
   MSE (Sampled x_A vs GT x_A): 0.0375667065382004
   MSE (Sampled x_B vs GT x_B): 0.0421410650014877
-
 Pair 65: 
   MSE (Sampled Avg vs GT Avg): 0.0013884576037526
   MSE (Sampled x_A vs GT x_A): 0.0751500651240349
   MSE (Sampled x_B vs GT x_B): 0.0650434866547585
-
 Pair 66: 
   MSE (Sampled Avg vs GT Avg): 0.0006487247301266
   MSE (Sampled x_A vs GT x_A): 0.0971050113439560
   MSE (Sampled x_B vs GT x_B): 0.1044531166553497
-
 Pair 67: 
   MSE (Sampled Avg vs GT Avg): 0.0017044090200216
   MSE (Sampled x_A vs GT x_A): 0.0283584147691727
   MSE (Sampled x_B vs GT x_B): 0.0260610058903694
-
 Pair 68: 
   MSE (Sampled Avg vs GT Avg): 0.0007983270916156
   MSE (Sampled x_A vs GT x_A): 0.0341960713267326
   MSE (Sampled x_B vs GT x_B): 0.0345980525016785
-
 Pair 69: 
   MSE (Sampled Avg vs GT Avg): 0.0007214570650831
   MSE (Sampled x_A vs GT x_A): 0.1193822622299194
   MSE (Sampled x_B vs GT x_B): 0.1219840645790100
-
 Pair 70: 
   MSE (Sampled Avg vs GT Avg): 0.0010392061667517
   MSE (Sampled x_A vs GT x_A): 0.1136368513107300
   MSE (Sampled x_B vs GT x_B): 0.1022524684667587
-
 Pair 71: 
   MSE (Sampled Avg vs GT Avg): 0.0007910273852758
   MSE (Sampled x_A vs GT x_A): 0.0949022620916367
   MSE (Sampled x_B vs GT x_B): 0.0932710021734238
-
 Pair 72: 
   MSE (Sampled Avg vs GT Avg): 0.0014046896249056
   MSE (Sampled x_A vs GT x_A): 0.1376251280307770
   MSE (Sampled x_B vs GT x_B): 0.1339178234338760
-
 Pair 73: 
   MSE (Sampled Avg vs GT Avg): 0.0011627505300567
   MSE (Sampled x_A vs GT x_A): 0.0574932917952538
   MSE (Sampled x_B vs GT x_B): 0.0685960799455643
-
 Pair 74: 
   MSE (Sampled Avg vs GT Avg): 0.0009099700255319
   MSE (Sampled x_A vs GT x_A): 0.0307984985411167
   MSE (Sampled x_B vs GT x_B): 0.0290357526391745
-
 Pair 75: 
   MSE (Sampled Avg vs GT Avg): 0.0007376732537523
   MSE (Sampled x_A vs GT x_A): 0.0551205798983574
   MSE (Sampled x_B vs GT x_B): 0.0579480826854706
-
 Pair 76: 
   MSE (Sampled Avg vs GT Avg): 0.0009809129405767
   MSE (Sampled x_A vs GT x_A): 0.0145812537521124
   MSE (Sampled x_B vs GT x_B): 0.0155729204416275
-
 Pair 77: 
   MSE (Sampled Avg vs GT Avg): 0.0005918051465414
   MSE (Sampled x_A vs GT x_A): 0.0427453145384789
   MSE (Sampled x_B vs GT x_B): 0.0390759631991386
-
 Pair 78: 
   MSE (Sampled Avg vs GT Avg): 0.0007830816321075
   MSE (Sampled x_A vs GT x_A): 0.0933465361595154
   MSE (Sampled x_B vs GT x_B): 0.0841609463095665
-
 Pair 79: 
   MSE (Sampled Avg vs GT Avg): 0.0004474646120798
   MSE (Sampled x_A vs GT x_A): 0.0746007338166237
   MSE (Sampled x_B vs GT x_B): 0.0804677307605743
-
 Pair 80: 
   MSE (Sampled Avg vs GT Avg): 0.0007690293714404
   MSE (Sampled x_A vs GT x_A): 0.0634535402059555
   MSE (Sampled x_B vs GT x_B): 0.0705807060003281
-
 Pair 81: 
   MSE (Sampled Avg vs GT Avg): 0.0008866181015037
   MSE (Sampled x_A vs GT x_A): 0.0552145801484585
   MSE (Sampled x_B vs GT x_B): 0.0581025704741478
-
 Pair 82: 
   MSE (Sampled Avg vs GT Avg): 0.0010713966330513
   MSE (Sampled x_A vs GT x_A): 0.0396359525620937
   MSE (Sampled x_B vs GT x_B): 0.0433897189795971
-
 Pair 83: 
   MSE (Sampled Avg vs GT Avg): 0.0005883147823624
   MSE (Sampled x_A vs GT x_A): 0.0722200199961662
   MSE (Sampled x_B vs GT x_B): 0.0715073645114899
-
 Pair 84: 
   MSE (Sampled Avg vs GT Avg): 0.0010222159326077
   MSE (Sampled x_A vs GT x_A): 0.0576536171138287
   MSE (Sampled x_B vs GT x_B): 0.0564905405044556
-
 Pair 85: 
   MSE (Sampled Avg vs GT Avg): 0.0033008223399520
   MSE (Sampled x_A vs GT x_A): 0.1787612289190292
   MSE (Sampled x_B vs GT x_B): 0.1802857965230942
-
 Pair 86: 
   MSE (Sampled Avg vs GT Avg): 0.0006645605899394
   MSE (Sampled x_A vs GT x_A): 0.0586185976862907
   MSE (Sampled x_B vs GT x_B): 0.0572632625699043
-
 Pair 87: 
   MSE (Sampled Avg vs GT Avg): 0.0010508643463254
   MSE (Sampled x_A vs GT x_A): 0.0202456694096327
   MSE (Sampled x_B vs GT x_B): 0.0181407388299704
-
 Pair 88: 
   MSE (Sampled Avg vs GT Avg): 0.0011625480838120
   MSE (Sampled x_A vs GT x_A): 0.0701674446463585
   MSE (Sampled x_B vs GT x_B): 0.0777543485164642
-
 Pair 89: 
   MSE (Sampled Avg vs GT Avg): 0.0010696426033974
   MSE (Sampled x_A vs GT x_A): 0.0512749552726746
   MSE (Sampled x_B vs GT x_B): 0.0503764301538467
-
 Pair 90: 
   MSE (Sampled Avg vs GT Avg): 0.0010062748333439
   MSE (Sampled x_A vs GT x_A): 0.0346465818583965
   MSE (Sampled x_B vs GT x_B): 0.0311248004436493
-
 Pair 91: 
   MSE (Sampled Avg vs GT Avg): 0.0004903136286885
   MSE (Sampled x_A vs GT x_A): 0.0308071635663509
   MSE (Sampled x_B vs GT x_B): 0.0314305573701859
-
 Pair 92: 
   MSE (Sampled Avg vs GT Avg): 0.0005661181639880
   MSE (Sampled x_A vs GT x_A): 0.0324647277593613
   MSE (Sampled x_B vs GT x_B): 0.0298480615019798
-
 Pair 93: 
   MSE (Sampled Avg vs GT Avg): 0.0004431466222741
   MSE (Sampled x_A vs GT x_A): 0.0392389073967934
   MSE (Sampled x_B vs GT x_B): 0.0378610342741013
-
 Pair 94: 
   MSE (Sampled Avg vs GT Avg): 0.0007471065036952
   MSE (Sampled x_A vs GT x_A): 0.0392834395170212
   MSE (Sampled x_B vs GT x_B): 0.0403568223118782
-
 Pair 95: 
   MSE (Sampled Avg vs GT Avg): 0.0009327818406746
   MSE (Sampled x_A vs GT x_A): 0.0699178948998451
   MSE (Sampled x_B vs GT x_B): 0.0669194459915161
-
 Pair 96: 
   MSE (Sampled Avg vs GT Avg): 0.0010581647511572
   MSE (Sampled x_A vs GT x_A): 0.1282828152179718
   MSE (Sampled x_B vs GT x_B): 0.1321223676204681
-
 Pair 97: 
   MSE (Sampled Avg vs GT Avg): 0.0004396517178975
   MSE (Sampled x_A vs GT x_A): 0.0191739965230227
   MSE (Sampled x_B vs GT x_B): 0.0194999203085899
-
 Pair 98: 
   MSE (Sampled Avg vs GT Avg): 0.0008323855581693
   MSE (Sampled x_A vs GT x_A): 0.0480471104383469
   MSE (Sampled x_B vs GT x_B): 0.0469239763915539
-
 Pair 99: 
   MSE (Sampled Avg vs GT Avg): 0.0007531609735452
   MSE (Sampled x_A vs GT x_A): 0.0683562755584717
   MSE (Sampled x_B vs GT x_B): 0.0670742541551590
-
 Pair 100: 
   MSE (Sampled Avg vs GT Avg): 0.0006835223175585
   MSE (Sampled x_A vs GT x_A): 0.0310978591442108
   MSE (Sampled x_B vs GT x_B): 0.0318004302680492
-
 Pair 101: 
   MSE (Sampled Avg vs GT Avg): 0.0015416534151882
   MSE (Sampled x_A vs GT x_A): 0.0557967051863670
   MSE (Sampled x_B vs GT x_B): 0.0596244484186172
-
 Pair 102: 
   MSE (Sampled Avg vs GT Avg): 0.0009917051065713
   MSE (Sampled x_A vs GT x_A): 0.0431235842406750
   MSE (Sampled x_B vs GT x_B): 0.0514728948473930
-
 Pair 103: 
   MSE (Sampled Avg vs GT Avg): 0.0006067176582292
   MSE (Sampled x_A vs GT x_A): 0.1667552888393402
   MSE (Sampled x_B vs GT x_B): 0.1597216427326202
-
 Pair 104: 
   MSE (Sampled Avg vs GT Avg): 0.0007001155754551
   MSE (Sampled x_A vs GT x_A): 0.0148127926513553
   MSE (Sampled x_B vs GT x_B): 0.0159421693533659
-
 Pair 105: 
   MSE (Sampled Avg vs GT Avg): 0.0012487404746935
   MSE (Sampled x_A vs GT x_A): 0.1055060625076294
   MSE (Sampled x_B vs GT x_B): 0.1090198084712029
-
 Pair 106: 
   MSE (Sampled Avg vs GT Avg): 0.0007004280341789
   MSE (Sampled x_A vs GT x_A): 0.0507835149765015
   MSE (Sampled x_B vs GT x_B): 0.0507241785526276
-
 Pair 107: 
   MSE (Sampled Avg vs GT Avg): 0.0008201397722587
   MSE (Sampled x_A vs GT x_A): 0.1534787118434906
   MSE (Sampled x_B vs GT x_B): 0.1515283882617950
-
 Pair 108: 
   MSE (Sampled Avg vs GT Avg): 0.0008546182652935
   MSE (Sampled x_A vs GT x_A): 0.0619670376181602
   MSE (Sampled x_B vs GT x_B): 0.0529581420123577
-
 Pair 109: 
   MSE (Sampled Avg vs GT Avg): 0.0008322539506480
   MSE (Sampled x_A vs GT x_A): 0.0536194406449795
   MSE (Sampled x_B vs GT x_B): 0.0589537248015404
-
 Pair 110: 
   MSE (Sampled Avg vs GT Avg): 0.0013590924208984
   MSE (Sampled x_A vs GT x_A): 0.1253028213977814
   MSE (Sampled x_B vs GT x_B): 0.1223142370581627
-
 Pair 111: 
   MSE (Sampled Avg vs GT Avg): 0.0009767166338861
   MSE (Sampled x_A vs GT x_A): 0.0515389665961266
   MSE (Sampled x_B vs GT x_B): 0.0499943569302559
-
 Pair 112: 
   MSE (Sampled Avg vs GT Avg): 0.0008907141163945
   MSE (Sampled x_A vs GT x_A): 0.0714662224054337
   MSE (Sampled x_B vs GT x_B): 0.0600291416049004
-
 Pair 113: 
   MSE (Sampled Avg vs GT Avg): 0.0005601698649116
   MSE (Sampled x_A vs GT x_A): 0.0721525400876999
   MSE (Sampled x_B vs GT x_B): 0.0733462870121002
-
 Pair 114: 
   MSE (Sampled Avg vs GT Avg): 0.0007496482576244
   MSE (Sampled x_A vs GT x_A): 0.0845043286681175
   MSE (Sampled x_B vs GT x_B): 0.0843996629118919
-
 Pair 115: 
   MSE (Sampled Avg vs GT Avg): 0.0011274786666036
   MSE (Sampled x_A vs GT x_A): 0.0384566634893417
   MSE (Sampled x_B vs GT x_B): 0.0392710044980049
-
 Pair 116: 
   MSE (Sampled Avg vs GT Avg): 0.0005822001839988
   MSE (Sampled x_A vs GT x_A): 0.0273584723472595
   MSE (Sampled x_B vs GT x_B): 0.0256943404674530
-
 Pair 117: 
   MSE (Sampled Avg vs GT Avg): 0.0006763177225366
   MSE (Sampled x_A vs GT x_A): 0.0466940812766552
   MSE (Sampled x_B vs GT x_B): 0.0466416701674461
-
 Pair 118: 
   MSE (Sampled Avg vs GT Avg): 0.0007630567415617
   MSE (Sampled x_A vs GT x_A): 0.0537093095481396
   MSE (Sampled x_B vs GT x_B): 0.0524763688445091
-
 Pair 119: 
   MSE (Sampled Avg vs GT Avg): 0.0005440335371532
   MSE (Sampled x_A vs GT x_A): 0.0499200522899628
   MSE (Sampled x_B vs GT x_B): 0.0534005165100098
-
 Pair 120: 
   MSE (Sampled Avg vs GT Avg): 0.0006307090516202
   MSE (Sampled x_A vs GT x_A): 0.0473262071609497
   MSE (Sampled x_B vs GT x_B): 0.0431915633380413
-
 Pair 121: 
   MSE (Sampled Avg vs GT Avg): 0.0006350359180942
   MSE (Sampled x_A vs GT x_A): 0.0649342834949493
   MSE (Sampled x_B vs GT x_B): 0.0632906556129456
-
 Pair 122: 
   MSE (Sampled Avg vs GT Avg): 0.0007879923796281
   MSE (Sampled x_A vs GT x_A): 0.0524353198707104
   MSE (Sampled x_B vs GT x_B): 0.0615507289767265
-
 Pair 123: 
   MSE (Sampled Avg vs GT Avg): 0.0009598070755601
   MSE (Sampled x_A vs GT x_A): 0.0391815081238747
   MSE (Sampled x_B vs GT x_B): 0.0351273566484451
-
 Pair 124: 
   MSE (Sampled Avg vs GT Avg): 0.0010218615643680
   MSE (Sampled x_A vs GT x_A): 0.0799636170268059
   MSE (Sampled x_B vs GT x_B): 0.0839146897196770
-
 Pair 125: 
   MSE (Sampled Avg vs GT Avg): 0.0007422598428093
   MSE (Sampled x_A vs GT x_A): 0.0387231037020683
   MSE (Sampled x_B vs GT x_B): 0.0404439233243465
-
 Pair 126: 
   MSE (Sampled Avg vs GT Avg): 0.0011960848933086
   MSE (Sampled x_A vs GT x_A): 0.0335662290453911
   MSE (Sampled x_B vs GT x_B): 0.0297441314905882
-
 Pair 127: 
   MSE (Sampled Avg vs GT Avg): 0.0016880622133613
   MSE (Sampled x_A vs GT x_A): 0.0566640421748161
   MSE (Sampled x_B vs GT x_B): 0.0589462332427502
 
+Saved MSE log to: results/dual_prediction_fixed/verification/tacos_mse_log.txt
+Saved Image Grid (7 columns) to: results/dual_prediction_fixed/verification/tacos_step_verification.jpg
