@@ -840,9 +840,9 @@ def verify_tacos_step(args):
             f.write("="*50 + "\n")
             for i in range(n):
                 log_str = (f"Pair {i}: \n"
-                           f"  MSE (Sampled Avg vs GT Avg): {mse_avg_per_pair[i].item():.8f}\n"
-                           f"  MSE (Sampled x_A vs GT x_A): {mse_A_per_pair[i].item():.8f}\n"
-                           f"  MSE (Sampled x_B vs GT x_B): {mse_B_per_pair[i].item():.8f}\n\n")
+                           f"  MSE (Sampled Avg vs GT Avg): {mse_avg_per_pair[i].item():.16f}\n"
+                           f"  MSE (Sampled x_A vs GT x_A): {mse_A_per_pair[i].item():.16f}\n"
+                           f"  MSE (Sampled x_B vs GT x_B): {mse_B_per_pair[i].item():.16f}\n\n")
                 f.write(log_str)
                 print(log_str.strip())
 
