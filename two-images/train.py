@@ -1,6 +1,7 @@
 import os, torch, numpy as np, math
 import torch.nn.functional as F
 import wandb
+import lpips
 from torch import optim
 from utils import *
 from modules import UNet
@@ -192,6 +193,8 @@ def eval(args):
 
     diffusion = Diffusion(img_size=args.image_size, device=device)
 
+    loss_fn_alex = lpips.LPIPS(net='alex').to(device)
+
     # 1. Track metrics separately for Image 1 and Image 2
     results = {
         "ssim_1": [], "ssim_2": [], 
@@ -253,8 +256,8 @@ def eval(args):
             p_A = peak_signal_noise_ratio(cur_gt_A, cur_s_A, data_range=255)
             p_B = peak_signal_noise_ratio(cur_gt_B, cur_s_B, data_range=255)
 
-            l_A = lpips((images[k]), (tensor_s_A.float() / 127.5) - 1.0, net_type='alex').item()
-            l_B = lpips((images_add[k]), (tensor_s_B.float() / 127.5) - 1.0, net_type='alex').item()
+            l_A = loss_fn_alex(images[k], (tensor_s_A.float() / 127.5) - 1.0).item()
+            l_B = loss_fn_alex(images_add[k], (tensor_s_B.float() / 127.5) - 1.0).item()
 
             # Append metrics independently
             results["ssim_1"].append(s_A)
@@ -329,6 +332,8 @@ def eval_with_recovery(args):
     model.eval()
 
     diffusion = Diffusion(img_size=args.image_size, device=device)
+
+    loss_fn_alex = lpips.LPIPS(net='alex').to(device)
 
     # 1. Track metrics and our new recovery counter
     results = {
@@ -428,8 +433,8 @@ def eval_with_recovery(args):
             p_A = peak_signal_noise_ratio(cur_gt_A, cur_s_A, data_range=255)
             p_B = peak_signal_noise_ratio(cur_gt_B, cur_s_B, data_range=255)
 
-            l_A = lpips((images[k]), (tensor_s_A.float() / 127.5) - 1.0, net_type='alex').item()
-            l_B = lpips((images_add[k]), (tensor_s_B.float() / 127.5) - 1.0, net_type='alex').item()
+            l_A = loss_fn_alex(images[k], (tensor_s_A.float() / 127.5) - 1.0).item()
+            l_B = loss_fn_alex(images_add[k], (tensor_s_B.float() / 127.5) - 1.0).item()
 
             results["ssim_1"].append(s_A)
             results["ssim_2"].append(s_B)
@@ -500,6 +505,8 @@ def one_shot_eval(args):
     model.eval()
 
     diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+
+    loss_fn_alex = lpips.LPIPS(net='alex').to(device)
     
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
@@ -565,8 +572,8 @@ def one_shot_eval(args):
                 p_A = peak_signal_noise_ratio(cur_gt_A, cur_s_A, data_range=255)
                 p_B = peak_signal_noise_ratio(cur_gt_B, cur_s_B, data_range=255)
 
-                l_A = lpips((images[k]), (final_A[k].float() / 127.5) - 1.0, net_type='alex').item()
-                l_B = lpips((images_add[k]), (final_B[k].float() / 127.5) - 1.0, net_type='alex').item()
+                l_A = loss_fn_alex(images[k], (final_A[k].float() / 127.5) - 1.0).item()
+                l_B = loss_fn_alex(images_add[k], (final_B[k].float() / 127.5) - 1.0).item()
 
                 # Append metrics independently
                 results["ssim_1"].append(s_A)
