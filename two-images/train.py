@@ -756,6 +756,121 @@ def save_transitions(args):
         save_image(grid_tensor, save_path, nrow=6)
         print(f"Saved full transition grid for Pair {real_idx} to {save_path}")
 
+def verify_tacos_step(args):
+    device = args.device
+    test_dataloader = get_data(args, 'test')
+
+    # 1. Setup Model & Diffusion
+    model = UNet(c_in=3, c_out=6, device=device).to(device)
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.eval()
+
+    diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+
+    # 2. Extract strictly the first batch
+    images, images_add = next(iter(test_dataloader))
+    images = images.to(device)
+    images_add = images_add.to(device)
+
+    superimposed = (images + images_add) / 2.
+    n = len(superimposed)
+    init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+    
+    os.makedirs(os.path.join("results", args.run_name, "verification"), exist_ok=True)
+    log_file_path = os.path.join("results", args.run_name, "verification", "tacos_mse_log.txt")
+
+    with torch.no_grad():
+        x_A = superimposed.clone()
+        x_B = superimposed.clone()
+        
+        gt_1 = images.clamp(-1.0, 1.0)
+        gt_2 = images_add.clamp(-1.0, 1.0)
+        
+        # Define current step (t) and the target step (t-1)
+        t_val = init_timestep
+        t = (torch.ones(n) * t_val).long().to(device)
+        t_minus_1 = (torch.ones(n) * (t_val - 1)).long().to(device)
+
+        # --- Forward Pass at t ---
+        p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
+        
+        best_pred_1 = p_1.clamp(-1.0, 1.0)
+        best_pred_2 = p_2.clamp(-1.0, 1.0)
+
+        anchor_A = best_pred_1.clone()
+        anchor_B = best_pred_2.clone()
+        
+        # Align Ground Truths to match model predictions
+        mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
+                          F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
+        mse_gt_crossed  = F.mse_loss(anchor_A, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
+                          F.mse_loss(anchor_B, gt_1, reduction='none').view(n, -1).mean(dim=1)
+        
+        swap_mask_gt = (mse_gt_crossed < mse_gt_straight).view(-1, 1, 1, 1)
+        aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
+        aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
+
+        # --- 1 Step of TACOS Sampling to t-1 ---
+        # Renoising: Model prediction is noised by the corresponding ground truth
+        x_A_t_minus_1 = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t) + diffusion.noise_images(best_pred_1, aligned_gt_2, t_minus_1)
+        x_B_t_minus_1 = x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t) + diffusion.noise_images(best_pred_2, aligned_gt_1, t_minus_1)
+
+        # --- Ground Truth & Averages at t-1 ---
+        # The average of the predicted paths at t-1
+        sampled_avg_t_minus_1 = (x_A_t_minus_1 + x_B_t_minus_1) / 2.0
+
+        # The true paths at t-1 based on the forward process
+        gt_path_A_t_minus_1 = diffusion.noise_images(aligned_gt_1, aligned_gt_2, t_minus_1)
+        gt_path_B_t_minus_1 = diffusion.noise_images(aligned_gt_2, aligned_gt_1, t_minus_1)
+        
+        # The true superimposed average at t-1
+        gt_avg_t_minus_1 = (gt_path_A_t_minus_1 + gt_path_B_t_minus_1) / 2.0
+
+        # --- Calculate MSE Metrics ---
+        # Check how well the sampled average matches the GT average
+        mse_avg_per_pair = F.mse_loss(sampled_avg_t_minus_1, gt_avg_t_minus_1, reduction='none').view(n, -1).mean(dim=1)
+        
+        # Check how well the individual sampled states match the individual GT states
+        mse_A_per_pair = F.mse_loss(x_A_t_minus_1, gt_path_A_t_minus_1, reduction='none').view(n, -1).mean(dim=1)
+        mse_B_per_pair = F.mse_loss(x_B_t_minus_1, gt_path_B_t_minus_1, reduction='none').view(n, -1).mean(dim=1)
+
+        # --- Save Logs ---
+        with open(log_file_path, "w") as f:
+            f.write(f"Verification of TACOS Step (t={t_val} -> t={t_val-1})\n")
+            f.write("="*50 + "\n")
+            for i in range(n):
+                log_str = (f"Pair {i}: \n"
+                           f"  MSE (Sampled Avg vs GT Avg): {mse_avg_per_pair[i].item():.8f}\n"
+                           f"  MSE (Sampled x_A vs GT x_A): {mse_A_per_pair[i].item():.8f}\n"
+                           f"  MSE (Sampled x_B vs GT x_B): {mse_B_per_pair[i].item():.8f}\n\n")
+                f.write(log_str)
+                print(log_str.strip())
+
+        # --- Save Visual Verification Grid ---
+        def norm(tensor):
+            return (tensor.clamp(-1.0, 1.0) + 1) / 2.0
+
+        # We'll save the first 4 pairs to a grid (to avoid overly large output images)
+        num_show = min(4, n)
+        visual_list = []
+        for i in range(num_show):
+            visual_list.extend([
+                norm(superimposed[i]),          # 1. Start Average (t)
+                norm(sampled_avg_t_minus_1[i]), # 2. Sampled Average (t-1)
+                norm(gt_avg_t_minus_1[i]),      # 3. Ground Truth Average (t-1)
+                norm(x_A_t_minus_1[i]),         # 4. Sampled Path A (t-1)
+                norm(gt_path_A_t_minus_1[i]),   # 5. Ground Truth Path A (t-1)
+                norm(x_B_t_minus_1[i]),         # 6. Sampled Path B (t-1)
+                norm(gt_path_B_t_minus_1[i])    # 7. Ground Truth Path B (t-1)
+            ])
+
+        grid_tensor = torch.stack(visual_list)
+        grid_save_path = os.path.join("results", args.run_name, "verification", "tacos_step_verification.jpg")
+        save_image(grid_tensor, grid_save_path, nrow=7)
+        
+        print(f"\nSaved MSE log to: {log_file_path}")
+        print(f"Saved Image Grid (7 columns) to: {grid_save_path}")
+
 def launch():
     import argparse
     parser = argparse.ArgumentParser()
@@ -782,7 +897,7 @@ def launch():
     elif args.mode == 'eval':
         eval_with_recovery(args)
     elif args.mode == 'one_shot':
-        one_shot_eval(args)
+        verify_tacos_step(args)
     elif args.mode == 'transition':
         save_transitions(args)
 
