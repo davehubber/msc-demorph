@@ -8,4 +8,4 @@
 
 # Commands / scripts to run (e.g., python3 train.py)
 
-python train.py --run_name "dual_prediction_fixed" --dataset_path "/nas-ctm01/datasets/public/Oxford102Flowers/jpg" --partition_file "partition.csv" --batch_size 128 --mode "one_shot"
+python train.py --run_name "dual_prediction_fixed" --dataset_path "/nas-ctm01/datasets/public/Oxford102Flowers/jpg" --partition_file "partition.csv" --batch_size 128 --mode "transition"

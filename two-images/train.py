@@ -613,6 +613,12 @@ def one_shot_eval(args):
         f.write(metrics_report)
 
 def save_transitions(args):
+    import os
+    import math
+    import torch
+    import torch.nn.functional as F
+    from torchvision.utils import save_image
+
     device = args.device
     test_dataloader = get_data(args, 'test')
 
@@ -641,13 +647,11 @@ def save_transitions(args):
     times = torch.linspace(init_timestep, 1, sampling_steps).round().long().tolist()
     times_next = times[1:] + [0]
     
-    # Trackers for the 6 columns
-    inputs_A = {0: [], 1: []}
-    inputs_B = {0: [], 1: []}
-    corrections_A = {0: [], 1: []}
-    corrections_B = {0: [], 1: []}
-    transitions_A = {0: [], 1: []}
-    transitions_B = {0: [], 1: []}
+    # Trackers for the 4 columns
+    pred_A_1 = {0: [], 1: []}
+    pred_A_2 = {0: [], 1: []}
+    pred_B_1 = {0: [], 1: []}
+    pred_B_2 = {0: [], 1: []}
 
     # 3. Custom Loop: Reverse Path Diffusion
     with torch.no_grad():
@@ -679,6 +683,12 @@ def save_transitions(args):
                 aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
                 aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
                 
+                # At step 0, since x_A and x_B are identical, their predictions are identical
+                pA_1_aligned = best_pred_1
+                pA_2_aligned = best_pred_2
+                pB_1_aligned = best_pred_1
+                pB_2_aligned = best_pred_2
+                
             else:
                 pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
@@ -701,6 +711,7 @@ def save_transitions(args):
                 pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
                 pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
 
+                # Update anchors for the Renoising Step
                 best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
                 best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
                 
@@ -711,23 +722,17 @@ def save_transitions(args):
             corr_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t)
             corr_B = x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t)
 
-            # 4. Save current timestep visuals
+            # 4. Save current timestep visuals (4 Columns)
             for b_idx in range(n):
-                inA_show = (x_A[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
-                inB_show = (x_B[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
-                
-                cA_show = (corr_A[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
-                cB_show = (corr_B[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
-                
-                img1_show = (best_pred_1[b_idx].clone() + 1) / 2
-                img2_show = (best_pred_2[b_idx].clone() + 1) / 2
+                show_pA1 = (pA_1_aligned[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
+                show_pA2 = (pA_2_aligned[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
+                show_pB1 = (pB_1_aligned[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
+                show_pB2 = (pB_2_aligned[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
 
-                inputs_A[b_idx].append(inA_show)
-                inputs_B[b_idx].append(inB_show)
-                corrections_A[b_idx].append(cA_show)
-                corrections_B[b_idx].append(cB_show)
-                transitions_A[b_idx].append(img1_show)
-                transitions_B[b_idx].append(img2_show)
+                pred_A_1[b_idx].append(show_pA1)
+                pred_A_2[b_idx].append(show_pA2)
+                pred_B_1[b_idx].append(show_pB1)
+                pred_B_2[b_idx].append(show_pB2)
 
             # Renoising: Jumps directly to t_next
             x_A = corr_A + diffusion.noise_images(best_pred_1, aligned_gt_2, t_next)
@@ -740,21 +745,19 @@ def save_transitions(args):
     
     for b_idx, real_idx in enumerate(original_indices):
         pair_sequence = []
-        for step_idx in range(len(transitions_A[b_idx])):
-            # Layout: x_A | Corr A | Pred 1 || Pred 2 | Corr B | x_B
-            pair_sequence.append(inputs_A[b_idx][step_idx])
-            pair_sequence.append(corrections_A[b_idx][step_idx])
-            pair_sequence.append(transitions_A[b_idx][step_idx])
-            pair_sequence.append(transitions_B[b_idx][step_idx])
-            pair_sequence.append(corrections_B[b_idx][step_idx])
-            pair_sequence.append(inputs_B[b_idx][step_idx])
+        for step_idx in range(len(pred_A_1[b_idx])):
+            # Layout: Pred 1 (Path A) | Pred 2 (Path A) | Pred 1 (Path B) | Pred 2 (Path B)
+            pair_sequence.append(pred_A_1[b_idx][step_idx])
+            pair_sequence.append(pred_A_2[b_idx][step_idx])
+            pair_sequence.append(pred_B_1[b_idx][step_idx])
+            pair_sequence.append(pred_B_2[b_idx][step_idx])
             
         grid_tensor = torch.stack(pair_sequence)
         save_path = os.path.join(save_dir, f"pair_{real_idx}_full_transition.jpg")
         
-        # nrow=6 matches our 6 columns
-        save_image(grid_tensor, save_path, nrow=6)
-        print(f"Saved full transition grid for Pair {real_idx} to {save_path}")
+        # nrow=4 matches our 4 columns
+        save_image(grid_tensor, save_path, nrow=4)
+        print(f"Saved 4-column transition grid for Pair {real_idx} to {save_path}")
 
 def verify_tacos_step(args):
     device = args.device
