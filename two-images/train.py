@@ -812,8 +812,8 @@ def verify_tacos_step(args):
 
         # --- 1 Step of TACOS Sampling to t-1 ---
         # Renoising: Model prediction is noised by the corresponding ground truth
-        x_A_t_minus_1 = diffusion.noise_images(best_pred_1, aligned_gt_2, t_minus_1) - (x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t))
-        x_B_t_minus_1 = diffusion.noise_images(best_pred_2, aligned_gt_1, t_minus_1) - (x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t))
+        x_A_t_minus_1 = diffusion.noise_images(best_pred_1, aligned_gt_2, t_minus_1)
+        x_B_t_minus_1 = diffusion.noise_images(best_pred_2, aligned_gt_1, t_minus_1)
 
         # --- Ground Truth & Averages at t-1 ---
         # The average of the predicted paths at t-1
