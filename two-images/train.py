@@ -750,8 +750,8 @@ def save_transitions(args):
                 best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
                 
                 # Only update anchors if they swapped!
-                anchor_A = torch.where(swap_mask_A, best_pred_1.clone(), anchor_A)
-                anchor_B = torch.where(swap_mask_B, best_pred_2.clone(), anchor_B)
+                # anchor_A = torch.where(swap_mask_A, best_pred_1.clone(), anchor_A)
+                # anchor_B = torch.where(swap_mask_B, best_pred_2.clone(), anchor_B)
 
             # --- Calculate the TACOS correction (Residuals) using current t ---
             corr_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t)
