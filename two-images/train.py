@@ -28,7 +28,10 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, gt_1, gt_2, alpha_init=0.5):
+    import math
+import torch
+
+def sample(self, model, superimposed_image, gt_1, gt_2, alpha_init=0.5):
         n = len(superimposed_image)
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
@@ -42,6 +45,10 @@ class Diffusion:
 
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
+                
+                # Determine alpha for current (t) and previous (t-1) steps
+                alpha_t = i * self.alteration_per_t
+                alpha_prev = (i - 1) * self.alteration_per_t
 
                 if i == init_timestep:
                     # Initial Prediction establishes the goals (Anchors)
@@ -75,7 +82,6 @@ class Diffusion:
                     pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
 
                     # --- ALIGN PATH B USING LPIPS ---
-                    # Fix retained: pB_1 corresponds to anchor_A, pB_2 to anchor_B
                     lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
                     lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
                     
@@ -90,19 +96,49 @@ class Diffusion:
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
-                pred_avg = (best_pred_A + best_pred_B) / 2.0
-
-                residual = superimposed_image - pred_avg
-
-
-                pA_adj = (best_pred_A + residual).clamp(-1.0, 1.0)
-                pB_adj = (best_pred_B + residual).clamp(-1.0, 1.0)
-
-                # Renoising: Path A focuses on Image A, so noise it using the opposite GT
-                x_A = x_A - self.noise_images(pA_adj, best_pred_B, t) + self.noise_images(pA_adj, best_pred_B, t-1)
+                # ==========================================
+                # EXACT SAMPLING WITH ERROR REMOVAL
+                # ==========================================
                 
-                # Renoising: Path B focuses on Image B, so noise it using the opposite GT
-                x_B = x_B - self.noise_images(pB_adj, best_pred_A, t) + self.noise_images(pB_adj, best_pred_A, t-1)
+                # --- PATH A ---
+                # 1. Estimate the added image from the predicted original image (Eq 8)
+                add_A = (x_A - (1 - alpha_t) * best_pred_A) / alpha_t
+                
+                # 2. Estimate initial image to calculate error
+                init_est_A = (1 - alpha_init) * best_pred_A + alpha_init * add_A
+                
+                # Prevent division by zero at t_init when alpha_t == alpha_init
+                if abs(alpha_init - alpha_t) < 1e-6:
+                    eps_A = torch.zeros_like(x_A)
+                else:
+                    # Calculate error (Eq 7)
+                    eps_A = ((1 - alpha_t) / (alpha_init - alpha_t)) * (init_est_A - superimposed_image)
+                
+                add_A_corr = add_A - eps_A
+                
+                # 3. Calculate previous timestep using corrected added image (Eq 5)
+                x_A = ((1 - alpha_prev) / (1 - alpha_t)) * x_A - ((alpha_t - alpha_prev) / (1 - alpha_t)) * add_A_corr
+
+
+                # --- PATH B ---
+                # 1. Estimate the added image from the predicted original image (Eq 8)
+                add_B = (x_B - (1 - alpha_t) * best_pred_B) / alpha_t
+                
+                # 2. Estimate initial image to calculate error
+                init_est_B = (1 - alpha_init) * best_pred_B + alpha_init * add_B
+                
+                # Prevent division by zero at t_init when alpha_t == alpha_init
+                if abs(alpha_init - alpha_t) < 1e-6:
+                    eps_B = torch.zeros_like(x_B)
+                else:
+                    # Calculate error (Eq 7)
+                    eps_B = ((1 - alpha_t) / (alpha_init - alpha_t)) * (init_est_B - superimposed_image)
+                    
+                add_B_corr = add_B - eps_B
+                
+                # 3. Calculate previous timestep using corrected added image (Eq 5)
+                x_B = ((1 - alpha_prev) / (1 - alpha_t)) * x_B - ((alpha_t - alpha_prev) / (1 - alpha_t)) * add_B_corr
+
         
         model.train()
 
