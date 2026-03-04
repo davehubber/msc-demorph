@@ -624,7 +624,7 @@ def save_transitions(args):
 
     # 1. Setup Model & Diffusion
     model = UNet(c_in=3, c_out=6, device=device).to(device)
-    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device), weights_only=True))
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
     model.eval()
 
     diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
@@ -652,19 +652,31 @@ def save_transitions(args):
     pred_A_2 = {0: [], 1: []}
     pred_B_1 = {0: [], 1: []}
     pred_B_2 = {0: [], 1: []}
+    
+    # Setup directory for saving images and logs
+    save_dir = os.path.join("results", args.run_name, "transitions")
+    os.makedirs(save_dir, exist_ok=True)
+    log_file_path = os.path.join(save_dir, "lpips_log.txt")
 
     # 3. Custom Loop: Reverse Path Diffusion
-    with torch.no_grad():
+    with torch.no_grad(), open(log_file_path, "w") as log_file:
+        log_file.write(f"--- LPIPS Transitions Log (Run: {args.run_name}) ---\n\n")
+
         x_A = superimposed.clone()
         x_B = superimposed.clone()
         
         gt_1 = images.clamp(-1.0, 1.0)
         gt_2 = images_add.clamp(-1.0, 1.0)
         
-        for i, next_i in zip(times, times_next):
+        for step_count, (i, next_i) in enumerate(zip(times, times_next)):
             t = (torch.ones(n) * i).long().to(device)
             t_next = (torch.ones(n) * next_i).long().to(device)
             
+            # Write a clear step header in the log
+            log_file.write(f"============================================================\n")
+            log_file.write(f"Step {step_count}: Timestep t={i} -> t_next={next_i}\n")
+            log_file.write(f"============================================================\n")
+
             if i == times[0]:
                 p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 
@@ -682,7 +694,18 @@ def save_transitions(args):
                 aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
                 aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
                 
-                # At step 0, since x_A and x_B are identical, their predictions are identical
+                # Format GT logs as lists to easily iterate over pairs
+                lpips_gt_s_val = lpips_gt_straight.view(-1).tolist()
+                lpips_gt_c_val = lpips_gt_crossed.view(-1).tolist()
+                swap_gt_val = swap_mask_gt.view(-1).tolist()
+
+                for b_idx in range(n):
+                    log_file.write(f"Pair {b_idx} (Initial Alignment vs Ground Truth):\n")
+                    log_file.write(f"  Straight LPIPS : {lpips_gt_s_val[b_idx]:.4f}\n")
+                    log_file.write(f"  Crossed LPIPS  : {lpips_gt_c_val[b_idx]:.4f}\n")
+                    log_file.write(f"  Swapped?       : {swap_gt_val[b_idx]}\n\n")
+
+                # At step 0, since x_A and x_B are identical, predictions are identical
                 pA_1_aligned = best_pred_1
                 pA_2_aligned = best_pred_2
                 pB_1_aligned = best_pred_1
@@ -708,10 +731,25 @@ def save_transitions(args):
                 pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
                 pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
 
-                # Update anchors for the Renoising Step
+                # Format Path A and Path B LPIPS values into lists for logging
+                lpips_A_s_val = lpips_A_straight.view(-1).tolist()
+                lpips_A_c_val = lpips_A_crossed.view(-1).tolist()
+                swap_A_val = swap_mask_A.view(-1).tolist()
+
+                lpips_B_s_val = lpips_B_straight.view(-1).tolist()
+                lpips_B_c_val = lpips_B_crossed.view(-1).tolist()
+                swap_B_val = swap_mask_B.view(-1).tolist()
+
+                # Write metrics to log file
+                for b_idx in range(n):
+                    log_file.write(f"Pair {b_idx}:\n")
+                    log_file.write(f"  [PATH A] Straight LPIPS: {lpips_A_s_val[b_idx]:.4f} | Crossed LPIPS: {lpips_A_c_val[b_idx]:.4f} | Swapped: {swap_A_val[b_idx]}\n")
+                    log_file.write(f"  [PATH B] Straight LPIPS: {lpips_B_s_val[b_idx]:.4f} | Crossed LPIPS: {lpips_B_c_val[b_idx]:.4f} | Swapped: {swap_B_val[b_idx]}\n\n")
+
                 best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
                 best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
                 
+                # Only update anchors if they swapped!
                 anchor_A = torch.where(swap_mask_A, best_pred_1.clone(), anchor_A)
                 anchor_B = torch.where(swap_mask_B, best_pred_2.clone(), anchor_B)
 
@@ -736,8 +774,6 @@ def save_transitions(args):
             x_B = corr_B + diffusion.noise_images(best_pred_2, aligned_gt_1, t_next)
             
     # 5. Output Image Grids
-    save_dir = os.path.join("results", args.run_name, "transitions")
-    os.makedirs(save_dir, exist_ok=True)
     original_indices = [1, 3]
     
     for b_idx, real_idx in enumerate(original_indices):
@@ -755,6 +791,9 @@ def save_transitions(args):
         # nrow=4 matches our 4 columns
         save_image(grid_tensor, save_path, nrow=4)
         print(f"Saved 4-column transition grid for Pair {real_idx} to {save_path}")
+        
+    # Let the user know the log was created successfully
+    print(f"\nSaved highly readable LPIPS transition log to {log_file_path}")
 
 def verify_tacos_step(args):
     device = args.device
