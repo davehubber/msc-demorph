@@ -33,12 +33,13 @@ class Diffusion:
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
 
+        # Calculate the exact float alpha used at the initial timestep
+        actual_alpha_init = self.alteration_per_t * init_timestep
+
         with torch.no_grad():
             x_A = superimposed_image.clone().to(self.device)
             x_B = superimposed_image.clone().to(self.device)
 
-            alpha_init_tensor = (self.alteration_per_t * init_timestep)[:, None, None, None].to(self.device)
-            
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
 
@@ -64,7 +65,6 @@ class Diffusion:
                     pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
 
                     # --- ALIGN PATH B USING LPIPS ---
-                    # Fix retained: pB_1 corresponds to anchor_A, pB_2 to anchor_B
                     lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
                     lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
                     
@@ -79,12 +79,16 @@ class Diffusion:
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
-                extracted_B_from_A = (superimposed_image - best_pred_A * (1. - alpha_init_tensor)) / alpha_init_tensor
-                extracted_A_from_B = (superimposed_image - best_pred_B * (1. - alpha_init_tensor)) / alpha_init_tensor
-
+                # --- ALGEBRAIC EXTRACTION (From Initial State) ---
+                # Using the original superimposed_image and the scalar actual_alpha_init
+                extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
+                extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
+                
+                # Clamp the extracted replicas to prevent numerical overshoots
                 extracted_B_from_A = extracted_B_from_A.clamp(-1.0, 1.0)
                 extracted_A_from_B = extracted_A_from_B.clamp(-1.0, 1.0)
 
+                # --- RENOISE (COLD DIFFUSION STEP) ---
                 x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
                 x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
         
