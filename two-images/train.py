@@ -47,13 +47,11 @@ class Diffusion:
                     anchor_A = p_1.clamp(-1.0, 1.0)
                     anchor_B = p_2.clamp(-1.0, 1.0)
                     
-                    # --- ALIGN GROUND TRUTHS USING MSE ---
-                    mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
-                                      F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
-                    mse_gt_crossed  = F.mse_loss(anchor_A, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
-                                      F.mse_loss(anchor_B, gt_1, reduction='none').view(n, -1).mean(dim=1)
+                    # --- ALIGN GROUND TRUTHS USING LPIPS ---
+                    lpips_gt_straight = self.loss_fn_alex(anchor_A, gt_1) + self.loss_fn_alex(anchor_B, gt_2)
+                    lpips_gt_crossed  = self.loss_fn_alex(anchor_A, gt_2) + self.loss_fn_alex(anchor_B, gt_1)
                     
-                    swap_mask_gt = (mse_gt_crossed < mse_gt_straight).view(-1, 1, 1, 1)
+                    swap_mask_gt = (lpips_gt_crossed < lpips_gt_straight).view(-1, 1, 1, 1)
                     
                     # Target ground truths mapping respectively to Image A and Image B
                     aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
@@ -66,23 +64,19 @@ class Diffusion:
                     pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                     pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
-                    # --- ALIGN PATH A USING MSE ---
-                    mse_A_straight = F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
-                                     F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
-                    mse_A_crossed  = F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
-                                     F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                    # --- ALIGN PATH A USING LPIPS ---
+                    lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
+                    lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
                     
-                    swap_mask_A = (mse_A_crossed < mse_A_straight).view(-1, 1, 1, 1)
+                    swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
                     pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
 
-                    # --- ALIGN PATH B USING MSE ---
-                    # Fix applied: pB_1 inherently corresponds to anchor_A, pB_2 to anchor_B
-                    mse_B_straight = F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
-                                     F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
-                    mse_B_crossed  = F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
-                                     F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                    # --- ALIGN PATH B USING LPIPS ---
+                    # Fix retained: pB_1 corresponds to anchor_A, pB_2 to anchor_B
+                    lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
+                    lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
                     
-                    swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
+                    swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
                     pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
 
                     # Goals extracted from aligned paths
@@ -679,13 +673,11 @@ def save_transitions(args):
                 anchor_A = p_1.clamp(-1.0, 1.0)
                 anchor_B = p_2.clamp(-1.0, 1.0)
                 
-                # --- ALIGN GROUND TRUTHS USING MSE ---
-                mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
-                                  F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
-                mse_gt_crossed  = F.mse_loss(anchor_A, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
-                                  F.mse_loss(anchor_B, gt_1, reduction='none').view(n, -1).mean(dim=1)
+                # --- ALIGN GROUND TRUTHS USING LPIPS ---
+                lpips_gt_straight = diffusion.loss_fn_alex(anchor_A, gt_1) + diffusion.loss_fn_alex(anchor_B, gt_2)
+                lpips_gt_crossed  = diffusion.loss_fn_alex(anchor_A, gt_2) + diffusion.loss_fn_alex(anchor_B, gt_1)
                 
-                swap_mask_gt = (mse_gt_crossed < mse_gt_straight).view(-1, 1, 1, 1)
+                swap_mask_gt = (lpips_gt_crossed < lpips_gt_straight).view(-1, 1, 1, 1)
                 aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
                 aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
                 
@@ -701,23 +693,19 @@ def save_transitions(args):
                 pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
-                # --- ALIGN PATH A USING MSE ---
-                mse_A_straight = F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
-                                 F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
-                mse_A_crossed  = F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
-                                 F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                # --- ALIGN PATH A USING LPIPS ---
+                lpips_A_straight = diffusion.loss_fn_alex(pA_1, anchor_A) + diffusion.loss_fn_alex(pA_2, anchor_B)
+                lpips_A_crossed  = diffusion.loss_fn_alex(pA_1, anchor_B) + diffusion.loss_fn_alex(pA_2, anchor_A)
                 
-                swap_mask_A = (mse_A_crossed < mse_A_straight).view(-1, 1, 1, 1)
+                swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
                 pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
                 pA_2_aligned = torch.where(swap_mask_A, pA_1, pA_2)
 
-                # --- ALIGN PATH B USING MSE ---
-                mse_B_straight = F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
-                                 F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
-                mse_B_crossed  = F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
-                                 F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
+                # --- ALIGN PATH B USING LPIPS ---
+                lpips_B_straight = diffusion.loss_fn_alex(pB_1, anchor_A) + diffusion.loss_fn_alex(pB_2, anchor_B)
+                lpips_B_crossed  = diffusion.loss_fn_alex(pB_1, anchor_B) + diffusion.loss_fn_alex(pB_2, anchor_A)
                 
-                swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
+                swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
                 pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
                 pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
 
