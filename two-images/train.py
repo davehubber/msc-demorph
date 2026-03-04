@@ -37,9 +37,6 @@ class Diffusion:
             x_A = superimposed_image.clone().to(self.device)
             x_B = superimposed_image.clone().to(self.device)
             
-            gt_1 = gt_1.to(self.device).clamp(-1.0, 1.0)
-            gt_2 = gt_2.to(self.device).clamp(-1.0, 1.0)
-
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
 
