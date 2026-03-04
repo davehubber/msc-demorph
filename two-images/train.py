@@ -99,10 +99,10 @@ class Diffusion:
                 pB_adj = (best_pred_B + residual).clamp(-1.0, 1.0)
 
                 # Renoising: Path A focuses on Image A, so noise it using the opposite GT
-                x_A = x_A - self.noise_images(best_pred_A, pB_adj, t) + self.noise_images(best_pred_A, pB_adj, t-1)
+                x_A = x_A - self.noise_images(pA_adj, best_pred_B, t) + self.noise_images(pA_adj, best_pred_B, t-1)
                 
                 # Renoising: Path B focuses on Image B, so noise it using the opposite GT
-                x_B = x_B - self.noise_images(best_pred_B, pA_adj, t) + self.noise_images(best_pred_B, pA_adj, t-1)
+                x_B = x_B - self.noise_images(pB_adj, best_pred_A, t) + self.noise_images(pB_adj, best_pred_A, t-1)
         
         model.train()
 
