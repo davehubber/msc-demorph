@@ -893,9 +893,9 @@ def launch():
         train(args)
         eval(args)
     elif args.mode == 'eval':
-        eval_with_recovery(args)
+        eval(args)
     elif args.mode == 'one_shot':
-        verify_tacos_step(args)
+        one_shot_eval(args)
     elif args.mode == 'transition':
         save_transitions(args)
 
