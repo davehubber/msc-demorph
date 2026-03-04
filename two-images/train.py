@@ -538,7 +538,9 @@ def one_shot_eval(args):
             images = images.to(device)
             images_add = images_add.to(device)
 
-            superimposed = images * 0.1 + images_add * 0.9
+            average = images * 0.5 + images_add * 0.5
+
+            superimposed = images * 0.5 + average * 0.5
             n = len(superimposed)
             
             # Prepare baseline for success metric calculation
