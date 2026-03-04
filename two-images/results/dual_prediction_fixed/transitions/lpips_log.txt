@@ -1,0 +1,3304 @@
+--- LPIPS Transitions Log (Run: dual_prediction_fixed) ---
+
+============================================================
+Step 0: Timestep t=300 -> t_next=299
+============================================================
+Pair 0 (Initial Alignment vs Ground Truth):
+  Straight LPIPS : 0.3372
+  Crossed LPIPS  : 0.7716
+  Swapped?       : False
+
+Pair 1 (Initial Alignment vs Ground Truth):
+  Straight LPIPS : 0.2329
+  Crossed LPIPS  : 0.7588
+  Swapped?       : False
+
+============================================================
+Step 1: Timestep t=299 -> t_next=298
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0001 | Crossed LPIPS: 0.8379 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8376 | Crossed LPIPS: 0.0001 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0001 | Crossed LPIPS: 0.7970 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7926 | Crossed LPIPS: 0.0003 | Swapped: True
+
+============================================================
+Step 2: Timestep t=298 -> t_next=297
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0002 | Crossed LPIPS: 0.8351 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8348 | Crossed LPIPS: 0.0004 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0013 | Crossed LPIPS: 0.7978 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7892 | Crossed LPIPS: 0.0002 | Swapped: True
+
+============================================================
+Step 3: Timestep t=297 -> t_next=296
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0006 | Crossed LPIPS: 0.8327 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8322 | Crossed LPIPS: 0.0008 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0029 | Crossed LPIPS: 0.7987 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7868 | Crossed LPIPS: 0.0002 | Swapped: True
+
+============================================================
+Step 4: Timestep t=296 -> t_next=295
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0010 | Crossed LPIPS: 0.8323 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8315 | Crossed LPIPS: 0.0012 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0038 | Crossed LPIPS: 0.7993 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7845 | Crossed LPIPS: 0.0003 | Swapped: True
+
+============================================================
+Step 5: Timestep t=295 -> t_next=294
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0015 | Crossed LPIPS: 0.8343 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8332 | Crossed LPIPS: 0.0015 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0045 | Crossed LPIPS: 0.7996 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7824 | Crossed LPIPS: 0.0006 | Swapped: True
+
+============================================================
+Step 6: Timestep t=294 -> t_next=293
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0021 | Crossed LPIPS: 0.8375 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8360 | Crossed LPIPS: 0.0018 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0060 | Crossed LPIPS: 0.8005 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7811 | Crossed LPIPS: 0.0014 | Swapped: True
+
+============================================================
+Step 7: Timestep t=293 -> t_next=292
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0027 | Crossed LPIPS: 0.8390 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8372 | Crossed LPIPS: 0.0026 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0090 | Crossed LPIPS: 0.8026 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7808 | Crossed LPIPS: 0.0031 | Swapped: True
+
+============================================================
+Step 8: Timestep t=292 -> t_next=291
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0035 | Crossed LPIPS: 0.8362 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8328 | Crossed LPIPS: 0.0042 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0139 | Crossed LPIPS: 0.8052 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7807 | Crossed LPIPS: 0.0045 | Swapped: True
+
+============================================================
+Step 9: Timestep t=291 -> t_next=290
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0050 | Crossed LPIPS: 0.8290 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8211 | Crossed LPIPS: 0.0077 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0199 | Crossed LPIPS: 0.8072 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7781 | Crossed LPIPS: 0.0060 | Swapped: True
+
+============================================================
+Step 10: Timestep t=290 -> t_next=289
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0073 | Crossed LPIPS: 0.8190 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8075 | Crossed LPIPS: 0.0125 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0241 | Crossed LPIPS: 0.8067 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7715 | Crossed LPIPS: 0.0088 | Swapped: True
+
+============================================================
+Step 11: Timestep t=289 -> t_next=288
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0099 | Crossed LPIPS: 0.8106 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7950 | Crossed LPIPS: 0.0171 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0264 | Crossed LPIPS: 0.8052 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7650 | Crossed LPIPS: 0.0122 | Swapped: True
+
+============================================================
+Step 12: Timestep t=288 -> t_next=287
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0115 | Crossed LPIPS: 0.8058 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7864 | Crossed LPIPS: 0.0196 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0289 | Crossed LPIPS: 0.8056 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7619 | Crossed LPIPS: 0.0162 | Swapped: True
+
+============================================================
+Step 13: Timestep t=287 -> t_next=286
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0121 | Crossed LPIPS: 0.8043 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7818 | Crossed LPIPS: 0.0202 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0331 | Crossed LPIPS: 0.8089 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7634 | Crossed LPIPS: 0.0216 | Swapped: True
+
+============================================================
+Step 14: Timestep t=286 -> t_next=285
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0126 | Crossed LPIPS: 0.8047 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7808 | Crossed LPIPS: 0.0201 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0378 | Crossed LPIPS: 0.8147 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7632 | Crossed LPIPS: 0.0306 | Swapped: True
+
+============================================================
+Step 15: Timestep t=285 -> t_next=284
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0135 | Crossed LPIPS: 0.8066 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7821 | Crossed LPIPS: 0.0211 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0415 | Crossed LPIPS: 0.8166 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7449 | Crossed LPIPS: 0.0440 | Swapped: True
+
+============================================================
+Step 16: Timestep t=284 -> t_next=283
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0155 | Crossed LPIPS: 0.8104 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7850 | Crossed LPIPS: 0.0241 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0457 | Crossed LPIPS: 0.8106 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7174 | Crossed LPIPS: 0.0553 | Swapped: True
+
+============================================================
+Step 17: Timestep t=283 -> t_next=282
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0185 | Crossed LPIPS: 0.8153 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7891 | Crossed LPIPS: 0.0285 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0514 | Crossed LPIPS: 0.8030 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6940 | Crossed LPIPS: 0.0669 | Swapped: True
+
+============================================================
+Step 18: Timestep t=282 -> t_next=281
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0220 | Crossed LPIPS: 0.8222 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7950 | Crossed LPIPS: 0.0322 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0575 | Crossed LPIPS: 0.7984 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6703 | Crossed LPIPS: 0.0825 | Swapped: True
+
+============================================================
+Step 19: Timestep t=281 -> t_next=280
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0246 | Crossed LPIPS: 0.8305 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8035 | Crossed LPIPS: 0.0330 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0654 | Crossed LPIPS: 0.7954 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6309 | Crossed LPIPS: 0.1072 | Swapped: True
+
+============================================================
+Step 20: Timestep t=280 -> t_next=279
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0257 | Crossed LPIPS: 0.8356 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8114 | Crossed LPIPS: 0.0317 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.0773 | Crossed LPIPS: 0.7883 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5491 | Crossed LPIPS: 0.1606 | Swapped: True
+
+============================================================
+Step 21: Timestep t=279 -> t_next=278
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0256 | Crossed LPIPS: 0.8359 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8128 | Crossed LPIPS: 0.0308 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1029 | Crossed LPIPS: 0.7646 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4189 | Crossed LPIPS: 0.2353 | Swapped: True
+
+============================================================
+Step 22: Timestep t=278 -> t_next=277
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0256 | Crossed LPIPS: 0.8321 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8061 | Crossed LPIPS: 0.0328 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1555 | Crossed LPIPS: 0.7097 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3638 | Crossed LPIPS: 0.2504 | Swapped: True
+
+============================================================
+Step 23: Timestep t=277 -> t_next=276
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0275 | Crossed LPIPS: 0.8255 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7916 | Crossed LPIPS: 0.0401 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1880 | Crossed LPIPS: 0.6676 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4078 | Crossed LPIPS: 0.2276 | Swapped: True
+
+============================================================
+Step 24: Timestep t=276 -> t_next=275
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0331 | Crossed LPIPS: 0.8167 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7734 | Crossed LPIPS: 0.0508 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1578 | Crossed LPIPS: 0.7009 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4731 | Crossed LPIPS: 0.1989 | Swapped: True
+
+============================================================
+Step 25: Timestep t=275 -> t_next=274
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0414 | Crossed LPIPS: 0.8109 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7582 | Crossed LPIPS: 0.0601 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1240 | Crossed LPIPS: 0.7447 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5280 | Crossed LPIPS: 0.1711 | Swapped: True
+
+============================================================
+Step 26: Timestep t=274 -> t_next=273
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0502 | Crossed LPIPS: 0.8087 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7521 | Crossed LPIPS: 0.0647 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1186 | Crossed LPIPS: 0.7597 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5324 | Crossed LPIPS: 0.1735 | Swapped: True
+
+============================================================
+Step 27: Timestep t=273 -> t_next=272
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0562 | Crossed LPIPS: 0.8078 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7511 | Crossed LPIPS: 0.0654 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1227 | Crossed LPIPS: 0.7561 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5000 | Crossed LPIPS: 0.1923 | Swapped: True
+
+============================================================
+Step 28: Timestep t=272 -> t_next=271
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0597 | Crossed LPIPS: 0.8056 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7503 | Crossed LPIPS: 0.0645 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1310 | Crossed LPIPS: 0.7419 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4528 | Crossed LPIPS: 0.2181 | Swapped: True
+
+============================================================
+Step 29: Timestep t=271 -> t_next=270
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0618 | Crossed LPIPS: 0.8035 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7477 | Crossed LPIPS: 0.0636 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1462 | Crossed LPIPS: 0.7193 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4013 | Crossed LPIPS: 0.2484 | Swapped: True
+
+============================================================
+Step 30: Timestep t=270 -> t_next=269
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0631 | Crossed LPIPS: 0.8023 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7445 | Crossed LPIPS: 0.0626 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1695 | Crossed LPIPS: 0.6855 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3621 | Crossed LPIPS: 0.2730 | Swapped: True
+
+============================================================
+Step 31: Timestep t=269 -> t_next=268
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0639 | Crossed LPIPS: 0.8019 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7422 | Crossed LPIPS: 0.0608 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.1994 | Crossed LPIPS: 0.6475 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3435 | Crossed LPIPS: 0.2891 | Swapped: True
+
+============================================================
+Step 32: Timestep t=268 -> t_next=267
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0637 | Crossed LPIPS: 0.8030 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7441 | Crossed LPIPS: 0.0578 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2275 | Crossed LPIPS: 0.6163 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3451 | Crossed LPIPS: 0.2971 | Swapped: True
+
+============================================================
+Step 33: Timestep t=267 -> t_next=266
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0619 | Crossed LPIPS: 0.8056 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7492 | Crossed LPIPS: 0.0547 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2443 | Crossed LPIPS: 0.6012 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3532 | Crossed LPIPS: 0.3008 | Swapped: True
+
+============================================================
+Step 34: Timestep t=266 -> t_next=265
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0607 | Crossed LPIPS: 0.8078 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7535 | Crossed LPIPS: 0.0543 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2489 | Crossed LPIPS: 0.5981 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3597 | Crossed LPIPS: 0.2984 | Swapped: True
+
+============================================================
+Step 35: Timestep t=265 -> t_next=264
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0618 | Crossed LPIPS: 0.8081 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7530 | Crossed LPIPS: 0.0575 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2424 | Crossed LPIPS: 0.6039 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3614 | Crossed LPIPS: 0.2932 | Swapped: True
+
+============================================================
+Step 36: Timestep t=264 -> t_next=263
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0658 | Crossed LPIPS: 0.8063 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7472 | Crossed LPIPS: 0.0624 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2325 | Crossed LPIPS: 0.6127 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3584 | Crossed LPIPS: 0.2921 | Swapped: True
+
+============================================================
+Step 37: Timestep t=263 -> t_next=262
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0719 | Crossed LPIPS: 0.8037 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7391 | Crossed LPIPS: 0.0661 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2349 | Crossed LPIPS: 0.6130 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3534 | Crossed LPIPS: 0.3049 | Swapped: True
+
+============================================================
+Step 38: Timestep t=262 -> t_next=261
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0775 | Crossed LPIPS: 0.8028 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7369 | Crossed LPIPS: 0.0661 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2565 | Crossed LPIPS: 0.5958 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3576 | Crossed LPIPS: 0.3307 | Swapped: True
+
+============================================================
+Step 39: Timestep t=261 -> t_next=260
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0803 | Crossed LPIPS: 0.8059 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7444 | Crossed LPIPS: 0.0631 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2921 | Crossed LPIPS: 0.5668 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3812 | Crossed LPIPS: 0.3524 | Swapped: True
+
+============================================================
+Step 40: Timestep t=260 -> t_next=259
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0799 | Crossed LPIPS: 0.8125 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7564 | Crossed LPIPS: 0.0611 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3271 | Crossed LPIPS: 0.5431 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4061 | Crossed LPIPS: 0.3636 | Swapped: True
+
+============================================================
+Step 41: Timestep t=259 -> t_next=258
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0795 | Crossed LPIPS: 0.8185 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7636 | Crossed LPIPS: 0.0640 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3518 | Crossed LPIPS: 0.5266 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4219 | Crossed LPIPS: 0.3655 | Swapped: True
+
+============================================================
+Step 42: Timestep t=258 -> t_next=257
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0826 | Crossed LPIPS: 0.8193 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7589 | Crossed LPIPS: 0.0750 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3624 | Crossed LPIPS: 0.5183 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4265 | Crossed LPIPS: 0.3625 | Swapped: True
+
+============================================================
+Step 43: Timestep t=257 -> t_next=256
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.0906 | Crossed LPIPS: 0.8142 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7418 | Crossed LPIPS: 0.0903 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3626 | Crossed LPIPS: 0.5174 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4251 | Crossed LPIPS: 0.3560 | Swapped: True
+
+============================================================
+Step 44: Timestep t=256 -> t_next=255
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1024 | Crossed LPIPS: 0.8065 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7194 | Crossed LPIPS: 0.1024 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3578 | Crossed LPIPS: 0.5218 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4212 | Crossed LPIPS: 0.3498 | Swapped: True
+
+============================================================
+Step 45: Timestep t=255 -> t_next=254
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1156 | Crossed LPIPS: 0.7982 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7037 | Crossed LPIPS: 0.1078 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3529 | Crossed LPIPS: 0.5265 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4176 | Crossed LPIPS: 0.3477 | Swapped: True
+
+============================================================
+Step 46: Timestep t=254 -> t_next=253
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1258 | Crossed LPIPS: 0.7933 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6963 | Crossed LPIPS: 0.1098 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3516 | Crossed LPIPS: 0.5283 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4168 | Crossed LPIPS: 0.3478 | Swapped: True
+
+============================================================
+Step 47: Timestep t=253 -> t_next=252
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1327 | Crossed LPIPS: 0.7888 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6892 | Crossed LPIPS: 0.1123 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3513 | Crossed LPIPS: 0.5281 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4170 | Crossed LPIPS: 0.3450 | Swapped: True
+
+============================================================
+Step 48: Timestep t=252 -> t_next=251
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1402 | Crossed LPIPS: 0.7817 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6782 | Crossed LPIPS: 0.1189 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3477 | Crossed LPIPS: 0.5306 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4156 | Crossed LPIPS: 0.3381 | Swapped: True
+
+============================================================
+Step 49: Timestep t=251 -> t_next=250
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1519 | Crossed LPIPS: 0.7720 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6649 | Crossed LPIPS: 0.1293 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3382 | Crossed LPIPS: 0.5367 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4114 | Crossed LPIPS: 0.3288 | Swapped: True
+
+============================================================
+Step 50: Timestep t=250 -> t_next=249
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1667 | Crossed LPIPS: 0.7627 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6535 | Crossed LPIPS: 0.1393 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3241 | Crossed LPIPS: 0.5462 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4064 | Crossed LPIPS: 0.3195 | Swapped: True
+
+============================================================
+Step 51: Timestep t=249 -> t_next=248
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1805 | Crossed LPIPS: 0.7573 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6494 | Crossed LPIPS: 0.1444 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3078 | Crossed LPIPS: 0.5590 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3982 | Crossed LPIPS: 0.3130 | Swapped: True
+
+============================================================
+Step 52: Timestep t=248 -> t_next=247
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1866 | Crossed LPIPS: 0.7560 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6502 | Crossed LPIPS: 0.1452 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.2982 | Crossed LPIPS: 0.5685 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3926 | Crossed LPIPS: 0.3153 | Swapped: True
+
+============================================================
+Step 53: Timestep t=247 -> t_next=246
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1884 | Crossed LPIPS: 0.7569 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6528 | Crossed LPIPS: 0.1431 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3005 | Crossed LPIPS: 0.5700 | Swapped: False
+  [PATH B] Straight LPIPS: 0.3933 | Crossed LPIPS: 0.3255 | Swapped: True
+
+============================================================
+Step 54: Timestep t=246 -> t_next=245
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1884 | Crossed LPIPS: 0.7580 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6554 | Crossed LPIPS: 0.1407 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3141 | Crossed LPIPS: 0.5630 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4005 | Crossed LPIPS: 0.3364 | Swapped: True
+
+============================================================
+Step 55: Timestep t=245 -> t_next=244
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1887 | Crossed LPIPS: 0.7577 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6555 | Crossed LPIPS: 0.1403 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3299 | Crossed LPIPS: 0.5510 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4087 | Crossed LPIPS: 0.3455 | Swapped: True
+
+============================================================
+Step 56: Timestep t=244 -> t_next=243
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1908 | Crossed LPIPS: 0.7552 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6523 | Crossed LPIPS: 0.1435 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3434 | Crossed LPIPS: 0.5389 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4158 | Crossed LPIPS: 0.3515 | Swapped: True
+
+============================================================
+Step 57: Timestep t=243 -> t_next=242
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.1971 | Crossed LPIPS: 0.7506 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6461 | Crossed LPIPS: 0.1498 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3517 | Crossed LPIPS: 0.5297 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4210 | Crossed LPIPS: 0.3532 | Swapped: True
+
+============================================================
+Step 58: Timestep t=242 -> t_next=241
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2073 | Crossed LPIPS: 0.7447 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6385 | Crossed LPIPS: 0.1568 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3541 | Crossed LPIPS: 0.5259 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4227 | Crossed LPIPS: 0.3510 | Swapped: True
+
+============================================================
+Step 59: Timestep t=241 -> t_next=240
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2194 | Crossed LPIPS: 0.7392 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6313 | Crossed LPIPS: 0.1626 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3519 | Crossed LPIPS: 0.5261 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4217 | Crossed LPIPS: 0.3464 | Swapped: True
+
+============================================================
+Step 60: Timestep t=240 -> t_next=239
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2318 | Crossed LPIPS: 0.7345 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6250 | Crossed LPIPS: 0.1675 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3486 | Crossed LPIPS: 0.5294 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4206 | Crossed LPIPS: 0.3415 | Swapped: True
+
+============================================================
+Step 61: Timestep t=239 -> t_next=238
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2440 | Crossed LPIPS: 0.7303 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6214 | Crossed LPIPS: 0.1713 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3441 | Crossed LPIPS: 0.5336 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4195 | Crossed LPIPS: 0.3395 | Swapped: True
+
+============================================================
+Step 62: Timestep t=238 -> t_next=237
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2547 | Crossed LPIPS: 0.7274 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6215 | Crossed LPIPS: 0.1733 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3410 | Crossed LPIPS: 0.5364 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4178 | Crossed LPIPS: 0.3410 | Swapped: True
+
+============================================================
+Step 63: Timestep t=237 -> t_next=236
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2601 | Crossed LPIPS: 0.7260 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6239 | Crossed LPIPS: 0.1743 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3427 | Crossed LPIPS: 0.5358 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4183 | Crossed LPIPS: 0.3457 | Swapped: True
+
+============================================================
+Step 64: Timestep t=236 -> t_next=235
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2611 | Crossed LPIPS: 0.7256 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6257 | Crossed LPIPS: 0.1755 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3486 | Crossed LPIPS: 0.5328 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4221 | Crossed LPIPS: 0.3514 | Swapped: True
+
+============================================================
+Step 65: Timestep t=235 -> t_next=234
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2623 | Crossed LPIPS: 0.7245 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6235 | Crossed LPIPS: 0.1787 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3551 | Crossed LPIPS: 0.5291 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4261 | Crossed LPIPS: 0.3552 | Swapped: True
+
+============================================================
+Step 66: Timestep t=234 -> t_next=233
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2690 | Crossed LPIPS: 0.7214 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6169 | Crossed LPIPS: 0.1855 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3575 | Crossed LPIPS: 0.5255 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4266 | Crossed LPIPS: 0.3542 | Swapped: True
+
+============================================================
+Step 67: Timestep t=233 -> t_next=232
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.2825 | Crossed LPIPS: 0.7165 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6108 | Crossed LPIPS: 0.1948 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3561 | Crossed LPIPS: 0.5242 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4249 | Crossed LPIPS: 0.3496 | Swapped: True
+
+============================================================
+Step 68: Timestep t=232 -> t_next=231
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3008 | Crossed LPIPS: 0.7103 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6123 | Crossed LPIPS: 0.2021 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3517 | Crossed LPIPS: 0.5260 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4230 | Crossed LPIPS: 0.3447 | Swapped: True
+
+============================================================
+Step 69: Timestep t=231 -> t_next=230
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3147 | Crossed LPIPS: 0.7059 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6184 | Crossed LPIPS: 0.2052 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3447 | Crossed LPIPS: 0.5282 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4211 | Crossed LPIPS: 0.3425 | Swapped: True
+
+============================================================
+Step 70: Timestep t=230 -> t_next=229
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3192 | Crossed LPIPS: 0.7038 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6229 | Crossed LPIPS: 0.2054 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3387 | Crossed LPIPS: 0.5302 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4195 | Crossed LPIPS: 0.3430 | Swapped: True
+
+============================================================
+Step 71: Timestep t=229 -> t_next=228
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3176 | Crossed LPIPS: 0.7037 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6228 | Crossed LPIPS: 0.2051 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3380 | Crossed LPIPS: 0.5309 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4207 | Crossed LPIPS: 0.3447 | Swapped: True
+
+============================================================
+Step 72: Timestep t=228 -> t_next=227
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3153 | Crossed LPIPS: 0.7040 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6179 | Crossed LPIPS: 0.2057 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3411 | Crossed LPIPS: 0.5312 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4225 | Crossed LPIPS: 0.3458 | Swapped: True
+
+============================================================
+Step 73: Timestep t=227 -> t_next=226
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3157 | Crossed LPIPS: 0.7037 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6113 | Crossed LPIPS: 0.2081 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3455 | Crossed LPIPS: 0.5314 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4234 | Crossed LPIPS: 0.3463 | Swapped: True
+
+============================================================
+Step 74: Timestep t=226 -> t_next=225
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3204 | Crossed LPIPS: 0.7023 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6083 | Crossed LPIPS: 0.2118 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3493 | Crossed LPIPS: 0.5309 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4230 | Crossed LPIPS: 0.3467 | Swapped: True
+
+============================================================
+Step 75: Timestep t=225 -> t_next=224
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3275 | Crossed LPIPS: 0.7001 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6125 | Crossed LPIPS: 0.2157 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3524 | Crossed LPIPS: 0.5305 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4229 | Crossed LPIPS: 0.3481 | Swapped: True
+
+============================================================
+Step 76: Timestep t=224 -> t_next=223
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3342 | Crossed LPIPS: 0.6984 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6205 | Crossed LPIPS: 0.2187 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3554 | Crossed LPIPS: 0.5299 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4239 | Crossed LPIPS: 0.3501 | Swapped: True
+
+============================================================
+Step 77: Timestep t=223 -> t_next=222
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3397 | Crossed LPIPS: 0.6969 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6272 | Crossed LPIPS: 0.2208 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3579 | Crossed LPIPS: 0.5291 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4256 | Crossed LPIPS: 0.3511 | Swapped: True
+
+============================================================
+Step 78: Timestep t=222 -> t_next=221
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3448 | Crossed LPIPS: 0.6948 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6285 | Crossed LPIPS: 0.2228 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3591 | Crossed LPIPS: 0.5291 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4266 | Crossed LPIPS: 0.3494 | Swapped: True
+
+============================================================
+Step 79: Timestep t=221 -> t_next=220
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3520 | Crossed LPIPS: 0.6914 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6250 | Crossed LPIPS: 0.2245 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3584 | Crossed LPIPS: 0.5303 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4266 | Crossed LPIPS: 0.3463 | Swapped: True
+
+============================================================
+Step 80: Timestep t=220 -> t_next=219
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3599 | Crossed LPIPS: 0.6880 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6203 | Crossed LPIPS: 0.2256 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3569 | Crossed LPIPS: 0.5324 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4264 | Crossed LPIPS: 0.3435 | Swapped: True
+
+============================================================
+Step 81: Timestep t=219 -> t_next=218
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3648 | Crossed LPIPS: 0.6860 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6177 | Crossed LPIPS: 0.2255 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3560 | Crossed LPIPS: 0.5344 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4258 | Crossed LPIPS: 0.3429 | Swapped: True
+
+============================================================
+Step 82: Timestep t=218 -> t_next=217
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3650 | Crossed LPIPS: 0.6856 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6190 | Crossed LPIPS: 0.2250 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3563 | Crossed LPIPS: 0.5350 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4258 | Crossed LPIPS: 0.3448 | Swapped: True
+
+============================================================
+Step 83: Timestep t=217 -> t_next=216
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3622 | Crossed LPIPS: 0.6864 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6230 | Crossed LPIPS: 0.2250 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3579 | Crossed LPIPS: 0.5340 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4267 | Crossed LPIPS: 0.3480 | Swapped: True
+
+============================================================
+Step 84: Timestep t=216 -> t_next=215
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3603 | Crossed LPIPS: 0.6883 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6264 | Crossed LPIPS: 0.2267 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3608 | Crossed LPIPS: 0.5320 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4285 | Crossed LPIPS: 0.3500 | Swapped: True
+
+============================================================
+Step 85: Timestep t=215 -> t_next=214
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3616 | Crossed LPIPS: 0.6896 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6265 | Crossed LPIPS: 0.2299 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3630 | Crossed LPIPS: 0.5304 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4296 | Crossed LPIPS: 0.3497 | Swapped: True
+
+============================================================
+Step 86: Timestep t=214 -> t_next=213
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3650 | Crossed LPIPS: 0.6890 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6229 | Crossed LPIPS: 0.2329 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3629 | Crossed LPIPS: 0.5302 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4297 | Crossed LPIPS: 0.3478 | Swapped: True
+
+============================================================
+Step 87: Timestep t=213 -> t_next=212
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3663 | Crossed LPIPS: 0.6866 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6169 | Crossed LPIPS: 0.2342 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3609 | Crossed LPIPS: 0.5315 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4296 | Crossed LPIPS: 0.3461 | Swapped: True
+
+============================================================
+Step 88: Timestep t=212 -> t_next=211
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3635 | Crossed LPIPS: 0.6832 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6110 | Crossed LPIPS: 0.2340 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3585 | Crossed LPIPS: 0.5334 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4295 | Crossed LPIPS: 0.3463 | Swapped: True
+
+============================================================
+Step 89: Timestep t=211 -> t_next=210
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3576 | Crossed LPIPS: 0.6801 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6070 | Crossed LPIPS: 0.2331 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3581 | Crossed LPIPS: 0.5347 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4297 | Crossed LPIPS: 0.3491 | Swapped: True
+
+============================================================
+Step 90: Timestep t=210 -> t_next=209
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3532 | Crossed LPIPS: 0.6785 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6052 | Crossed LPIPS: 0.2330 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3609 | Crossed LPIPS: 0.5341 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4315 | Crossed LPIPS: 0.3532 | Swapped: True
+
+============================================================
+Step 91: Timestep t=209 -> t_next=208
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3530 | Crossed LPIPS: 0.6789 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6047 | Crossed LPIPS: 0.2342 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3656 | Crossed LPIPS: 0.5323 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4346 | Crossed LPIPS: 0.3566 | Swapped: True
+
+============================================================
+Step 92: Timestep t=208 -> t_next=207
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3580 | Crossed LPIPS: 0.6803 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6056 | Crossed LPIPS: 0.2361 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3696 | Crossed LPIPS: 0.5309 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4376 | Crossed LPIPS: 0.3583 | Swapped: True
+
+============================================================
+Step 93: Timestep t=207 -> t_next=206
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3647 | Crossed LPIPS: 0.6818 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6074 | Crossed LPIPS: 0.2376 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3718 | Crossed LPIPS: 0.5305 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4399 | Crossed LPIPS: 0.3587 | Swapped: True
+
+============================================================
+Step 94: Timestep t=206 -> t_next=205
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3691 | Crossed LPIPS: 0.6826 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6099 | Crossed LPIPS: 0.2385 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3727 | Crossed LPIPS: 0.5312 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4419 | Crossed LPIPS: 0.3587 | Swapped: True
+
+============================================================
+Step 95: Timestep t=205 -> t_next=204
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3708 | Crossed LPIPS: 0.6816 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6122 | Crossed LPIPS: 0.2396 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3726 | Crossed LPIPS: 0.5324 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4435 | Crossed LPIPS: 0.3587 | Swapped: True
+
+============================================================
+Step 96: Timestep t=204 -> t_next=203
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3713 | Crossed LPIPS: 0.6783 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6130 | Crossed LPIPS: 0.2417 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3720 | Crossed LPIPS: 0.5331 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4442 | Crossed LPIPS: 0.3587 | Swapped: True
+
+============================================================
+Step 97: Timestep t=203 -> t_next=202
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3735 | Crossed LPIPS: 0.6733 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6121 | Crossed LPIPS: 0.2448 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3716 | Crossed LPIPS: 0.5334 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4439 | Crossed LPIPS: 0.3580 | Swapped: True
+
+============================================================
+Step 98: Timestep t=202 -> t_next=201
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3778 | Crossed LPIPS: 0.6686 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6108 | Crossed LPIPS: 0.2478 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3709 | Crossed LPIPS: 0.5335 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4425 | Crossed LPIPS: 0.3560 | Swapped: True
+
+============================================================
+Step 99: Timestep t=201 -> t_next=200
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3821 | Crossed LPIPS: 0.6658 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6101 | Crossed LPIPS: 0.2494 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3698 | Crossed LPIPS: 0.5342 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4418 | Crossed LPIPS: 0.3536 | Swapped: True
+
+============================================================
+Step 100: Timestep t=200 -> t_next=199
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3837 | Crossed LPIPS: 0.6653 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6106 | Crossed LPIPS: 0.2497 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3682 | Crossed LPIPS: 0.5362 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4420 | Crossed LPIPS: 0.3514 | Swapped: True
+
+============================================================
+Step 101: Timestep t=199 -> t_next=198
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3826 | Crossed LPIPS: 0.6665 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6120 | Crossed LPIPS: 0.2497 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3661 | Crossed LPIPS: 0.5391 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4422 | Crossed LPIPS: 0.3493 | Swapped: True
+
+============================================================
+Step 102: Timestep t=198 -> t_next=197
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3819 | Crossed LPIPS: 0.6676 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6132 | Crossed LPIPS: 0.2506 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3648 | Crossed LPIPS: 0.5424 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4430 | Crossed LPIPS: 0.3474 | Swapped: True
+
+============================================================
+Step 103: Timestep t=197 -> t_next=196
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3845 | Crossed LPIPS: 0.6673 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6125 | Crossed LPIPS: 0.2527 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3640 | Crossed LPIPS: 0.5456 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4434 | Crossed LPIPS: 0.3450 | Swapped: True
+
+============================================================
+Step 104: Timestep t=196 -> t_next=195
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3908 | Crossed LPIPS: 0.6651 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6102 | Crossed LPIPS: 0.2557 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3631 | Crossed LPIPS: 0.5483 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4427 | Crossed LPIPS: 0.3426 | Swapped: True
+
+============================================================
+Step 105: Timestep t=195 -> t_next=194
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3977 | Crossed LPIPS: 0.6621 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6073 | Crossed LPIPS: 0.2578 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3617 | Crossed LPIPS: 0.5501 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4411 | Crossed LPIPS: 0.3411 | Swapped: True
+
+============================================================
+Step 106: Timestep t=194 -> t_next=193
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4009 | Crossed LPIPS: 0.6600 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6047 | Crossed LPIPS: 0.2584 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3605 | Crossed LPIPS: 0.5509 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4399 | Crossed LPIPS: 0.3414 | Swapped: True
+
+============================================================
+Step 107: Timestep t=193 -> t_next=192
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3997 | Crossed LPIPS: 0.6594 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6040 | Crossed LPIPS: 0.2581 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3607 | Crossed LPIPS: 0.5508 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4401 | Crossed LPIPS: 0.3435 | Swapped: True
+
+============================================================
+Step 108: Timestep t=192 -> t_next=191
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3962 | Crossed LPIPS: 0.6594 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6042 | Crossed LPIPS: 0.2579 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3626 | Crossed LPIPS: 0.5505 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4420 | Crossed LPIPS: 0.3455 | Swapped: True
+
+============================================================
+Step 109: Timestep t=191 -> t_next=190
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3949 | Crossed LPIPS: 0.6589 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6032 | Crossed LPIPS: 0.2589 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3653 | Crossed LPIPS: 0.5508 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4446 | Crossed LPIPS: 0.3454 | Swapped: True
+
+============================================================
+Step 110: Timestep t=190 -> t_next=189
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3978 | Crossed LPIPS: 0.6576 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6004 | Crossed LPIPS: 0.2613 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3670 | Crossed LPIPS: 0.5528 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4462 | Crossed LPIPS: 0.3427 | Swapped: True
+
+============================================================
+Step 111: Timestep t=189 -> t_next=188
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4032 | Crossed LPIPS: 0.6559 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5973 | Crossed LPIPS: 0.2638 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3663 | Crossed LPIPS: 0.5564 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4458 | Crossed LPIPS: 0.3392 | Swapped: True
+
+============================================================
+Step 112: Timestep t=188 -> t_next=187
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4063 | Crossed LPIPS: 0.6541 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5948 | Crossed LPIPS: 0.2651 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3637 | Crossed LPIPS: 0.5599 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4441 | Crossed LPIPS: 0.3370 | Swapped: True
+
+============================================================
+Step 113: Timestep t=187 -> t_next=186
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4057 | Crossed LPIPS: 0.6523 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5943 | Crossed LPIPS: 0.2657 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3613 | Crossed LPIPS: 0.5609 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4428 | Crossed LPIPS: 0.3382 | Swapped: True
+
+============================================================
+Step 114: Timestep t=186 -> t_next=185
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4024 | Crossed LPIPS: 0.6496 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5965 | Crossed LPIPS: 0.2660 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3605 | Crossed LPIPS: 0.5588 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4432 | Crossed LPIPS: 0.3417 | Swapped: True
+
+============================================================
+Step 115: Timestep t=185 -> t_next=184
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3990 | Crossed LPIPS: 0.6466 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5995 | Crossed LPIPS: 0.2664 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3618 | Crossed LPIPS: 0.5557 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4453 | Crossed LPIPS: 0.3446 | Swapped: True
+
+============================================================
+Step 116: Timestep t=184 -> t_next=183
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.3988 | Crossed LPIPS: 0.6440 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6018 | Crossed LPIPS: 0.2674 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3642 | Crossed LPIPS: 0.5539 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4481 | Crossed LPIPS: 0.3448 | Swapped: True
+
+============================================================
+Step 117: Timestep t=183 -> t_next=182
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4014 | Crossed LPIPS: 0.6419 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6017 | Crossed LPIPS: 0.2688 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3647 | Crossed LPIPS: 0.5543 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4498 | Crossed LPIPS: 0.3427 | Swapped: True
+
+============================================================
+Step 118: Timestep t=182 -> t_next=181
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4043 | Crossed LPIPS: 0.6414 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5998 | Crossed LPIPS: 0.2697 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3629 | Crossed LPIPS: 0.5571 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4499 | Crossed LPIPS: 0.3403 | Swapped: True
+
+============================================================
+Step 119: Timestep t=181 -> t_next=180
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4058 | Crossed LPIPS: 0.6437 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5981 | Crossed LPIPS: 0.2696 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3611 | Crossed LPIPS: 0.5606 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4489 | Crossed LPIPS: 0.3402 | Swapped: True
+
+============================================================
+Step 120: Timestep t=180 -> t_next=179
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4056 | Crossed LPIPS: 0.6477 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5982 | Crossed LPIPS: 0.2692 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3619 | Crossed LPIPS: 0.5618 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4483 | Crossed LPIPS: 0.3430 | Swapped: True
+
+============================================================
+Step 121: Timestep t=179 -> t_next=178
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4062 | Crossed LPIPS: 0.6510 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6009 | Crossed LPIPS: 0.2692 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3662 | Crossed LPIPS: 0.5600 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4496 | Crossed LPIPS: 0.3463 | Swapped: True
+
+============================================================
+Step 122: Timestep t=178 -> t_next=177
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4087 | Crossed LPIPS: 0.6525 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6045 | Crossed LPIPS: 0.2699 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3718 | Crossed LPIPS: 0.5572 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4528 | Crossed LPIPS: 0.3475 | Swapped: True
+
+============================================================
+Step 123: Timestep t=177 -> t_next=176
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4134 | Crossed LPIPS: 0.6523 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6066 | Crossed LPIPS: 0.2708 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3756 | Crossed LPIPS: 0.5561 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4557 | Crossed LPIPS: 0.3456 | Swapped: True
+
+============================================================
+Step 124: Timestep t=176 -> t_next=175
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4175 | Crossed LPIPS: 0.6512 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6059 | Crossed LPIPS: 0.2716 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3765 | Crossed LPIPS: 0.5581 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4585 | Crossed LPIPS: 0.3421 | Swapped: True
+
+============================================================
+Step 125: Timestep t=175 -> t_next=174
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4177 | Crossed LPIPS: 0.6500 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6030 | Crossed LPIPS: 0.2718 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3730 | Crossed LPIPS: 0.5628 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4596 | Crossed LPIPS: 0.3392 | Swapped: True
+
+============================================================
+Step 126: Timestep t=174 -> t_next=173
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4138 | Crossed LPIPS: 0.6477 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5996 | Crossed LPIPS: 0.2718 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3691 | Crossed LPIPS: 0.5677 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4585 | Crossed LPIPS: 0.3388 | Swapped: True
+
+============================================================
+Step 127: Timestep t=173 -> t_next=172
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4085 | Crossed LPIPS: 0.6436 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5970 | Crossed LPIPS: 0.2726 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3683 | Crossed LPIPS: 0.5698 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4570 | Crossed LPIPS: 0.3415 | Swapped: True
+
+============================================================
+Step 128: Timestep t=172 -> t_next=171
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4056 | Crossed LPIPS: 0.6375 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5967 | Crossed LPIPS: 0.2744 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3707 | Crossed LPIPS: 0.5673 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4566 | Crossed LPIPS: 0.3450 | Swapped: True
+
+============================================================
+Step 129: Timestep t=171 -> t_next=170
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4063 | Crossed LPIPS: 0.6323 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5984 | Crossed LPIPS: 0.2761 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3746 | Crossed LPIPS: 0.5634 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4576 | Crossed LPIPS: 0.3471 | Swapped: True
+
+============================================================
+Step 130: Timestep t=170 -> t_next=169
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4099 | Crossed LPIPS: 0.6300 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6011 | Crossed LPIPS: 0.2770 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3781 | Crossed LPIPS: 0.5604 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4595 | Crossed LPIPS: 0.3473 | Swapped: True
+
+============================================================
+Step 131: Timestep t=169 -> t_next=168
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4132 | Crossed LPIPS: 0.6305 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6027 | Crossed LPIPS: 0.2766 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3790 | Crossed LPIPS: 0.5594 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4618 | Crossed LPIPS: 0.3462 | Swapped: True
+
+============================================================
+Step 132: Timestep t=168 -> t_next=167
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4133 | Crossed LPIPS: 0.6339 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6016 | Crossed LPIPS: 0.2754 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3779 | Crossed LPIPS: 0.5609 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4639 | Crossed LPIPS: 0.3453 | Swapped: True
+
+============================================================
+Step 133: Timestep t=167 -> t_next=166
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4098 | Crossed LPIPS: 0.6398 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5983 | Crossed LPIPS: 0.2737 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3773 | Crossed LPIPS: 0.5644 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4652 | Crossed LPIPS: 0.3451 | Swapped: True
+
+============================================================
+Step 134: Timestep t=166 -> t_next=165
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4063 | Crossed LPIPS: 0.6450 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5951 | Crossed LPIPS: 0.2730 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3786 | Crossed LPIPS: 0.5681 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4668 | Crossed LPIPS: 0.3452 | Swapped: True
+
+============================================================
+Step 135: Timestep t=165 -> t_next=164
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4063 | Crossed LPIPS: 0.6468 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5937 | Crossed LPIPS: 0.2739 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3810 | Crossed LPIPS: 0.5713 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4684 | Crossed LPIPS: 0.3444 | Swapped: True
+
+============================================================
+Step 136: Timestep t=164 -> t_next=163
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4101 | Crossed LPIPS: 0.6466 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5948 | Crossed LPIPS: 0.2753 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3824 | Crossed LPIPS: 0.5740 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4690 | Crossed LPIPS: 0.3421 | Swapped: True
+
+============================================================
+Step 137: Timestep t=163 -> t_next=162
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4152 | Crossed LPIPS: 0.6469 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5975 | Crossed LPIPS: 0.2759 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3817 | Crossed LPIPS: 0.5758 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4693 | Crossed LPIPS: 0.3396 | Swapped: True
+
+============================================================
+Step 138: Timestep t=162 -> t_next=161
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4185 | Crossed LPIPS: 0.6479 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5996 | Crossed LPIPS: 0.2757 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3796 | Crossed LPIPS: 0.5777 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4698 | Crossed LPIPS: 0.3381 | Swapped: True
+
+============================================================
+Step 139: Timestep t=161 -> t_next=160
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4188 | Crossed LPIPS: 0.6502 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6000 | Crossed LPIPS: 0.2752 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3782 | Crossed LPIPS: 0.5801 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4711 | Crossed LPIPS: 0.3385 | Swapped: True
+
+============================================================
+Step 140: Timestep t=160 -> t_next=159
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4176 | Crossed LPIPS: 0.6531 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5983 | Crossed LPIPS: 0.2747 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3801 | Crossed LPIPS: 0.5823 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4737 | Crossed LPIPS: 0.3400 | Swapped: True
+
+============================================================
+Step 141: Timestep t=159 -> t_next=158
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4173 | Crossed LPIPS: 0.6553 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5953 | Crossed LPIPS: 0.2743 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3848 | Crossed LPIPS: 0.5837 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4766 | Crossed LPIPS: 0.3410 | Swapped: True
+
+============================================================
+Step 142: Timestep t=158 -> t_next=157
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4187 | Crossed LPIPS: 0.6565 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5930 | Crossed LPIPS: 0.2744 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3892 | Crossed LPIPS: 0.5835 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4788 | Crossed LPIPS: 0.3405 | Swapped: True
+
+============================================================
+Step 143: Timestep t=157 -> t_next=156
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4208 | Crossed LPIPS: 0.6572 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5925 | Crossed LPIPS: 0.2743 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3912 | Crossed LPIPS: 0.5830 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4801 | Crossed LPIPS: 0.3391 | Swapped: True
+
+============================================================
+Step 144: Timestep t=156 -> t_next=155
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4214 | Crossed LPIPS: 0.6576 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5939 | Crossed LPIPS: 0.2738 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3903 | Crossed LPIPS: 0.5834 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4807 | Crossed LPIPS: 0.3375 | Swapped: True
+
+============================================================
+Step 145: Timestep t=155 -> t_next=154
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4199 | Crossed LPIPS: 0.6579 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5960 | Crossed LPIPS: 0.2733 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3878 | Crossed LPIPS: 0.5851 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4814 | Crossed LPIPS: 0.3370 | Swapped: True
+
+============================================================
+Step 146: Timestep t=154 -> t_next=153
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4175 | Crossed LPIPS: 0.6573 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5967 | Crossed LPIPS: 0.2739 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3856 | Crossed LPIPS: 0.5867 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4824 | Crossed LPIPS: 0.3377 | Swapped: True
+
+============================================================
+Step 147: Timestep t=153 -> t_next=152
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4174 | Crossed LPIPS: 0.6554 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5962 | Crossed LPIPS: 0.2757 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3860 | Crossed LPIPS: 0.5875 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4838 | Crossed LPIPS: 0.3389 | Swapped: True
+
+============================================================
+Step 148: Timestep t=152 -> t_next=151
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4212 | Crossed LPIPS: 0.6535 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5964 | Crossed LPIPS: 0.2775 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3883 | Crossed LPIPS: 0.5876 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4851 | Crossed LPIPS: 0.3395 | Swapped: True
+
+============================================================
+Step 149: Timestep t=151 -> t_next=150
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4257 | Crossed LPIPS: 0.6533 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5977 | Crossed LPIPS: 0.2780 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3903 | Crossed LPIPS: 0.5870 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4857 | Crossed LPIPS: 0.3393 | Swapped: True
+
+============================================================
+Step 150: Timestep t=150 -> t_next=149
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4277 | Crossed LPIPS: 0.6565 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5998 | Crossed LPIPS: 0.2770 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3913 | Crossed LPIPS: 0.5865 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4865 | Crossed LPIPS: 0.3388 | Swapped: True
+
+============================================================
+Step 151: Timestep t=149 -> t_next=148
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4258 | Crossed LPIPS: 0.6633 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6012 | Crossed LPIPS: 0.2750 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3915 | Crossed LPIPS: 0.5878 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4882 | Crossed LPIPS: 0.3381 | Swapped: True
+
+============================================================
+Step 152: Timestep t=148 -> t_next=147
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4216 | Crossed LPIPS: 0.6702 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6014 | Crossed LPIPS: 0.2732 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3912 | Crossed LPIPS: 0.5910 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4906 | Crossed LPIPS: 0.3378 | Swapped: True
+
+============================================================
+Step 153: Timestep t=147 -> t_next=146
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4182 | Crossed LPIPS: 0.6737 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5998 | Crossed LPIPS: 0.2728 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3913 | Crossed LPIPS: 0.5943 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4938 | Crossed LPIPS: 0.3378 | Swapped: True
+
+============================================================
+Step 154: Timestep t=146 -> t_next=145
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4186 | Crossed LPIPS: 0.6723 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5977 | Crossed LPIPS: 0.2745 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3920 | Crossed LPIPS: 0.5959 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4970 | Crossed LPIPS: 0.3379 | Swapped: True
+
+============================================================
+Step 155: Timestep t=145 -> t_next=144
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4234 | Crossed LPIPS: 0.6673 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5969 | Crossed LPIPS: 0.2768 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3927 | Crossed LPIPS: 0.5959 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4989 | Crossed LPIPS: 0.3377 | Swapped: True
+
+============================================================
+Step 156: Timestep t=144 -> t_next=143
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4278 | Crossed LPIPS: 0.6614 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5979 | Crossed LPIPS: 0.2781 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3929 | Crossed LPIPS: 0.5950 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4991 | Crossed LPIPS: 0.3375 | Swapped: True
+
+============================================================
+Step 157: Timestep t=143 -> t_next=142
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4283 | Crossed LPIPS: 0.6578 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6000 | Crossed LPIPS: 0.2781 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3932 | Crossed LPIPS: 0.5949 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4985 | Crossed LPIPS: 0.3372 | Swapped: True
+
+============================================================
+Step 158: Timestep t=142 -> t_next=141
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4254 | Crossed LPIPS: 0.6582 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6014 | Crossed LPIPS: 0.2771 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3937 | Crossed LPIPS: 0.5957 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4983 | Crossed LPIPS: 0.3369 | Swapped: True
+
+============================================================
+Step 159: Timestep t=141 -> t_next=140
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4225 | Crossed LPIPS: 0.6633 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6013 | Crossed LPIPS: 0.2757 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3945 | Crossed LPIPS: 0.5976 | Swapped: False
+  [PATH B] Straight LPIPS: 0.4996 | Crossed LPIPS: 0.3362 | Swapped: True
+
+============================================================
+Step 160: Timestep t=140 -> t_next=139
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4221 | Crossed LPIPS: 0.6713 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6002 | Crossed LPIPS: 0.2748 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3951 | Crossed LPIPS: 0.6002 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5024 | Crossed LPIPS: 0.3355 | Swapped: True
+
+============================================================
+Step 161: Timestep t=139 -> t_next=138
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4242 | Crossed LPIPS: 0.6777 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6010 | Crossed LPIPS: 0.2753 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3947 | Crossed LPIPS: 0.6030 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5056 | Crossed LPIPS: 0.3354 | Swapped: True
+
+============================================================
+Step 162: Timestep t=138 -> t_next=137
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4285 | Crossed LPIPS: 0.6808 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6048 | Crossed LPIPS: 0.2761 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3943 | Crossed LPIPS: 0.6051 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5082 | Crossed LPIPS: 0.3364 | Swapped: True
+
+============================================================
+Step 163: Timestep t=137 -> t_next=136
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4317 | Crossed LPIPS: 0.6793 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6090 | Crossed LPIPS: 0.2769 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3955 | Crossed LPIPS: 0.6053 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5113 | Crossed LPIPS: 0.3389 | Swapped: True
+
+============================================================
+Step 164: Timestep t=136 -> t_next=135
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4312 | Crossed LPIPS: 0.6748 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6110 | Crossed LPIPS: 0.2775 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3986 | Crossed LPIPS: 0.6039 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5137 | Crossed LPIPS: 0.3415 | Swapped: True
+
+============================================================
+Step 165: Timestep t=135 -> t_next=134
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4277 | Crossed LPIPS: 0.6709 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6090 | Crossed LPIPS: 0.2773 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4031 | Crossed LPIPS: 0.6023 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5161 | Crossed LPIPS: 0.3426 | Swapped: True
+
+============================================================
+Step 166: Timestep t=134 -> t_next=133
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4242 | Crossed LPIPS: 0.6699 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6042 | Crossed LPIPS: 0.2767 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4065 | Crossed LPIPS: 0.6016 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5181 | Crossed LPIPS: 0.3416 | Swapped: True
+
+============================================================
+Step 167: Timestep t=133 -> t_next=132
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4230 | Crossed LPIPS: 0.6725 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5997 | Crossed LPIPS: 0.2762 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4074 | Crossed LPIPS: 0.6027 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5197 | Crossed LPIPS: 0.3391 | Swapped: True
+
+============================================================
+Step 168: Timestep t=132 -> t_next=131
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4240 | Crossed LPIPS: 0.6778 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5988 | Crossed LPIPS: 0.2760 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4059 | Crossed LPIPS: 0.6066 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5216 | Crossed LPIPS: 0.3362 | Swapped: True
+
+============================================================
+Step 169: Timestep t=131 -> t_next=130
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4258 | Crossed LPIPS: 0.6843 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6032 | Crossed LPIPS: 0.2760 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4020 | Crossed LPIPS: 0.6127 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5230 | Crossed LPIPS: 0.3342 | Swapped: True
+
+============================================================
+Step 170: Timestep t=130 -> t_next=129
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4271 | Crossed LPIPS: 0.6902 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6106 | Crossed LPIPS: 0.2759 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3978 | Crossed LPIPS: 0.6184 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5227 | Crossed LPIPS: 0.3348 | Swapped: True
+
+============================================================
+Step 171: Timestep t=129 -> t_next=128
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4282 | Crossed LPIPS: 0.6943 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6170 | Crossed LPIPS: 0.2758 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.3984 | Crossed LPIPS: 0.6202 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5235 | Crossed LPIPS: 0.3380 | Swapped: True
+
+============================================================
+Step 172: Timestep t=128 -> t_next=127
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4289 | Crossed LPIPS: 0.6962 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6192 | Crossed LPIPS: 0.2758 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4036 | Crossed LPIPS: 0.6182 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5265 | Crossed LPIPS: 0.3411 | Swapped: True
+
+============================================================
+Step 173: Timestep t=127 -> t_next=126
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4299 | Crossed LPIPS: 0.6970 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6175 | Crossed LPIPS: 0.2760 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4093 | Crossed LPIPS: 0.6149 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5305 | Crossed LPIPS: 0.3423 | Swapped: True
+
+============================================================
+Step 174: Timestep t=126 -> t_next=125
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4308 | Crossed LPIPS: 0.6972 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6149 | Crossed LPIPS: 0.2762 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4134 | Crossed LPIPS: 0.6138 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5337 | Crossed LPIPS: 0.3419 | Swapped: True
+
+============================================================
+Step 175: Timestep t=125 -> t_next=124
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4308 | Crossed LPIPS: 0.6971 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6138 | Crossed LPIPS: 0.2762 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4154 | Crossed LPIPS: 0.6152 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5367 | Crossed LPIPS: 0.3408 | Swapped: True
+
+============================================================
+Step 176: Timestep t=124 -> t_next=123
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4282 | Crossed LPIPS: 0.6958 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6144 | Crossed LPIPS: 0.2760 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4151 | Crossed LPIPS: 0.6185 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5391 | Crossed LPIPS: 0.3402 | Swapped: True
+
+============================================================
+Step 177: Timestep t=123 -> t_next=122
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4233 | Crossed LPIPS: 0.6942 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6157 | Crossed LPIPS: 0.2763 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4135 | Crossed LPIPS: 0.6215 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5407 | Crossed LPIPS: 0.3403 | Swapped: True
+
+============================================================
+Step 178: Timestep t=122 -> t_next=121
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4187 | Crossed LPIPS: 0.6936 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6175 | Crossed LPIPS: 0.2773 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4120 | Crossed LPIPS: 0.6229 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5413 | Crossed LPIPS: 0.3404 | Swapped: True
+
+============================================================
+Step 179: Timestep t=121 -> t_next=120
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4188 | Crossed LPIPS: 0.6961 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6208 | Crossed LPIPS: 0.2787 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4111 | Crossed LPIPS: 0.6236 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5414 | Crossed LPIPS: 0.3396 | Swapped: True
+
+============================================================
+Step 180: Timestep t=120 -> t_next=119
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4237 | Crossed LPIPS: 0.7026 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6254 | Crossed LPIPS: 0.2798 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4094 | Crossed LPIPS: 0.6246 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5406 | Crossed LPIPS: 0.3383 | Swapped: True
+
+============================================================
+Step 181: Timestep t=119 -> t_next=118
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4293 | Crossed LPIPS: 0.7109 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6300 | Crossed LPIPS: 0.2804 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4079 | Crossed LPIPS: 0.6265 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5399 | Crossed LPIPS: 0.3373 | Swapped: True
+
+============================================================
+Step 182: Timestep t=118 -> t_next=117
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4328 | Crossed LPIPS: 0.7180 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6346 | Crossed LPIPS: 0.2802 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4077 | Crossed LPIPS: 0.6286 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5400 | Crossed LPIPS: 0.3376 | Swapped: True
+
+============================================================
+Step 183: Timestep t=117 -> t_next=116
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4330 | Crossed LPIPS: 0.7209 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6376 | Crossed LPIPS: 0.2799 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4093 | Crossed LPIPS: 0.6297 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5420 | Crossed LPIPS: 0.3393 | Swapped: True
+
+============================================================
+Step 184: Timestep t=116 -> t_next=115
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4310 | Crossed LPIPS: 0.7191 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6380 | Crossed LPIPS: 0.2799 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4131 | Crossed LPIPS: 0.6291 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5454 | Crossed LPIPS: 0.3415 | Swapped: True
+
+============================================================
+Step 185: Timestep t=115 -> t_next=114
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4279 | Crossed LPIPS: 0.7153 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6358 | Crossed LPIPS: 0.2799 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4171 | Crossed LPIPS: 0.6265 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5496 | Crossed LPIPS: 0.3429 | Swapped: True
+
+============================================================
+Step 186: Timestep t=114 -> t_next=113
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4245 | Crossed LPIPS: 0.7128 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6327 | Crossed LPIPS: 0.2801 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4199 | Crossed LPIPS: 0.6241 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5529 | Crossed LPIPS: 0.3432 | Swapped: True
+
+============================================================
+Step 187: Timestep t=113 -> t_next=112
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4215 | Crossed LPIPS: 0.7141 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6313 | Crossed LPIPS: 0.2802 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4217 | Crossed LPIPS: 0.6238 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5555 | Crossed LPIPS: 0.3431 | Swapped: True
+
+============================================================
+Step 188: Timestep t=112 -> t_next=111
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4186 | Crossed LPIPS: 0.7187 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6328 | Crossed LPIPS: 0.2802 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4231 | Crossed LPIPS: 0.6256 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5582 | Crossed LPIPS: 0.3434 | Swapped: True
+
+============================================================
+Step 189: Timestep t=111 -> t_next=110
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4162 | Crossed LPIPS: 0.7240 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6362 | Crossed LPIPS: 0.2802 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4249 | Crossed LPIPS: 0.6283 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5616 | Crossed LPIPS: 0.3442 | Swapped: True
+
+============================================================
+Step 190: Timestep t=110 -> t_next=109
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4154 | Crossed LPIPS: 0.7282 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6401 | Crossed LPIPS: 0.2806 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4269 | Crossed LPIPS: 0.6299 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5646 | Crossed LPIPS: 0.3445 | Swapped: True
+
+============================================================
+Step 191: Timestep t=109 -> t_next=108
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4178 | Crossed LPIPS: 0.7311 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6442 | Crossed LPIPS: 0.2816 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4275 | Crossed LPIPS: 0.6302 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5655 | Crossed LPIPS: 0.3436 | Swapped: True
+
+============================================================
+Step 192: Timestep t=108 -> t_next=107
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4226 | Crossed LPIPS: 0.7336 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6486 | Crossed LPIPS: 0.2828 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4251 | Crossed LPIPS: 0.6298 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5640 | Crossed LPIPS: 0.3418 | Swapped: True
+
+============================================================
+Step 193: Timestep t=107 -> t_next=106
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4275 | Crossed LPIPS: 0.7363 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6520 | Crossed LPIPS: 0.2834 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4207 | Crossed LPIPS: 0.6299 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5610 | Crossed LPIPS: 0.3398 | Swapped: True
+
+============================================================
+Step 194: Timestep t=106 -> t_next=105
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4299 | Crossed LPIPS: 0.7378 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6539 | Crossed LPIPS: 0.2835 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4175 | Crossed LPIPS: 0.6314 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5584 | Crossed LPIPS: 0.3385 | Swapped: True
+
+============================================================
+Step 195: Timestep t=105 -> t_next=104
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4271 | Crossed LPIPS: 0.7380 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6532 | Crossed LPIPS: 0.2835 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4174 | Crossed LPIPS: 0.6336 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5582 | Crossed LPIPS: 0.3391 | Swapped: True
+
+============================================================
+Step 196: Timestep t=104 -> t_next=103
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4205 | Crossed LPIPS: 0.7368 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6503 | Crossed LPIPS: 0.2833 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4201 | Crossed LPIPS: 0.6346 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5610 | Crossed LPIPS: 0.3417 | Swapped: True
+
+============================================================
+Step 197: Timestep t=103 -> t_next=102
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4153 | Crossed LPIPS: 0.7354 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6485 | Crossed LPIPS: 0.2833 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4245 | Crossed LPIPS: 0.6333 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5668 | Crossed LPIPS: 0.3444 | Swapped: True
+
+============================================================
+Step 198: Timestep t=102 -> t_next=101
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4145 | Crossed LPIPS: 0.7364 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6496 | Crossed LPIPS: 0.2839 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4290 | Crossed LPIPS: 0.6317 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5723 | Crossed LPIPS: 0.3461 | Swapped: True
+
+============================================================
+Step 199: Timestep t=101 -> t_next=100
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4174 | Crossed LPIPS: 0.7412 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6541 | Crossed LPIPS: 0.2846 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4318 | Crossed LPIPS: 0.6306 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5755 | Crossed LPIPS: 0.3469 | Swapped: True
+
+============================================================
+Step 200: Timestep t=100 -> t_next=99
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4208 | Crossed LPIPS: 0.7485 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6608 | Crossed LPIPS: 0.2849 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4334 | Crossed LPIPS: 0.6310 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5776 | Crossed LPIPS: 0.3470 | Swapped: True
+
+============================================================
+Step 201: Timestep t=99 -> t_next=98
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4221 | Crossed LPIPS: 0.7560 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6681 | Crossed LPIPS: 0.2847 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4351 | Crossed LPIPS: 0.6332 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5797 | Crossed LPIPS: 0.3469 | Swapped: True
+
+============================================================
+Step 202: Timestep t=98 -> t_next=97
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4203 | Crossed LPIPS: 0.7601 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6725 | Crossed LPIPS: 0.2847 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4369 | Crossed LPIPS: 0.6362 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5822 | Crossed LPIPS: 0.3465 | Swapped: True
+
+============================================================
+Step 203: Timestep t=97 -> t_next=96
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4164 | Crossed LPIPS: 0.7595 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6725 | Crossed LPIPS: 0.2852 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4384 | Crossed LPIPS: 0.6392 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5839 | Crossed LPIPS: 0.3449 | Swapped: True
+
+============================================================
+Step 204: Timestep t=96 -> t_next=95
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4140 | Crossed LPIPS: 0.7560 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6695 | Crossed LPIPS: 0.2864 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4373 | Crossed LPIPS: 0.6412 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5826 | Crossed LPIPS: 0.3422 | Swapped: True
+
+============================================================
+Step 205: Timestep t=95 -> t_next=94
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4144 | Crossed LPIPS: 0.7536 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6668 | Crossed LPIPS: 0.2878 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4323 | Crossed LPIPS: 0.6423 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5788 | Crossed LPIPS: 0.3391 | Swapped: True
+
+============================================================
+Step 206: Timestep t=94 -> t_next=93
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4150 | Crossed LPIPS: 0.7542 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6668 | Crossed LPIPS: 0.2885 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4257 | Crossed LPIPS: 0.6445 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5745 | Crossed LPIPS: 0.3371 | Swapped: True
+
+============================================================
+Step 207: Timestep t=93 -> t_next=92
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4136 | Crossed LPIPS: 0.7570 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6699 | Crossed LPIPS: 0.2887 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4225 | Crossed LPIPS: 0.6473 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5717 | Crossed LPIPS: 0.3380 | Swapped: True
+
+============================================================
+Step 208: Timestep t=92 -> t_next=91
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4105 | Crossed LPIPS: 0.7611 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6754 | Crossed LPIPS: 0.2888 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4246 | Crossed LPIPS: 0.6484 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5721 | Crossed LPIPS: 0.3427 | Swapped: True
+
+============================================================
+Step 209: Timestep t=91 -> t_next=90
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4087 | Crossed LPIPS: 0.7659 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6813 | Crossed LPIPS: 0.2889 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4310 | Crossed LPIPS: 0.6464 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5782 | Crossed LPIPS: 0.3479 | Swapped: True
+
+============================================================
+Step 210: Timestep t=90 -> t_next=89
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4100 | Crossed LPIPS: 0.7704 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6867 | Crossed LPIPS: 0.2893 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4401 | Crossed LPIPS: 0.6443 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5885 | Crossed LPIPS: 0.3505 | Swapped: True
+
+============================================================
+Step 211: Timestep t=89 -> t_next=88
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4131 | Crossed LPIPS: 0.7744 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6906 | Crossed LPIPS: 0.2899 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4468 | Crossed LPIPS: 0.6439 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5961 | Crossed LPIPS: 0.3500 | Swapped: True
+
+============================================================
+Step 212: Timestep t=88 -> t_next=87
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4163 | Crossed LPIPS: 0.7778 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6933 | Crossed LPIPS: 0.2904 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4489 | Crossed LPIPS: 0.6449 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5983 | Crossed LPIPS: 0.3481 | Swapped: True
+
+============================================================
+Step 213: Timestep t=87 -> t_next=86
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4180 | Crossed LPIPS: 0.7797 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6951 | Crossed LPIPS: 0.2905 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4474 | Crossed LPIPS: 0.6474 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5975 | Crossed LPIPS: 0.3460 | Swapped: True
+
+============================================================
+Step 214: Timestep t=86 -> t_next=85
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4163 | Crossed LPIPS: 0.7809 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6968 | Crossed LPIPS: 0.2903 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4457 | Crossed LPIPS: 0.6510 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5969 | Crossed LPIPS: 0.3450 | Swapped: True
+
+============================================================
+Step 215: Timestep t=85 -> t_next=84
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4120 | Crossed LPIPS: 0.7826 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6983 | Crossed LPIPS: 0.2901 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4457 | Crossed LPIPS: 0.6536 | Swapped: False
+  [PATH B] Straight LPIPS: 0.5984 | Crossed LPIPS: 0.3457 | Swapped: True
+
+============================================================
+Step 216: Timestep t=84 -> t_next=83
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4087 | Crossed LPIPS: 0.7845 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7006 | Crossed LPIPS: 0.2907 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4469 | Crossed LPIPS: 0.6539 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6016 | Crossed LPIPS: 0.3468 | Swapped: True
+
+============================================================
+Step 217: Timestep t=83 -> t_next=82
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4086 | Crossed LPIPS: 0.7877 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7037 | Crossed LPIPS: 0.2918 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4479 | Crossed LPIPS: 0.6531 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6052 | Crossed LPIPS: 0.3466 | Swapped: True
+
+============================================================
+Step 218: Timestep t=82 -> t_next=81
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4110 | Crossed LPIPS: 0.7927 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7085 | Crossed LPIPS: 0.2930 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4474 | Crossed LPIPS: 0.6542 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6076 | Crossed LPIPS: 0.3450 | Swapped: True
+
+============================================================
+Step 219: Timestep t=81 -> t_next=80
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4140 | Crossed LPIPS: 0.7995 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7153 | Crossed LPIPS: 0.2937 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4464 | Crossed LPIPS: 0.6584 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6087 | Crossed LPIPS: 0.3431 | Swapped: True
+
+============================================================
+Step 220: Timestep t=80 -> t_next=79
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4162 | Crossed LPIPS: 0.8063 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7238 | Crossed LPIPS: 0.2940 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4474 | Crossed LPIPS: 0.6651 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6089 | Crossed LPIPS: 0.3425 | Swapped: True
+
+============================================================
+Step 221: Timestep t=79 -> t_next=78
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4174 | Crossed LPIPS: 0.8108 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7317 | Crossed LPIPS: 0.2940 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4506 | Crossed LPIPS: 0.6705 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6085 | Crossed LPIPS: 0.3441 | Swapped: True
+
+============================================================
+Step 222: Timestep t=78 -> t_next=77
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4176 | Crossed LPIPS: 0.8115 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7366 | Crossed LPIPS: 0.2942 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4550 | Crossed LPIPS: 0.6701 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6098 | Crossed LPIPS: 0.3470 | Swapped: True
+
+============================================================
+Step 223: Timestep t=77 -> t_next=76
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4175 | Crossed LPIPS: 0.8090 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7376 | Crossed LPIPS: 0.2947 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4588 | Crossed LPIPS: 0.6659 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6130 | Crossed LPIPS: 0.3489 | Swapped: True
+
+============================================================
+Step 224: Timestep t=76 -> t_next=75
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4173 | Crossed LPIPS: 0.8060 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7360 | Crossed LPIPS: 0.2956 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4605 | Crossed LPIPS: 0.6619 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6174 | Crossed LPIPS: 0.3487 | Swapped: True
+
+============================================================
+Step 225: Timestep t=75 -> t_next=74
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4171 | Crossed LPIPS: 0.8053 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7348 | Crossed LPIPS: 0.2964 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4610 | Crossed LPIPS: 0.6618 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6221 | Crossed LPIPS: 0.3471 | Swapped: True
+
+============================================================
+Step 226: Timestep t=74 -> t_next=73
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4172 | Crossed LPIPS: 0.8089 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7369 | Crossed LPIPS: 0.2971 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4614 | Crossed LPIPS: 0.6667 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6265 | Crossed LPIPS: 0.3451 | Swapped: True
+
+============================================================
+Step 227: Timestep t=73 -> t_next=72
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4178 | Crossed LPIPS: 0.8169 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7440 | Crossed LPIPS: 0.2979 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4633 | Crossed LPIPS: 0.6757 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6308 | Crossed LPIPS: 0.3439 | Swapped: True
+
+============================================================
+Step 228: Timestep t=72 -> t_next=71
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4207 | Crossed LPIPS: 0.8264 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7559 | Crossed LPIPS: 0.2989 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4667 | Crossed LPIPS: 0.6838 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6336 | Crossed LPIPS: 0.3439 | Swapped: True
+
+============================================================
+Step 229: Timestep t=71 -> t_next=70
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4252 | Crossed LPIPS: 0.8333 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7686 | Crossed LPIPS: 0.3001 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4690 | Crossed LPIPS: 0.6855 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6344 | Crossed LPIPS: 0.3448 | Swapped: True
+
+============================================================
+Step 230: Timestep t=70 -> t_next=69
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4292 | Crossed LPIPS: 0.8367 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7790 | Crossed LPIPS: 0.3013 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4688 | Crossed LPIPS: 0.6825 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6345 | Crossed LPIPS: 0.3453 | Swapped: True
+
+============================================================
+Step 231: Timestep t=69 -> t_next=68
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4311 | Crossed LPIPS: 0.8380 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7864 | Crossed LPIPS: 0.3022 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4679 | Crossed LPIPS: 0.6803 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6359 | Crossed LPIPS: 0.3450 | Swapped: True
+
+============================================================
+Step 232: Timestep t=68 -> t_next=67
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4312 | Crossed LPIPS: 0.8398 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7910 | Crossed LPIPS: 0.3027 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4680 | Crossed LPIPS: 0.6817 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6389 | Crossed LPIPS: 0.3444 | Swapped: True
+
+============================================================
+Step 233: Timestep t=67 -> t_next=66
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4313 | Crossed LPIPS: 0.8442 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7949 | Crossed LPIPS: 0.3032 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4711 | Crossed LPIPS: 0.6872 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6433 | Crossed LPIPS: 0.3439 | Swapped: True
+
+============================================================
+Step 234: Timestep t=66 -> t_next=65
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4332 | Crossed LPIPS: 0.8513 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8005 | Crossed LPIPS: 0.3033 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4776 | Crossed LPIPS: 0.6951 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6483 | Crossed LPIPS: 0.3439 | Swapped: True
+
+============================================================
+Step 235: Timestep t=65 -> t_next=64
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4370 | Crossed LPIPS: 0.8588 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8076 | Crossed LPIPS: 0.3038 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4841 | Crossed LPIPS: 0.7001 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6516 | Crossed LPIPS: 0.3440 | Swapped: True
+
+============================================================
+Step 236: Timestep t=64 -> t_next=63
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4398 | Crossed LPIPS: 0.8634 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8137 | Crossed LPIPS: 0.3049 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4875 | Crossed LPIPS: 0.7006 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6518 | Crossed LPIPS: 0.3442 | Swapped: True
+
+============================================================
+Step 237: Timestep t=63 -> t_next=62
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4408 | Crossed LPIPS: 0.8651 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8190 | Crossed LPIPS: 0.3062 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4875 | Crossed LPIPS: 0.6982 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6502 | Crossed LPIPS: 0.3441 | Swapped: True
+
+============================================================
+Step 238: Timestep t=62 -> t_next=61
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4407 | Crossed LPIPS: 0.8656 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8240 | Crossed LPIPS: 0.3073 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4859 | Crossed LPIPS: 0.6959 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6503 | Crossed LPIPS: 0.3441 | Swapped: True
+
+============================================================
+Step 239: Timestep t=61 -> t_next=60
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4401 | Crossed LPIPS: 0.8668 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8287 | Crossed LPIPS: 0.3081 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4859 | Crossed LPIPS: 0.6963 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6542 | Crossed LPIPS: 0.3445 | Swapped: True
+
+============================================================
+Step 240: Timestep t=60 -> t_next=59
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4400 | Crossed LPIPS: 0.8692 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8337 | Crossed LPIPS: 0.3089 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4893 | Crossed LPIPS: 0.7004 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6615 | Crossed LPIPS: 0.3453 | Swapped: True
+
+============================================================
+Step 241: Timestep t=59 -> t_next=58
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4416 | Crossed LPIPS: 0.8736 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8405 | Crossed LPIPS: 0.3099 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4960 | Crossed LPIPS: 0.7070 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6701 | Crossed LPIPS: 0.3459 | Swapped: True
+
+============================================================
+Step 242: Timestep t=58 -> t_next=57
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4437 | Crossed LPIPS: 0.8800 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8497 | Crossed LPIPS: 0.3111 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5027 | Crossed LPIPS: 0.7134 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6764 | Crossed LPIPS: 0.3459 | Swapped: True
+
+============================================================
+Step 243: Timestep t=57 -> t_next=56
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4462 | Crossed LPIPS: 0.8857 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8611 | Crossed LPIPS: 0.3122 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5064 | Crossed LPIPS: 0.7176 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6794 | Crossed LPIPS: 0.3454 | Swapped: True
+
+============================================================
+Step 244: Timestep t=56 -> t_next=55
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4482 | Crossed LPIPS: 0.8895 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8725 | Crossed LPIPS: 0.3128 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5072 | Crossed LPIPS: 0.7203 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6799 | Crossed LPIPS: 0.3449 | Swapped: True
+
+============================================================
+Step 245: Timestep t=55 -> t_next=54
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4502 | Crossed LPIPS: 0.8923 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8825 | Crossed LPIPS: 0.3131 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5070 | Crossed LPIPS: 0.7223 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6807 | Crossed LPIPS: 0.3449 | Swapped: True
+
+============================================================
+Step 246: Timestep t=54 -> t_next=53
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4522 | Crossed LPIPS: 0.8957 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8909 | Crossed LPIPS: 0.3136 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5080 | Crossed LPIPS: 0.7250 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6836 | Crossed LPIPS: 0.3452 | Swapped: True
+
+============================================================
+Step 247: Timestep t=53 -> t_next=52
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4551 | Crossed LPIPS: 0.9019 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8993 | Crossed LPIPS: 0.3144 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5114 | Crossed LPIPS: 0.7290 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6888 | Crossed LPIPS: 0.3455 | Swapped: True
+
+============================================================
+Step 248: Timestep t=52 -> t_next=51
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4589 | Crossed LPIPS: 0.9110 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9092 | Crossed LPIPS: 0.3156 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5160 | Crossed LPIPS: 0.7340 | Swapped: False
+  [PATH B] Straight LPIPS: 0.6948 | Crossed LPIPS: 0.3453 | Swapped: True
+
+============================================================
+Step 249: Timestep t=51 -> t_next=50
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4629 | Crossed LPIPS: 0.9205 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9203 | Crossed LPIPS: 0.3169 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5196 | Crossed LPIPS: 0.7394 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7004 | Crossed LPIPS: 0.3446 | Swapped: True
+
+============================================================
+Step 250: Timestep t=50 -> t_next=49
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4661 | Crossed LPIPS: 0.9280 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9315 | Crossed LPIPS: 0.3177 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5211 | Crossed LPIPS: 0.7451 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7048 | Crossed LPIPS: 0.3436 | Swapped: True
+
+============================================================
+Step 251: Timestep t=49 -> t_next=48
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4683 | Crossed LPIPS: 0.9328 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9410 | Crossed LPIPS: 0.3182 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5213 | Crossed LPIPS: 0.7514 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7077 | Crossed LPIPS: 0.3425 | Swapped: True
+
+============================================================
+Step 252: Timestep t=48 -> t_next=47
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4701 | Crossed LPIPS: 0.9347 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9488 | Crossed LPIPS: 0.3187 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5216 | Crossed LPIPS: 0.7566 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7105 | Crossed LPIPS: 0.3419 | Swapped: True
+
+============================================================
+Step 253: Timestep t=47 -> t_next=46
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4723 | Crossed LPIPS: 0.9357 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9570 | Crossed LPIPS: 0.3194 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5243 | Crossed LPIPS: 0.7617 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7146 | Crossed LPIPS: 0.3417 | Swapped: True
+
+============================================================
+Step 254: Timestep t=46 -> t_next=45
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4760 | Crossed LPIPS: 0.9384 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9683 | Crossed LPIPS: 0.3206 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5288 | Crossed LPIPS: 0.7671 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7195 | Crossed LPIPS: 0.3417 | Swapped: True
+
+============================================================
+Step 255: Timestep t=45 -> t_next=44
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4813 | Crossed LPIPS: 0.9442 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9842 | Crossed LPIPS: 0.3223 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5330 | Crossed LPIPS: 0.7723 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7246 | Crossed LPIPS: 0.3417 | Swapped: True
+
+============================================================
+Step 256: Timestep t=44 -> t_next=43
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4877 | Crossed LPIPS: 0.9524 | Swapped: False
+  [PATH B] Straight LPIPS: 1.0029 | Crossed LPIPS: 0.3235 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5356 | Crossed LPIPS: 0.7764 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7299 | Crossed LPIPS: 0.3417 | Swapped: True
+
+============================================================
+Step 257: Timestep t=43 -> t_next=42
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4932 | Crossed LPIPS: 0.9610 | Swapped: False
+  [PATH B] Straight LPIPS: 1.0201 | Crossed LPIPS: 0.3241 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5369 | Crossed LPIPS: 0.7803 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7350 | Crossed LPIPS: 0.3417 | Swapped: True
+
+============================================================
+Step 258: Timestep t=42 -> t_next=41
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4961 | Crossed LPIPS: 0.9678 | Swapped: False
+  [PATH B] Straight LPIPS: 1.0328 | Crossed LPIPS: 0.3243 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5385 | Crossed LPIPS: 0.7846 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7396 | Crossed LPIPS: 0.3418 | Swapped: True
+
+============================================================
+Step 259: Timestep t=41 -> t_next=40
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4973 | Crossed LPIPS: 0.9725 | Swapped: False
+  [PATH B] Straight LPIPS: 1.0417 | Crossed LPIPS: 0.3246 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5414 | Crossed LPIPS: 0.7900 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7444 | Crossed LPIPS: 0.3416 | Swapped: True
+
+============================================================
+Step 260: Timestep t=40 -> t_next=39
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.4993 | Crossed LPIPS: 0.9764 | Swapped: False
+  [PATH B] Straight LPIPS: 1.0508 | Crossed LPIPS: 0.3253 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5463 | Crossed LPIPS: 0.7966 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7492 | Crossed LPIPS: 0.3410 | Swapped: True
+
+============================================================
+Step 261: Timestep t=39 -> t_next=38
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5039 | Crossed LPIPS: 0.9819 | Swapped: False
+  [PATH B] Straight LPIPS: 1.0634 | Crossed LPIPS: 0.3265 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5522 | Crossed LPIPS: 0.8037 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7543 | Crossed LPIPS: 0.3403 | Swapped: True
+
+============================================================
+Step 262: Timestep t=38 -> t_next=37
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5100 | Crossed LPIPS: 0.9891 | Swapped: False
+  [PATH B] Straight LPIPS: 1.0805 | Crossed LPIPS: 0.3280 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5578 | Crossed LPIPS: 0.8106 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7598 | Crossed LPIPS: 0.3398 | Swapped: True
+
+============================================================
+Step 263: Timestep t=37 -> t_next=36
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5169 | Crossed LPIPS: 0.9970 | Swapped: False
+  [PATH B] Straight LPIPS: 1.0989 | Crossed LPIPS: 0.3292 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5621 | Crossed LPIPS: 0.8160 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7657 | Crossed LPIPS: 0.3398 | Swapped: True
+
+============================================================
+Step 264: Timestep t=36 -> t_next=35
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5229 | Crossed LPIPS: 1.0046 | Swapped: False
+  [PATH B] Straight LPIPS: 1.1143 | Crossed LPIPS: 0.3301 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5643 | Crossed LPIPS: 0.8189 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7716 | Crossed LPIPS: 0.3405 | Swapped: True
+
+============================================================
+Step 265: Timestep t=35 -> t_next=34
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5271 | Crossed LPIPS: 1.0115 | Swapped: False
+  [PATH B] Straight LPIPS: 1.1235 | Crossed LPIPS: 0.3307 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5653 | Crossed LPIPS: 0.8200 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7770 | Crossed LPIPS: 0.3409 | Swapped: True
+
+============================================================
+Step 266: Timestep t=34 -> t_next=33
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5286 | Crossed LPIPS: 1.0174 | Swapped: False
+  [PATH B] Straight LPIPS: 1.1263 | Crossed LPIPS: 0.3313 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5669 | Crossed LPIPS: 0.8220 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7817 | Crossed LPIPS: 0.3404 | Swapped: True
+
+============================================================
+Step 267: Timestep t=33 -> t_next=32
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5291 | Crossed LPIPS: 1.0238 | Swapped: False
+  [PATH B] Straight LPIPS: 1.1281 | Crossed LPIPS: 0.3321 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5692 | Crossed LPIPS: 0.8265 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7854 | Crossed LPIPS: 0.3389 | Swapped: True
+
+============================================================
+Step 268: Timestep t=32 -> t_next=31
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5312 | Crossed LPIPS: 1.0333 | Swapped: False
+  [PATH B] Straight LPIPS: 1.1357 | Crossed LPIPS: 0.3329 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5700 | Crossed LPIPS: 0.8334 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7894 | Crossed LPIPS: 0.3370 | Swapped: True
+
+============================================================
+Step 269: Timestep t=31 -> t_next=30
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5376 | Crossed LPIPS: 1.0460 | Swapped: False
+  [PATH B] Straight LPIPS: 1.1514 | Crossed LPIPS: 0.3338 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5688 | Crossed LPIPS: 0.8418 | Swapped: False
+  [PATH B] Straight LPIPS: 0.7944 | Crossed LPIPS: 0.3354 | Swapped: True
+
+============================================================
+Step 270: Timestep t=30 -> t_next=29
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5474 | Crossed LPIPS: 1.0590 | Swapped: False
+  [PATH B] Straight LPIPS: 1.1716 | Crossed LPIPS: 0.3342 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5669 | Crossed LPIPS: 0.8490 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8002 | Crossed LPIPS: 0.3348 | Swapped: True
+
+============================================================
+Step 271: Timestep t=29 -> t_next=28
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5592 | Crossed LPIPS: 1.0686 | Swapped: False
+  [PATH B] Straight LPIPS: 1.1902 | Crossed LPIPS: 0.3345 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5669 | Crossed LPIPS: 0.8533 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8060 | Crossed LPIPS: 0.3355 | Swapped: True
+
+============================================================
+Step 272: Timestep t=28 -> t_next=27
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5672 | Crossed LPIPS: 1.0746 | Swapped: False
+  [PATH B] Straight LPIPS: 1.2026 | Crossed LPIPS: 0.3350 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5690 | Crossed LPIPS: 0.8537 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8102 | Crossed LPIPS: 0.3368 | Swapped: True
+
+============================================================
+Step 273: Timestep t=27 -> t_next=26
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5694 | Crossed LPIPS: 1.0808 | Swapped: False
+  [PATH B] Straight LPIPS: 1.2102 | Crossed LPIPS: 0.3356 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5717 | Crossed LPIPS: 0.8528 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8129 | Crossed LPIPS: 0.3375 | Swapped: True
+
+============================================================
+Step 274: Timestep t=26 -> t_next=25
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5677 | Crossed LPIPS: 1.0918 | Swapped: False
+  [PATH B] Straight LPIPS: 1.2178 | Crossed LPIPS: 0.3365 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5741 | Crossed LPIPS: 0.8544 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8159 | Crossed LPIPS: 0.3374 | Swapped: True
+
+============================================================
+Step 275: Timestep t=25 -> t_next=24
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5648 | Crossed LPIPS: 1.1111 | Swapped: False
+  [PATH B] Straight LPIPS: 1.2296 | Crossed LPIPS: 0.3378 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5768 | Crossed LPIPS: 0.8614 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8211 | Crossed LPIPS: 0.3367 | Swapped: True
+
+============================================================
+Step 276: Timestep t=24 -> t_next=23
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5650 | Crossed LPIPS: 1.1369 | Swapped: False
+  [PATH B] Straight LPIPS: 1.2465 | Crossed LPIPS: 0.3389 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5783 | Crossed LPIPS: 0.8718 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8285 | Crossed LPIPS: 0.3358 | Swapped: True
+
+============================================================
+Step 277: Timestep t=23 -> t_next=22
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5723 | Crossed LPIPS: 1.1621 | Swapped: False
+  [PATH B] Straight LPIPS: 1.2667 | Crossed LPIPS: 0.3396 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5795 | Crossed LPIPS: 0.8812 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8365 | Crossed LPIPS: 0.3351 | Swapped: True
+
+============================================================
+Step 278: Timestep t=22 -> t_next=21
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5850 | Crossed LPIPS: 1.1838 | Swapped: False
+  [PATH B] Straight LPIPS: 1.2854 | Crossed LPIPS: 0.3400 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5817 | Crossed LPIPS: 0.8874 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8423 | Crossed LPIPS: 0.3349 | Swapped: True
+
+============================================================
+Step 279: Timestep t=21 -> t_next=20
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.5975 | Crossed LPIPS: 1.1997 | Swapped: False
+  [PATH B] Straight LPIPS: 1.2992 | Crossed LPIPS: 0.3405 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5830 | Crossed LPIPS: 0.8899 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8457 | Crossed LPIPS: 0.3348 | Swapped: True
+
+============================================================
+Step 280: Timestep t=20 -> t_next=19
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6054 | Crossed LPIPS: 1.2110 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3080 | Crossed LPIPS: 0.3413 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5798 | Crossed LPIPS: 0.8889 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8470 | Crossed LPIPS: 0.3346 | Swapped: True
+
+============================================================
+Step 281: Timestep t=19 -> t_next=18
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6084 | Crossed LPIPS: 1.2243 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3146 | Crossed LPIPS: 0.3420 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5725 | Crossed LPIPS: 0.8871 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8478 | Crossed LPIPS: 0.3342 | Swapped: True
+
+============================================================
+Step 282: Timestep t=18 -> t_next=17
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6082 | Crossed LPIPS: 1.2407 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3222 | Crossed LPIPS: 0.3425 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5646 | Crossed LPIPS: 0.8874 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8502 | Crossed LPIPS: 0.3338 | Swapped: True
+
+============================================================
+Step 283: Timestep t=17 -> t_next=16
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6073 | Crossed LPIPS: 1.2593 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3327 | Crossed LPIPS: 0.3430 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5579 | Crossed LPIPS: 0.8901 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8551 | Crossed LPIPS: 0.3337 | Swapped: True
+
+============================================================
+Step 284: Timestep t=16 -> t_next=15
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6082 | Crossed LPIPS: 1.2782 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3457 | Crossed LPIPS: 0.3434 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5532 | Crossed LPIPS: 0.8945 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8616 | Crossed LPIPS: 0.3335 | Swapped: True
+
+============================================================
+Step 285: Timestep t=15 -> t_next=14
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6136 | Crossed LPIPS: 1.3005 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3593 | Crossed LPIPS: 0.3440 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5495 | Crossed LPIPS: 0.8994 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8677 | Crossed LPIPS: 0.3332 | Swapped: True
+
+============================================================
+Step 286: Timestep t=14 -> t_next=13
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6217 | Crossed LPIPS: 1.3245 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3725 | Crossed LPIPS: 0.3450 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5449 | Crossed LPIPS: 0.9049 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8720 | Crossed LPIPS: 0.3327 | Swapped: True
+
+============================================================
+Step 287: Timestep t=13 -> t_next=12
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6308 | Crossed LPIPS: 1.3503 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3847 | Crossed LPIPS: 0.3461 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5371 | Crossed LPIPS: 0.9117 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8745 | Crossed LPIPS: 0.3323 | Swapped: True
+
+============================================================
+Step 288: Timestep t=12 -> t_next=11
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6341 | Crossed LPIPS: 1.3735 | Swapped: False
+  [PATH B] Straight LPIPS: 1.3977 | Crossed LPIPS: 0.3469 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5265 | Crossed LPIPS: 0.9204 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8784 | Crossed LPIPS: 0.3317 | Swapped: True
+
+============================================================
+Step 289: Timestep t=11 -> t_next=10
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6335 | Crossed LPIPS: 1.3949 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4119 | Crossed LPIPS: 0.3474 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5160 | Crossed LPIPS: 0.9316 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8854 | Crossed LPIPS: 0.3312 | Swapped: True
+
+============================================================
+Step 290: Timestep t=10 -> t_next=9
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6342 | Crossed LPIPS: 1.4127 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4260 | Crossed LPIPS: 0.3474 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5085 | Crossed LPIPS: 0.9432 | Swapped: False
+  [PATH B] Straight LPIPS: 0.8948 | Crossed LPIPS: 0.3310 | Swapped: True
+
+============================================================
+Step 291: Timestep t=9 -> t_next=8
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6364 | Crossed LPIPS: 1.4277 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4375 | Crossed LPIPS: 0.3474 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5054 | Crossed LPIPS: 0.9540 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9054 | Crossed LPIPS: 0.3308 | Swapped: True
+
+============================================================
+Step 292: Timestep t=8 -> t_next=7
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6396 | Crossed LPIPS: 1.4443 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4472 | Crossed LPIPS: 0.3481 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5054 | Crossed LPIPS: 0.9645 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9170 | Crossed LPIPS: 0.3306 | Swapped: True
+
+============================================================
+Step 293: Timestep t=7 -> t_next=6
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6408 | Crossed LPIPS: 1.4651 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4577 | Crossed LPIPS: 0.3492 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.5031 | Crossed LPIPS: 0.9772 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9288 | Crossed LPIPS: 0.3302 | Swapped: True
+
+============================================================
+Step 294: Timestep t=6 -> t_next=5
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6385 | Crossed LPIPS: 1.4859 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4697 | Crossed LPIPS: 0.3501 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4956 | Crossed LPIPS: 0.9921 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9400 | Crossed LPIPS: 0.3297 | Swapped: True
+
+============================================================
+Step 295: Timestep t=5 -> t_next=4
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6330 | Crossed LPIPS: 1.5024 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4813 | Crossed LPIPS: 0.3508 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4828 | Crossed LPIPS: 1.0076 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9498 | Crossed LPIPS: 0.3290 | Swapped: True
+
+============================================================
+Step 296: Timestep t=4 -> t_next=3
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6258 | Crossed LPIPS: 1.5129 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4891 | Crossed LPIPS: 0.3508 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4709 | Crossed LPIPS: 1.0198 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9579 | Crossed LPIPS: 0.3284 | Swapped: True
+
+============================================================
+Step 297: Timestep t=3 -> t_next=2
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6226 | Crossed LPIPS: 1.5189 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4930 | Crossed LPIPS: 0.3509 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4641 | Crossed LPIPS: 1.0270 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9637 | Crossed LPIPS: 0.3283 | Swapped: True
+
+============================================================
+Step 298: Timestep t=2 -> t_next=1
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6210 | Crossed LPIPS: 1.5222 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4951 | Crossed LPIPS: 0.3514 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4625 | Crossed LPIPS: 1.0300 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9691 | Crossed LPIPS: 0.3283 | Swapped: True
+
+============================================================
+Step 299: Timestep t=1 -> t_next=0
+============================================================
+Pair 0:
+  [PATH A] Straight LPIPS: 0.6198 | Crossed LPIPS: 1.5244 | Swapped: False
+  [PATH B] Straight LPIPS: 1.4986 | Crossed LPIPS: 0.3522 | Swapped: True
+
+Pair 1:
+  [PATH A] Straight LPIPS: 0.4630 | Crossed LPIPS: 1.0314 | Swapped: False
+  [PATH B] Straight LPIPS: 0.9744 | Crossed LPIPS: 0.3282 | Swapped: True
+
