@@ -87,11 +87,19 @@ class Diffusion:
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
+                pred_avg = (best_pred_A + best_pred_B) / 2.0
+
+                residual = superimposed_image - pred_avg
+
+
+                pA_adj = (best_pred_A + residual).clamp(-1.0, 1.0)
+                pB_adj = (best_pred_B + residual).clamp(-1.0, 1.0)
+
                 # Renoising: Path A focuses on Image A, so noise it using the opposite GT
-                x_A = x_A - self.noise_images(best_pred_A, best_pred_B, t) + self.noise_images(best_pred_A, best_pred_B, t-1)
+                x_A = x_A - self.noise_images(pA_adj, pB_adj, t) + self.noise_images(pA_adj, pB_adj, t-1)
                 
                 # Renoising: Path B focuses on Image B, so noise it using the opposite GT
-                x_B = x_B - self.noise_images(best_pred_B, best_pred_A, t) + self.noise_images(best_pred_B, best_pred_A, t-1)
+                x_B = x_B - self.noise_images(pB_adj, pA_adj, t) + self.noise_images(pB_adj, pA_adj, t-1)
         
         model.train()
 
