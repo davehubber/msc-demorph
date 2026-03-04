@@ -81,8 +81,8 @@ class Diffusion:
                     best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
                     best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
                     
-                    anchor_A = best_pred_1.clone()
-                    anchor_B = best_pred_2.clone()
+                    anchor_A = torch.where(swap_mask_A, best_pred_1.clone(), anchor_A)
+                    anchor_B = torch.where(swap_mask_B, best_pred_2.clone(), anchor_B)
 
                 # Renoising: Respective best prediction is noised by the corresponding ground truth
                 x_A = x_A - self.noise_images(best_pred_1, aligned_gt_2, t) + self.noise_images(best_pred_1, aligned_gt_2, t-1)
@@ -624,7 +624,7 @@ def save_transitions(args):
 
     # 1. Setup Model & Diffusion
     model = UNet(c_in=3, c_out=6, device=device).to(device)
-    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device), weights_only=True))
     model.eval()
 
     diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
@@ -712,8 +712,8 @@ def save_transitions(args):
                 best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
                 best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
                 
-                anchor_A = best_pred_1.clone()
-                anchor_B = best_pred_2.clone()
+                anchor_A = torch.where(swap_mask_A, best_pred_1.clone(), anchor_A)
+                anchor_B = torch.where(swap_mask_B, best_pred_2.clone(), anchor_B)
 
             # --- Calculate the TACOS correction (Residuals) using current t ---
             corr_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t)
