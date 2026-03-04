@@ -36,6 +36,8 @@ class Diffusion:
         with torch.no_grad():
             x_A = superimposed_image.clone().to(self.device)
             x_B = superimposed_image.clone().to(self.device)
+
+            alpha_init_tensor = (self.alteration_per_t * init_timestep)[:, None, None, None].to(self.device)
             
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
@@ -77,10 +79,11 @@ class Diffusion:
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
-                alpha_t = (self.alteration_per_t * t)[:, None, None, None]
+                extracted_B_from_A = (superimposed_image - best_pred_A * (1. - alpha_init_tensor)) / alpha_init_tensor
+                extracted_A_from_B = (superimposed_image - best_pred_B * (1. - alpha_init_tensor)) / alpha_init_tensor
 
-                extracted_B_from_A = (x_A - best_pred_A * (1. - alpha_t)) / (alpha_t + 1e-8)
-                extracted_A_from_B = (x_B - best_pred_B * (1. - alpha_t)) / (alpha_t + 1e-8)
+                extracted_B_from_A = extracted_B_from_A.clamp(-1.0, 1.0)
+                extracted_A_from_B = extracted_A_from_B.clamp(-1.0, 1.0)
 
                 x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
                 x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
