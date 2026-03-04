@@ -13,7 +13,7 @@ class Diffusion:
         self.max_timesteps = max_timesteps
         self.img_size = img_size
         self.device = device
-        self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps
+        self.alteration_per_t = 1.0 / max_timesteps # (alpha_max - alpha_start) / max_timesteps
         
         # Initialize LPIPS once here so it doesn't reload on every sample call
         self.loss_fn_alex = lpips.LPIPS(net='alex').to(self.device)
@@ -21,13 +21,16 @@ class Diffusion:
 
     def noise_images(self, image_1, image_2, t):
         return image_1 * (1. - self.alteration_per_t * t)[:, None, None, None] + image_2 * (self.alteration_per_t * t)[:, None, None, None]
+    
+    def noise_images_superimposed(self, image, superimposed, t):
+        return image * (1. - self.alteration_per_t * t)[:, None, None, None] + superimposed * (self.alteration_per_t * t)[:, None, None, None]
 
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
 
     def sample(self, model, superimposed_image, gt_1, gt_2, alpha_init=0.5):
         n = len(superimposed_image)
-        init_timestep = math.ceil(alpha_init / self.alteration_per_t)
+        init_timestep = 300 # math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
 
         with torch.no_grad():
@@ -96,10 +99,10 @@ class Diffusion:
                 pB_adj = (best_pred_B + residual).clamp(-1.0, 1.0)
 
                 # Renoising: Path A focuses on Image A, so noise it using the opposite GT
-                x_A = x_A - self.noise_images(pA_adj, pB_adj, t) + self.noise_images(pA_adj, pB_adj, t-1)
+                x_A = x_A - self.noise_images_superimposed(best_pred_A, superimposed_image, t) + self.noise_images_superimposed(best_pred_A, superimposed_image, t-1)
                 
                 # Renoising: Path B focuses on Image B, so noise it using the opposite GT
-                x_B = x_B - self.noise_images(pB_adj, pA_adj, t) + self.noise_images(pB_adj, pA_adj, t-1)
+                x_B = x_B - self.noise_images_superimposed(best_pred_B, superimposed_image, t) + self.noise_images_superimposed(best_pred_B, superimposed_image, t-1)
         
         model.train()
 
