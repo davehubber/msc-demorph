@@ -1,7 +1,0 @@
-Size of test: 1000
-Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
-Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
-Saved 4-column transition grid for Pair 1 to results/dual_prediction_fixed/transitions/pair_1_full_transition.jpg
-Saved 4-column transition grid for Pair 3 to results/dual_prediction_fixed/transitions/pair_3_full_transition.jpg
-
-Saved highly readable LPIPS transition log to results/dual_prediction_fixed/transitions/lpips_log.txt

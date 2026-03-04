@@ -41,60 +41,70 @@ class Diffusion:
                 t = (torch.ones(n) * i).long().to(self.device)
 
                 if i == init_timestep:
+                    # Initial Prediction establishes the goals (Anchors)
                     p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
                     
-                    best_pred_1 = p_1.clamp(-1.0, 1.0)
-                    best_pred_2 = p_2.clamp(-1.0, 1.0)
+                    anchor_A = p_1.clamp(-1.0, 1.0)
+                    anchor_B = p_2.clamp(-1.0, 1.0)
                     
-                    anchor_A = best_pred_1.clone()
-                    anchor_B = best_pred_2.clone()
+                    # --- ALIGN GROUND TRUTHS USING MSE ---
+                    mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
+                                      F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
+                    mse_gt_crossed  = F.mse_loss(anchor_A, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
+                                      F.mse_loss(anchor_B, gt_1, reduction='none').view(n, -1).mean(dim=1)
                     
-                    # --- ALIGN GROUND TRUTHS USING LPIPS ---
-                    lpips_gt_straight = self.loss_fn_alex(anchor_A, gt_1) + self.loss_fn_alex(anchor_B, gt_2)
-                    lpips_gt_crossed  = self.loss_fn_alex(anchor_A, gt_2) + self.loss_fn_alex(anchor_B, gt_1)
+                    swap_mask_gt = (mse_gt_crossed < mse_gt_straight).view(-1, 1, 1, 1)
                     
-                    swap_mask_gt = (lpips_gt_crossed < lpips_gt_straight).view(-1, 1, 1, 1)
-                    
+                    # Target ground truths mapping respectively to Image A and Image B
                     aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
                     aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
+                    
+                    best_pred_A = anchor_A.clone()
+                    best_pred_B = anchor_B.clone()
                     
                 else:
                     pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                     pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
-                    # --- ALIGN PATH A USING LPIPS ---
-                    lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
-                    lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
+                    # --- ALIGN PATH A USING MSE ---
+                    mse_A_straight = F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                     F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                    mse_A_crossed  = F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                     F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
                     
-                    swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
+                    swap_mask_A = (mse_A_crossed < mse_A_straight).view(-1, 1, 1, 1)
                     pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
-                    pA_2_aligned = torch.where(swap_mask_A, pA_1, pA_2)
 
-                    # --- ALIGN PATH B USING LPIPS ---
-                    lpips_B_straight = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
-                    lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
+                    # --- ALIGN PATH B USING MSE ---
+                    # Fix applied: pB_1 inherently corresponds to anchor_A, pB_2 to anchor_B
+                    mse_B_straight = F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                     F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                    mse_B_crossed  = F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                     F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
                     
-                    swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
-                    pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
+                    swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
                     pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
 
-                    best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
-                    best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
+                    # Goals extracted from aligned paths
+                    best_pred_A = pA_1_aligned.clamp(-1.0, 1.0)
+                    best_pred_B = pB_2_aligned.clamp(-1.0, 1.0)
                     
-                    anchor_A = torch.where(swap_mask_A, best_pred_1.clone(), anchor_A)
-                    anchor_B = torch.where(swap_mask_B, best_pred_2.clone(), anchor_B)
+                    # Update Anchors ONLY if they swapped (shifted concepts)
+                    anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
+                    anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
-                # Renoising: Respective best prediction is noised by the corresponding ground truth
-                x_A = x_A - self.noise_images(best_pred_1, aligned_gt_2, t) + self.noise_images(best_pred_1, aligned_gt_2, t-1)
+                # Renoising: Path A focuses on Image A, so noise it using the opposite GT
+                x_A = x_A - self.noise_images(best_pred_A, aligned_gt_2, t) + self.noise_images(best_pred_A, aligned_gt_2, t-1)
                 
-                x_B = x_B - self.noise_images(best_pred_2, aligned_gt_1, t) + self.noise_images(best_pred_2, aligned_gt_1, t-1)
+                # Renoising: Path B focuses on Image B, so noise it using the opposite GT
+                x_B = x_B - self.noise_images(best_pred_B, aligned_gt_1, t) + self.noise_images(best_pred_B, aligned_gt_1, t-1)
         
         model.train()
 
-        final_A = (pA_1_aligned.clamp(-1.0, 1.0) + 1) / 2
+        final_A = (best_pred_A + 1) / 2
         final_A = (final_A * 255).type(torch.uint8)
         
-        final_B = (pB_1_aligned.clamp(-1.0, 1.0) + 1) / 2
+        final_B = (best_pred_B + 1) / 2
         final_B = (final_B * 255).type(torch.uint8)
 
         return final_A, final_B
@@ -638,12 +648,10 @@ def save_transitions(args):
     n = len(superimposed)
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
-    # Check for custom sampling steps, default to full schedule if not provided
     sampling_steps = getattr(args, 'sampling_steps', init_timestep)
     if sampling_steps is None:
         sampling_steps = init_timestep
 
-    # Generate the strided timeline and target jump steps
     times = torch.linspace(init_timestep, 1, sampling_steps).round().long().tolist()
     times_next = times[1:] + [0]
     
@@ -652,112 +660,78 @@ def save_transitions(args):
     pred_A_2 = {0: [], 1: []}
     pred_B_1 = {0: [], 1: []}
     pred_B_2 = {0: [], 1: []}
-    
-    # Setup directory for saving images and logs
-    save_dir = os.path.join("results", args.run_name, "transitions")
-    os.makedirs(save_dir, exist_ok=True)
-    log_file_path = os.path.join(save_dir, "lpips_log.txt")
 
     # 3. Custom Loop: Reverse Path Diffusion
-    with torch.no_grad(), open(log_file_path, "w") as log_file:
-        log_file.write(f"--- LPIPS Transitions Log (Run: {args.run_name}) ---\n\n")
-
+    with torch.no_grad():
         x_A = superimposed.clone()
         x_B = superimposed.clone()
         
         gt_1 = images.clamp(-1.0, 1.0)
         gt_2 = images_add.clamp(-1.0, 1.0)
         
-        for step_count, (i, next_i) in enumerate(zip(times, times_next)):
+        for i, next_i in zip(times, times_next):
             t = (torch.ones(n) * i).long().to(device)
             t_next = (torch.ones(n) * next_i).long().to(device)
             
-            # Write a clear step header in the log
-            log_file.write(f"============================================================\n")
-            log_file.write(f"Step {step_count}: Timestep t={i} -> t_next={next_i}\n")
-            log_file.write(f"============================================================\n")
-
             if i == times[0]:
                 p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 
-                best_pred_1 = p_1.clamp(-1.0, 1.0)
-                best_pred_2 = p_2.clamp(-1.0, 1.0)
-
-                anchor_A = best_pred_1.clone()
-                anchor_B = best_pred_2.clone()
+                anchor_A = p_1.clamp(-1.0, 1.0)
+                anchor_B = p_2.clamp(-1.0, 1.0)
                 
-                # --- ALIGN GROUND TRUTHS USING LPIPS ---
-                lpips_gt_straight = diffusion.loss_fn_alex(anchor_A, gt_1) + diffusion.loss_fn_alex(anchor_B, gt_2)
-                lpips_gt_crossed  = diffusion.loss_fn_alex(anchor_A, gt_2) + diffusion.loss_fn_alex(anchor_B, gt_1)
+                # --- ALIGN GROUND TRUTHS USING MSE ---
+                mse_gt_straight = F.mse_loss(anchor_A, gt_1, reduction='none').view(n, -1).mean(dim=1) + \
+                                  F.mse_loss(anchor_B, gt_2, reduction='none').view(n, -1).mean(dim=1)
+                mse_gt_crossed  = F.mse_loss(anchor_A, gt_2, reduction='none').view(n, -1).mean(dim=1) + \
+                                  F.mse_loss(anchor_B, gt_1, reduction='none').view(n, -1).mean(dim=1)
                 
-                swap_mask_gt = (lpips_gt_crossed < lpips_gt_straight).view(-1, 1, 1, 1)
+                swap_mask_gt = (mse_gt_crossed < mse_gt_straight).view(-1, 1, 1, 1)
                 aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
                 aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
                 
-                # Format GT logs as lists to easily iterate over pairs
-                lpips_gt_s_val = lpips_gt_straight.view(-1).tolist()
-                lpips_gt_c_val = lpips_gt_crossed.view(-1).tolist()
-                swap_gt_val = swap_mask_gt.view(-1).tolist()
-
-                for b_idx in range(n):
-                    log_file.write(f"Pair {b_idx} (Initial Alignment vs Ground Truth):\n")
-                    log_file.write(f"  Straight LPIPS : {lpips_gt_s_val[b_idx]:.4f}\n")
-                    log_file.write(f"  Crossed LPIPS  : {lpips_gt_c_val[b_idx]:.4f}\n")
-                    log_file.write(f"  Swapped?       : {swap_gt_val[b_idx]}\n\n")
-
-                # At step 0, since x_A and x_B are identical, predictions are identical
-                pA_1_aligned = best_pred_1
-                pA_2_aligned = best_pred_2
-                pB_1_aligned = best_pred_1
-                pB_2_aligned = best_pred_2
+                pA_1_aligned = anchor_A
+                pA_2_aligned = anchor_B
+                pB_1_aligned = anchor_A
+                pB_2_aligned = anchor_B
+                
+                best_pred_A = anchor_A.clone()
+                best_pred_B = anchor_B.clone()
                 
             else:
                 pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                 pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
-                # --- ALIGN PATH A USING LPIPS ---
-                lpips_A_straight = diffusion.loss_fn_alex(pA_1, anchor_A) + diffusion.loss_fn_alex(pA_2, anchor_B)
-                lpips_A_crossed  = diffusion.loss_fn_alex(pA_1, anchor_B) + diffusion.loss_fn_alex(pA_2, anchor_A)
+                # --- ALIGN PATH A USING MSE ---
+                mse_A_straight = F.mse_loss(pA_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pA_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                mse_A_crossed  = F.mse_loss(pA_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pA_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
                 
-                swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
+                swap_mask_A = (mse_A_crossed < mse_A_straight).view(-1, 1, 1, 1)
                 pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
                 pA_2_aligned = torch.where(swap_mask_A, pA_1, pA_2)
 
-                # --- ALIGN PATH B USING LPIPS ---
-                lpips_B_straight = diffusion.loss_fn_alex(pB_1, anchor_B) + diffusion.loss_fn_alex(pB_2, anchor_A)
-                lpips_B_crossed  = diffusion.loss_fn_alex(pB_1, anchor_A) + diffusion.loss_fn_alex(pB_2, anchor_B)
+                # --- ALIGN PATH B USING MSE ---
+                mse_B_straight = F.mse_loss(pB_1, anchor_A, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pB_2, anchor_B, reduction='none').view(n, -1).mean(dim=1)
+                mse_B_crossed  = F.mse_loss(pB_1, anchor_B, reduction='none').view(n, -1).mean(dim=1) + \
+                                 F.mse_loss(pB_2, anchor_A, reduction='none').view(n, -1).mean(dim=1)
                 
-                swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
+                swap_mask_B = (mse_B_crossed < mse_B_straight).view(-1, 1, 1, 1)
                 pB_1_aligned = torch.where(swap_mask_B, pB_2, pB_1)
                 pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
 
-                # Format Path A and Path B LPIPS values into lists for logging
-                lpips_A_s_val = lpips_A_straight.view(-1).tolist()
-                lpips_A_c_val = lpips_A_crossed.view(-1).tolist()
-                swap_A_val = swap_mask_A.view(-1).tolist()
-
-                lpips_B_s_val = lpips_B_straight.view(-1).tolist()
-                lpips_B_c_val = lpips_B_crossed.view(-1).tolist()
-                swap_B_val = swap_mask_B.view(-1).tolist()
-
-                # Write metrics to log file
-                for b_idx in range(n):
-                    log_file.write(f"Pair {b_idx}:\n")
-                    log_file.write(f"  [PATH A] Straight LPIPS: {lpips_A_s_val[b_idx]:.4f} | Crossed LPIPS: {lpips_A_c_val[b_idx]:.4f} | Swapped: {swap_A_val[b_idx]}\n")
-                    log_file.write(f"  [PATH B] Straight LPIPS: {lpips_B_s_val[b_idx]:.4f} | Crossed LPIPS: {lpips_B_c_val[b_idx]:.4f} | Swapped: {swap_B_val[b_idx]}\n\n")
-
-                best_pred_1 = pA_1_aligned.clamp(-1.0, 1.0)
-                best_pred_2 = pB_1_aligned.clamp(-1.0, 1.0)
+                best_pred_A = pA_1_aligned.clamp(-1.0, 1.0)
+                best_pred_B = pB_2_aligned.clamp(-1.0, 1.0)
                 
-                # Only update anchors if they swapped!
-                # anchor_A = torch.where(swap_mask_A, best_pred_1.clone(), anchor_A)
-                # anchor_B = torch.where(swap_mask_B, best_pred_2.clone(), anchor_B)
+                anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
+                anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
-            # --- Calculate the TACOS correction (Residuals) using current t ---
-            corr_A = x_A - diffusion.noise_images(best_pred_1, aligned_gt_2, t)
-            corr_B = x_B - diffusion.noise_images(best_pred_2, aligned_gt_1, t)
+            # --- TACOS correction ---
+            corr_A = x_A - diffusion.noise_images(best_pred_A, aligned_gt_2, t)
+            corr_B = x_B - diffusion.noise_images(best_pred_B, aligned_gt_1, t)
 
-            # 4. Save current timestep visuals (4 Columns)
+            # 4. Save current timestep visuals
             for b_idx in range(n):
                 show_pA1 = (pA_1_aligned[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
                 show_pA2 = (pA_2_aligned[b_idx].clone().clamp(-1.0, 1.0) + 1) / 2
@@ -769,17 +743,18 @@ def save_transitions(args):
                 pred_B_1[b_idx].append(show_pB1)
                 pred_B_2[b_idx].append(show_pB2)
 
-            # Renoising: Jumps directly to t_next
-            x_A = corr_A + diffusion.noise_images(best_pred_1, aligned_gt_2, t_next)
-            x_B = corr_B + diffusion.noise_images(best_pred_2, aligned_gt_1, t_next)
+            # Renoising jumps directly to t_next
+            x_A = corr_A + diffusion.noise_images(best_pred_A, aligned_gt_2, t_next)
+            x_B = corr_B + diffusion.noise_images(best_pred_B, aligned_gt_1, t_next)
             
     # 5. Output Image Grids
+    save_dir = os.path.join("results", args.run_name, "transitions")
+    os.makedirs(save_dir, exist_ok=True)
     original_indices = [1, 3]
     
     for b_idx, real_idx in enumerate(original_indices):
         pair_sequence = []
         for step_idx in range(len(pred_A_1[b_idx])):
-            # Layout: Pred 1 (Path A) | Pred 2 (Path A) | Pred 1 (Path B) | Pred 2 (Path B)
             pair_sequence.append(pred_A_1[b_idx][step_idx])
             pair_sequence.append(pred_A_2[b_idx][step_idx])
             pair_sequence.append(pred_B_1[b_idx][step_idx])
@@ -788,12 +763,8 @@ def save_transitions(args):
         grid_tensor = torch.stack(pair_sequence)
         save_path = os.path.join(save_dir, f"pair_{real_idx}_full_transition.jpg")
         
-        # nrow=4 matches our 4 columns
         save_image(grid_tensor, save_path, nrow=4)
         print(f"Saved 4-column transition grid for Pair {real_idx} to {save_path}")
-        
-    # Let the user know the log was created successfully
-    print(f"\nSaved highly readable LPIPS transition log to {log_file_path}")
 
 def verify_tacos_step(args):
     device = args.device
