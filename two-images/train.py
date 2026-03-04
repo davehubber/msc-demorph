@@ -8,32 +8,27 @@ from modules import UNet
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
 
 class Diffusion:
-    def __init__(self, max_timesteps=300, alpha_start=0., alpha_max=0.5, img_size=256, device="cuda"):
+    def __init__(self, max_timesteps=300, img_size=256, device="cuda"):
         self.max_timesteps = max_timesteps
         self.img_size = img_size
         self.device = device
-        self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps
         
         # Initialize LPIPS once here so it doesn't reload on every sample call
         self.loss_fn_alex = lpips.LPIPS(net='alex').to(self.device)
         self.loss_fn_alex.eval()
 
-    def noise_images(self, image_1, image_2, t):
-        return image_1 * (1. - self.alteration_per_t * t)[:, None, None, None] + image_2 * (self.alteration_per_t * t)[:, None, None, None]
-    
-    def noise_images_superimposed(self, image, superimposed, t):
-        return image * (1. - self.alteration_per_t * t)[:, None, None, None] + superimposed * (self.alteration_per_t * t)[:, None, None, None]
+    def noise_images(self, image, superimposed, t):
+        # Linear interpolation: t=0 gives the single image, t=max_timesteps gives the 50/50 superimposed image
+        t_frac = (t / self.max_timesteps)[:, None, None, None]
+        return image * (1. - t_frac) + superimposed * t_frac
 
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, alpha_init=0.5):
+    def sample(self, model, superimposed_image):
         n = len(superimposed_image)
-        init_timestep = math.ceil(alpha_init / self.alteration_per_t)
+        init_timestep = self.max_timesteps
         model.eval()
-
-        # Calculate the exact float alpha used at the initial timestep
-        actual_alpha_init = self.alteration_per_t * init_timestep
 
         with torch.no_grad():
             x_A = superimposed_image.clone().to(self.device)
@@ -41,6 +36,7 @@ class Diffusion:
 
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
+                t_prev = (torch.ones(n) * (i - 1)).long().to(self.device)
 
                 if i == init_timestep:
                     # Initial Prediction establishes the goals (Anchors)
@@ -78,18 +74,10 @@ class Diffusion:
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
-                # --- ALGEBRAIC EXTRACTION (From Initial State) ---
-                # Using the original superimposed_image and the scalar actual_alpha_init
-                extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
-                extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
-                
-                # Clamp the extracted replicas to prevent numerical overshoots
-                extracted_B_from_A = extracted_B_from_A.clamp(-1.0, 1.0)
-                extracted_A_from_B = extracted_A_from_B.clamp(-1.0, 1.0)
-
                 # --- RENOISE (COLD DIFFUSION STEP) ---
-                x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
-                x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
+                # Applying TACOS update using directly the known superimposed image as the M concept
+                x_A = x_A - self.noise_images(best_pred_A, superimposed_image, t) + self.noise_images(best_pred_A, superimposed_image, t_prev)
+                x_B = x_B - self.noise_images(best_pred_B, superimposed_image, t) + self.noise_images(best_pred_B, superimposed_image, t_prev)
         
         model.train()
 
@@ -101,16 +89,22 @@ class Diffusion:
 
         return final_A, final_B
 
+
 def train(args):
     setup_logging(args.run_name)
     device = args.device
     train_dataloader = get_data(args, 'train')
     test_dataloader = get_data(args, 'test')
 
+    # Get fixed 4 images from testing data for regular visual tracking
+    fixed_test_batch = next(iter(test_dataloader))
+    fixed_images = fixed_test_batch[0][:4].to(device)
+    fixed_images_add = fixed_test_batch[1][:4].to(device)
+
     model = UNet(c_in=3, c_out=6, device=device).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
 
-    diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+    diffusion = Diffusion(img_size=args.image_size, device=device)
 
     wandb.init(
         project="demorph",
@@ -125,14 +119,19 @@ def train(args):
         for _, (images, images_add) in enumerate(train_dataloader):
             images = images.to(device)
             images_add = images_add.to(device)
+            
+            # The perfect 50/50 superimposed average (constant target for max timestep)
+            superimposed = (images + images_add) / 2.
 
+            # Permutation invariant start (selects one of the components as the start)
             if torch.rand(1).item() > 0.5:
                 images, images_add = images_add, images
 
             t = diffusion.sample_timesteps(images.shape[0]).to(device)
 
             with torch.amp.autocast("cuda"):
-                x_t = diffusion.noise_images(images, images_add, t)
+                # Forward noise interpolating single image and perfect average
+                x_t = diffusion.noise_images(images, superimposed, t)
 
                 predicted_both = model(x_t, t)
                 pred_1, pred_2 = torch.chunk(predicted_both, 2, dim=1)
@@ -157,32 +156,21 @@ def train(args):
                     "epoch": epoch
                 })
 
-        # Sample and save images every 10 epochs (No metric calculation)
+        # Sample and save the SAME 4 images every 10 epochs
         if (epoch + 1) % 10 == 0:
-            for _, (images, images_add) in enumerate(test_dataloader):
-                images = images.to(device)
-                images_add = images_add.to(device)
+            superimposed = (fixed_images + fixed_images_add) / 2.
+            
+            sampled_A, sampled_B = diffusion.sample(model, superimposed)
 
-                superimposed = (images + images_add) / 2.
-                # Passed ground truth images here
-                sampled_A, sampled_B = diffusion.sample(model, superimposed, alpha_init=args.alpha_init)
+            fixed_images_vis = (fixed_images.clamp(-1, 1) + 1) / 2
+            fixed_images_vis = (fixed_images_vis * 255).type(torch.uint8)
+            fixed_images_add_vis = (fixed_images_add.clamp(-1, 1) + 1) / 2
+            fixed_images_add_vis = (fixed_images_add_vis * 255).type(torch.uint8)
 
-                images = (images.clamp(-1, 1) + 1) / 2
-                images = (images * 255).type(torch.uint8)
-                images_add = (images_add.clamp(-1, 1) + 1) / 2
-                images_add = (images_add * 255).type(torch.uint8)
-
-                save_images(sampled_A, sampled_B, images, images_add, os.path.join("results", args.run_name, f"{epoch+1}.jpg"))
-                break
+            save_images(sampled_A, sampled_B, fixed_images_vis, fixed_images_add_vis, os.path.join("results", args.run_name, f"{epoch+1}.jpg"))
         
         torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
 
-def calculate_metrics(image, add_image, result_ori_image, result_add_image):
-    ssim_original = structural_similarity(image, result_ori_image, data_range=255, channel_axis=-1)
-    ssim_added = structural_similarity(add_image, result_add_image, data_range=255, channel_axis=-1)
-    psnr_original = peak_signal_noise_ratio(image, result_ori_image, data_range=255)
-    psnr_added = peak_signal_noise_ratio(add_image, result_add_image, data_range=255)
-    return ssim_original, ssim_added, psnr_original, psnr_added
 
 def eval(args):
     device = args.device
@@ -196,7 +184,6 @@ def eval(args):
 
     loss_fn_alex = lpips.LPIPS(net='alex').to(device)
 
-    # 1. Track metrics separately for Image 1 and Image 2
     results = {
         "ssim_1": [], "ssim_2": [], 
         "psnr_1": [], "psnr_2": [], 
@@ -207,11 +194,9 @@ def eval(args):
     
     saved_grid = False
 
-    # Ensure output directories exist before writing files
     os.makedirs(os.path.join("samples", args.sampling_name), exist_ok=True)
     os.makedirs(os.path.join("results", args.run_name), exist_ok=True)
     
-    # Create a directory specifically for the individual separated images
     ind_dir = os.path.join("samples", args.sampling_name, "individual")
     os.makedirs(ind_dir, exist_ok=True)
 
@@ -222,8 +207,7 @@ def eval(args):
         superimposed = (images + images_add) / 2.
         superimposed_np = ((superimposed.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8).cpu().permute(0, 2, 3, 1).numpy()
 
-        # Passed ground truth images here
-        sampled_A, sampled_B = diffusion.sample(model, superimposed, args.alpha_init)
+        sampled_A, sampled_B = diffusion.sample(model, superimposed)
         
         gt_A_eval = ((images.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
         gt_B_eval = ((images_add.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
@@ -260,7 +244,6 @@ def eval(args):
             l_A = loss_fn_alex(images[k], (tensor_s_A.float() / 127.5) - 1.0).item()
             l_B = loss_fn_alex(images_add[k], (tensor_s_B.float() / 127.5) - 1.0).item()
 
-            # Append metrics independently
             results["ssim_1"].append(s_A)
             results["ssim_2"].append(s_B)
             results["psnr_1"].append(p_A)
@@ -271,7 +254,6 @@ def eval(args):
             ssim_avg_A = structural_similarity(cur_gt_A, cur_super, data_range=255, channel_axis=-1)
             ssim_avg_B = structural_similarity(cur_gt_B, cur_super, data_range=255, channel_axis=-1)
 
-            # Track success independently
             if s_A > ssim_avg_A:
                 results["success_count_1"] += 1
             if s_B > ssim_avg_B:
@@ -285,11 +267,10 @@ def eval(args):
             aligned_A_stack = torch.stack(batch_s_A)
             aligned_B_stack = torch.stack(batch_s_B)
             
-            # Still save the grid for a quick overview
+            # Save the evaluation grid containing the whole first batch showing GT, Avg, and Separation perfectly aligned
             save_images(aligned_A_stack, aligned_B_stack, gt_A_eval, gt_B_eval, 
                         os.path.join("samples", args.sampling_name, "eval_grid.jpg"))
             
-            # 2. Save individual image files
             for b_idx in range(len(batch_s_A)):
                 img_A_np = batch_s_A[b_idx].cpu().permute(1, 2, 0).numpy()
                 img_B_np = batch_s_B[b_idx].cpu().permute(1, 2, 0).numpy()
@@ -299,7 +280,6 @@ def eval(args):
 
             saved_grid = True
 
-    # Calculate final averages
     avg_ssim_1, avg_ssim_2 = np.mean(results["ssim_1"]), np.mean(results["ssim_2"])
     avg_psnr_1, avg_psnr_2 = np.mean(results["psnr_1"]), np.mean(results["psnr_2"])
     avg_lpips_1, avg_lpips_2 = np.mean(results["lpips_1"]), np.mean(results["lpips_2"])
@@ -330,8 +310,6 @@ def launch():
     parser.add_argument('--dataset_path', help='Path to dataset', required=True)
     parser.add_argument('--run_name', help='Name of the experiment for saving models and results', required=True)
     parser.add_argument('--partition_file', help='CSV file with test indexes', required=True)
-    parser.add_argument('--alpha_max', default=0.5, type=float, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max', required=False)
-    parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
     parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
     parser.add_argument('--batch_size', default=16, help='Batch size', type=int, required=False)
     parser.add_argument('--epochs', default=800, help='Number of epochs', type=int, required=False)
