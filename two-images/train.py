@@ -6,7 +6,6 @@ from torch import optim
 from utils import *
 from modules import UNet
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
-from lpips_pytorch import lpips
 from torchvision.utils import save_image
 
 class Diffusion:
