@@ -28,127 +28,124 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
 
-    import math
-import torch
+    def sample(self, model, superimposed_image, gt_1, gt_2, alpha_init=0.5):
+            n = len(superimposed_image)
+            init_timestep = math.ceil(alpha_init / self.alteration_per_t)
+            model.eval()
 
-def sample(self, model, superimposed_image, gt_1, gt_2, alpha_init=0.5):
-        n = len(superimposed_image)
-        init_timestep = math.ceil(alpha_init / self.alteration_per_t)
-        model.eval()
+            with torch.no_grad():
+                x_A = superimposed_image.clone().to(self.device)
+                x_B = superimposed_image.clone().to(self.device)
+                
+                gt_1 = gt_1.to(self.device).clamp(-1.0, 1.0)
+                gt_2 = gt_2.to(self.device).clamp(-1.0, 1.0)
 
-        with torch.no_grad():
-            x_A = superimposed_image.clone().to(self.device)
-            x_B = superimposed_image.clone().to(self.device)
+                for i in reversed(range(1, init_timestep + 1)):
+                    t = (torch.ones(n) * i).long().to(self.device)
+                    
+                    # Determine alpha for current (t) and previous (t-1) steps
+                    alpha_t = i * self.alteration_per_t
+                    alpha_prev = (i - 1) * self.alteration_per_t
+
+                    if i == init_timestep:
+                        # Initial Prediction establishes the goals (Anchors)
+                        p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
+                        
+                        anchor_A = p_1.clamp(-1.0, 1.0)
+                        anchor_B = p_2.clamp(-1.0, 1.0)
+                        
+                        # --- ALIGN GROUND TRUTHS USING LPIPS ---
+                        lpips_gt_straight = self.loss_fn_alex(anchor_A, gt_1) + self.loss_fn_alex(anchor_B, gt_2)
+                        lpips_gt_crossed  = self.loss_fn_alex(anchor_A, gt_2) + self.loss_fn_alex(anchor_B, gt_1)
+                        
+                        swap_mask_gt = (lpips_gt_crossed < lpips_gt_straight).view(-1, 1, 1, 1)
+                        
+                        # Target ground truths mapping respectively to Image A and Image B
+                        aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
+                        aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
+                        
+                        best_pred_A = anchor_A.clone()
+                        best_pred_B = anchor_B.clone()
+                        
+                    else:
+                        pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
+                        pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
+
+                        # --- ALIGN PATH A USING LPIPS ---
+                        lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
+                        lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
+                        
+                        swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
+                        pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
+
+                        # --- ALIGN PATH B USING LPIPS ---
+                        lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
+                        lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
+                        
+                        swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
+                        pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
+
+                        # Goals extracted from aligned paths
+                        best_pred_A = pA_1_aligned.clamp(-1.0, 1.0)
+                        best_pred_B = pB_2_aligned.clamp(-1.0, 1.0)
+                        
+                        # Update Anchors ONLY if they swapped (shifted concepts)
+                        anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
+                        anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
+
+                    # ==========================================
+                    # EXACT SAMPLING WITH ERROR REMOVAL
+                    # ==========================================
+                    
+                    # --- PATH A ---
+                    # 1. Estimate the added image from the predicted original image (Eq 8)
+                    add_A = (x_A - (1 - alpha_t) * best_pred_A) / alpha_t
+                    
+                    # 2. Estimate initial image to calculate error
+                    init_est_A = (1 - alpha_init) * best_pred_A + alpha_init * add_A
+                    
+                    # Prevent division by zero at t_init when alpha_t == alpha_init
+                    if abs(alpha_init - alpha_t) < 1e-6:
+                        eps_A = torch.zeros_like(x_A)
+                    else:
+                        # Calculate error (Eq 7)
+                        eps_A = ((1 - alpha_t) / (alpha_init - alpha_t)) * (init_est_A - superimposed_image)
+                    
+                    add_A_corr = add_A - eps_A
+                    
+                    # 3. Calculate previous timestep using corrected added image (Eq 5)
+                    x_A = ((1 - alpha_prev) / (1 - alpha_t)) * x_A - ((alpha_t - alpha_prev) / (1 - alpha_t)) * add_A_corr
+
+
+                    # --- PATH B ---
+                    # 1. Estimate the added image from the predicted original image (Eq 8)
+                    add_B = (x_B - (1 - alpha_t) * best_pred_B) / alpha_t
+                    
+                    # 2. Estimate initial image to calculate error
+                    init_est_B = (1 - alpha_init) * best_pred_B + alpha_init * add_B
+                    
+                    # Prevent division by zero at t_init when alpha_t == alpha_init
+                    if abs(alpha_init - alpha_t) < 1e-6:
+                        eps_B = torch.zeros_like(x_B)
+                    else:
+                        # Calculate error (Eq 7)
+                        eps_B = ((1 - alpha_t) / (alpha_init - alpha_t)) * (init_est_B - superimposed_image)
+                        
+                    add_B_corr = add_B - eps_B
+                    
+                    # 3. Calculate previous timestep using corrected added image (Eq 5)
+                    x_B = ((1 - alpha_prev) / (1 - alpha_t)) * x_B - ((alpha_t - alpha_prev) / (1 - alpha_t)) * add_B_corr
+
             
-            gt_1 = gt_1.to(self.device).clamp(-1.0, 1.0)
-            gt_2 = gt_2.to(self.device).clamp(-1.0, 1.0)
+            model.train()
 
-            for i in reversed(range(1, init_timestep + 1)):
-                t = (torch.ones(n) * i).long().to(self.device)
-                
-                # Determine alpha for current (t) and previous (t-1) steps
-                alpha_t = i * self.alteration_per_t
-                alpha_prev = (i - 1) * self.alteration_per_t
+            final_A = (best_pred_A + 1) / 2
+            final_A = (final_A * 255).type(torch.uint8)
+            
+            final_B = (best_pred_B + 1) / 2
+            final_B = (final_B * 255).type(torch.uint8)
 
-                if i == init_timestep:
-                    # Initial Prediction establishes the goals (Anchors)
-                    p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
-                    
-                    anchor_A = p_1.clamp(-1.0, 1.0)
-                    anchor_B = p_2.clamp(-1.0, 1.0)
-                    
-                    # --- ALIGN GROUND TRUTHS USING LPIPS ---
-                    lpips_gt_straight = self.loss_fn_alex(anchor_A, gt_1) + self.loss_fn_alex(anchor_B, gt_2)
-                    lpips_gt_crossed  = self.loss_fn_alex(anchor_A, gt_2) + self.loss_fn_alex(anchor_B, gt_1)
-                    
-                    swap_mask_gt = (lpips_gt_crossed < lpips_gt_straight).view(-1, 1, 1, 1)
-                    
-                    # Target ground truths mapping respectively to Image A and Image B
-                    aligned_gt_1 = torch.where(swap_mask_gt, gt_2, gt_1)
-                    aligned_gt_2 = torch.where(swap_mask_gt, gt_1, gt_2)
-                    
-                    best_pred_A = anchor_A.clone()
-                    best_pred_B = anchor_B.clone()
-                    
-                else:
-                    pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
-                    pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
-
-                    # --- ALIGN PATH A USING LPIPS ---
-                    lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
-                    lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
-                    
-                    swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
-                    pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
-
-                    # --- ALIGN PATH B USING LPIPS ---
-                    lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
-                    lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
-                    
-                    swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
-                    pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
-
-                    # Goals extracted from aligned paths
-                    best_pred_A = pA_1_aligned.clamp(-1.0, 1.0)
-                    best_pred_B = pB_2_aligned.clamp(-1.0, 1.0)
-                    
-                    # Update Anchors ONLY if they swapped (shifted concepts)
-                    anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
-                    anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
-
-                # ==========================================
-                # EXACT SAMPLING WITH ERROR REMOVAL
-                # ==========================================
-                
-                # --- PATH A ---
-                # 1. Estimate the added image from the predicted original image (Eq 8)
-                add_A = (x_A - (1 - alpha_t) * best_pred_A) / alpha_t
-                
-                # 2. Estimate initial image to calculate error
-                init_est_A = (1 - alpha_init) * best_pred_A + alpha_init * add_A
-                
-                # Prevent division by zero at t_init when alpha_t == alpha_init
-                if abs(alpha_init - alpha_t) < 1e-6:
-                    eps_A = torch.zeros_like(x_A)
-                else:
-                    # Calculate error (Eq 7)
-                    eps_A = ((1 - alpha_t) / (alpha_init - alpha_t)) * (init_est_A - superimposed_image)
-                
-                add_A_corr = add_A - eps_A
-                
-                # 3. Calculate previous timestep using corrected added image (Eq 5)
-                x_A = ((1 - alpha_prev) / (1 - alpha_t)) * x_A - ((alpha_t - alpha_prev) / (1 - alpha_t)) * add_A_corr
-
-
-                # --- PATH B ---
-                # 1. Estimate the added image from the predicted original image (Eq 8)
-                add_B = (x_B - (1 - alpha_t) * best_pred_B) / alpha_t
-                
-                # 2. Estimate initial image to calculate error
-                init_est_B = (1 - alpha_init) * best_pred_B + alpha_init * add_B
-                
-                # Prevent division by zero at t_init when alpha_t == alpha_init
-                if abs(alpha_init - alpha_t) < 1e-6:
-                    eps_B = torch.zeros_like(x_B)
-                else:
-                    # Calculate error (Eq 7)
-                    eps_B = ((1 - alpha_t) / (alpha_init - alpha_t)) * (init_est_B - superimposed_image)
-                    
-                add_B_corr = add_B - eps_B
-                
-                # 3. Calculate previous timestep using corrected added image (Eq 5)
-                x_B = ((1 - alpha_prev) / (1 - alpha_t)) * x_B - ((alpha_t - alpha_prev) / (1 - alpha_t)) * add_B_corr
-
-        
-        model.train()
-
-        final_A = (best_pred_A + 1) / 2
-        final_A = (final_A * 255).type(torch.uint8)
-        
-        final_B = (best_pred_B + 1) / 2
-        final_B = (final_B * 255).type(torch.uint8)
-
-        return final_A, final_B
+            return final_A, final_B
 
 def train(args):
     setup_logging(args.run_name)
