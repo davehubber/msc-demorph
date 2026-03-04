@@ -1,0 +1,11 @@
+--- One-Shot Image 1 Metrics ---
+SSIM: 0.7998
+PSNR: 20.9823
+LPIPS: 0.0599
+Success Rate: 39.10%
+
+--- One-Shot Image 2 Metrics ---
+SSIM: 0.4197
+PSNR: 14.6061
+LPIPS: 0.2994
+Success Rate: 97.50%
