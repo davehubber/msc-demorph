@@ -1,11 +1,11 @@
 import os, torch, numpy as np, math
 import torch.nn as nn
 import wandb
+import lpips
 from torch import optim
 from utils import *
 from modules import UNet
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
-from lpips_pytorch import lpips
 
 class Diffusion:
     def __init__(self, max_timesteps=1000, alpha_start=0., alpha_max=0.8, img_size=256, device="cuda"):
@@ -20,7 +20,7 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, alpha_init = 0.5, prediction="original"):
+    def sample(self, model, superimposed_image, alpha_init = 0.5, prediction="original", sampling_method="with_error"):
         n = len(superimposed_image)
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
@@ -29,17 +29,59 @@ class Diffusion:
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
                 predicted_image = model(x, t).to(self.device)
+                
+                if (prediction == "original" or prediction == "added") and sampling_method == "one_step":
+                    x = predicted_image
+                    break
 
-                current_alpha_raw = self.alteration_per_t * t
-                current_alpha = current_alpha_raw[:, None, None, None]
-                if prediction == "added":
-                    other_image = (x - current_alpha * predicted_image) / (1 - current_alpha)
-                    x_t = self.noise_images(other_image, predicted_image, t-1) + x - self.noise_images(other_image, predicted_image, t)
-                elif prediction == "original":
-                    other_image = (x - (1 - current_alpha) * predicted_image) / current_alpha
-                    x_t = self.noise_images(predicted_image, other_image, t-1) + x - self.noise_images(predicted_image, other_image, t)
+                elif prediction == "differences" and sampling_method == "one_step":
+                    x = x + predicted_image * t[:, None, None, None]
+                    break
+            
+                elif prediction == "differences":
+                    x = x + predicted_image
+
+                elif prediction == "original" and sampling_method == "with_error_removal":
+                    other_image = (x - (1-alpha_init) * predicted_image) / (alpha_init) 
+                    
+                    error = 0
+                    if i != init_timestep:
+                        error = (alpha_init * predicted_image + (1.-alpha_init) * other_image) - superimposed_image
+                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (alpha_init - self.alteration_per_t * t))[:, None, None, None]
+                    
+                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
+                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image - error
+                
+                elif prediction == "added" and sampling_method == "with_error_removal":
+                    other_image = (x - (self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (1-self.alteration_per_t * t)[:, None, None, None] 
+                
+                    error = 0
+                    if i != init_timestep:
+                        error = (alpha_init * predicted_image + (1.-alpha_init) * other_image) - superimposed_image
+                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (alpha_init - self.alteration_per_t * t))[:, None, None, None]
+                    
+                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
+                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image - error
+                
+                elif sampling_method == "cold_diffusion":
+                    other_image = (x - (alpha_init) * predicted_image) / (1.-alpha_init)
+                    if prediction == "added":
+                        x_t = self.noise_images(other_image, predicted_image, t-1) + x - self.noise_images(other_image, predicted_image, t)
+                    elif prediction == "original":
+                        x_t = self.noise_images(predicted_image, other_image, t-1) + x - self.noise_images(predicted_image, other_image, t)
+                    else:
+                        print("Invalid prediction/sampling_method combination.")
+                        exit(-1)
+
+                elif prediction == 'added' and sampling_method == "without_error_removal":
+                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
+                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image
+                elif prediction == 'original' and sampling_method == "without_error_removal":
+                    other_image = (x - (1-self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (self.alteration_per_t * t)[:, None, None, None]
+                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
+                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image
                 else:
-                    print("Invalid prediction.")
+                    print(f"Invalid prediction - {prediction} - and sampling_method - {sampling_method} - combination.")
                     exit(-1)
                 
                 x = x_t
@@ -108,7 +150,7 @@ def train(args):
             for _, (images, images_add) in enumerate(test_dataloader):
                 images = images.to(device)
                 images_add = images_add.to(device)
-                sampled_images, other_images = diffusion.sample(model, (images + images_add) / 2., prediction=args.prediction)
+                sampled_images, other_images = diffusion.sample(model, (images + images_add) / 2., prediction=args.prediction, sampling_method=args.sampling_method)
                 images = (images.clamp(-1, 1) + 1) / 2
                 images = (images * 255).type(torch.uint8)
                 images_add = (images_add.clamp(-1, 1) + 1) / 2
@@ -133,6 +175,10 @@ def eval(args):
     model.to(device)
     model.eval()
     diffusion = Diffusion(img_size=args.image_size, device=device)
+    
+    # Initialize the standard LPIPS model once
+    lpips_model = lpips.LPIPS(net='alex').to(device)
+
     ssim_o = []
     ssim_a = []
     lpips_o = []
@@ -142,7 +188,7 @@ def eval(args):
     for i, (images, images_add) in enumerate(test_dataloader):
         images = images.to(device)
         images_add = images_add.to(device)
-        sampled_images, sampled_other_image = diffusion.sample(model, images * (1-args.alpha_init) + images_add * args.alpha_init, args.alpha_init, prediction=args.prediction)
+        sampled_images, sampled_other_image = diffusion.sample(model, images * (1-args.alpha_init) + images_add * args.alpha_init, args.alpha_init, prediction=args.prediction, sampling_method=args.sampling_method)
         images = (images.clamp(-1, 1) + 1) / 2
         images = (images * 255).type(torch.uint8)
         images_add = (images_add.clamp(-1, 1) + 1) / 2
@@ -155,24 +201,25 @@ def eval(args):
         images_add_np = images_add.to('cpu').permute(0, 2, 3, 1).numpy()
         sampled_other_image_np = sampled_other_image.to('cpu').permute(0, 2, 3, 1).numpy()
         
-        for k in range(len(images_np)):
-            ssim_1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
-            ssim_2 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
-            if ssim_1 > ssim_2:
-                so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_images_np[k], sampled_other_image_np[k])
-                lo = lpips((images[k] - 127.5) / 127.5, (sampled_images[k] - 127.5) / 127.5, net_type='alex', version='0.1')
-                la = lpips((images_add[k] - 127.5) / 127.5, (sampled_other_image[k] - 127.5) / 127.5, net_type='alex', version='0.1')
-            else:
-                so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_other_image_np[k], sampled_images_np[k])
-                lo = lpips((images[k] - 127.5) / 127.5, (sampled_other_image[k] - 127.5) / 127.5, net_type='alex', version='0.1')
-                la = lpips((images_add[k] - 127.5) / 127.5, (sampled_images[k] - 127.5) / 127.5, net_type='alex', version='0.1')
-            
-            ssim_o.append(so)
-            ssim_a.append(sa)
-            psnr_o.append(po)
-            psnr_a.append(pa)
-            lpips_o.append(lo.to('cpu').numpy())
-            lpips_a.append(la.to('cpu').numpy())
+        with torch.no_grad():
+            for k in range(len(images_np)):
+                ssim_1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+                ssim_2 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+                if ssim_1 > ssim_2:
+                    so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_images_np[k], sampled_other_image_np[k])
+                    lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
+                    la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
+                else:
+                    so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_other_image_np[k], sampled_images_np[k])
+                    lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
+                    la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
+                
+                ssim_o.append(so)
+                ssim_a.append(sa)
+                psnr_o.append(po)
+                psnr_a.append(pa)
+                lpips_o.append(lo.detach().cpu().numpy())
+                lpips_a.append(la.detach().cpu().numpy())
 
     avg_ssim_o = np.average(ssim_o)
     avg_ssim_a = np.average(ssim_a)
@@ -213,6 +260,7 @@ def launch():
     parser.add_argument('--run_name', help='Name of the experiment for saving models and results', required=True)
     parser.add_argument('--partition_file', help='CSV file with test indexes', required=True)
     parser.add_argument('--prediction', default='original', help='The prediction of the model, choose between [added, original, differences]', required=False)
+    parser.add_argument('--sampling_method', default='with_error_removal', help='Choose between [cold_diffusion, with_error_removal, one_step, without_error_removal, differences]', required=False)
     parser.add_argument('--alpha_max', default=0.8, type=float, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max', required=False)
     parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
     parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
