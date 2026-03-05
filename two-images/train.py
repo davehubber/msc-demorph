@@ -139,7 +139,7 @@ def train(args):
             scaler.update()
 
             global_step += 1
-            if global_step % 1000 == 0:
+            if global_step % 100 == 0:
                 wandb.log({
                     "train_loss": loss.item(),
                     "epoch": epoch
