@@ -21,9 +21,6 @@ class Diffusion:
 
     def noise_images(self, image_1, image_2, t):
         return image_1 * (1. - self.alteration_per_t * t)[:, None, None, None] + image_2 * (self.alteration_per_t * t)[:, None, None, None]
-    
-    def noise_images_superimposed(self, image, superimposed, t):
-        return image * (1. - self.alteration_per_t * t)[:, None, None, None] + superimposed * (self.alteration_per_t * t)[:, None, None, None]
 
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
