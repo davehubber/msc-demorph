@@ -322,12 +322,9 @@ def eval(args):
     with open(os.path.join("results", args.run_name, "final_metrics.txt"), "w") as f:
         f.write(metrics_report)
 
-import torch
-import torch.nn.functional as F
-
 def test_renoising_configurations(model, diffusion, dataloader, device="cuda"):
     """
-    Tests 3 different cold diffusion TACOS re-noising update steps to analyze 
+    Tests 4 different cold diffusion re-noising update steps to analyze 
     prediction error propagation using 1 pair of images over 10 steps.
     """
     model.eval()
@@ -344,10 +341,10 @@ def test_renoising_configurations(model, diffusion, dataloader, device="cuda"):
     init_timestep = 10
     actual_alpha_init = diffusion.alteration_per_t * init_timestep
     
-    results = {1: [], 2: [], 3: []}
+    results = {1: [], 2: [], 3: [], 4: []}
     
     # Run the full 10 steps independently for each configuration
-    for config in [1, 2, 3]:
+    for config in [1, 2, 3, 4]:
         x_A = superimposed_image.clone()
         x_B = superimposed_image.clone()
         
@@ -397,25 +394,62 @@ def test_renoising_configurations(model, diffusion, dataloader, device="cuda"):
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
-                # --- CONFIGURATION LOGIC ---
+                # Dynamically determine the "other" Ground Truth for Config 1
+                lpips_A_gtA = diffusion.loss_fn_alex(best_pred_A, gt_A)
+                lpips_A_gtB = diffusion.loss_fn_alex(best_pred_A, gt_B)
+                gt_other_for_A = gt_B if lpips_A_gtA < lpips_A_gtB else gt_A
+                
+                lpips_B_gtA = diffusion.loss_fn_alex(best_pred_B, gt_A)
+                lpips_B_gtB = diffusion.loss_fn_alex(best_pred_B, gt_B)
+                gt_other_for_B = gt_B if lpips_B_gtA < lpips_B_gtB else gt_A
+
+                # --- CONFIGURATION LOGIC & RENOISING ---
                 if config == 1:
-                    img2_A = pA_2_aligned.clamp(-1.0, 1.0)
-                    img2_B = pB_1_aligned.clamp(-1.0, 1.0)
+                    # Baseline: Image 2 is the actual ground truth of the other image
+                    img2_A = gt_other_for_A
+                    img2_B = gt_other_for_B
+                    x_A_next = x_A - diffusion.noise_images(best_pred_A, img2_A, t) + diffusion.noise_images(best_pred_A, img2_A, t_minus_1)
+                    x_B_next = x_B - diffusion.noise_images(best_pred_B, img2_B, t) + diffusion.noise_images(best_pred_B, img2_B, t_minus_1)
                     
                 elif config == 2:
+                    # Mathematical algebraic extraction
                     extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
                     extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
                     img2_A = extracted_B_from_A.clamp(-1.0, 1.0)
                     img2_B = extracted_A_from_B.clamp(-1.0, 1.0)
+                    x_A_next = x_A - diffusion.noise_images(best_pred_A, img2_A, t) + diffusion.noise_images(best_pred_A, img2_A, t_minus_1)
+                    x_B_next = x_B - diffusion.noise_images(best_pred_B, img2_B, t) + diffusion.noise_images(best_pred_B, img2_B, t_minus_1)
                     
                 elif config == 3:
+                    # Cross-pollination using best_preds from the OTHER branch
                     img2_A = best_pred_B
                     img2_B = best_pred_A
+                    x_A_next = x_A - diffusion.noise_images(best_pred_A, img2_A, t) + diffusion.noise_images(best_pred_A, img2_A, t_minus_1)
+                    x_B_next = x_B - diffusion.noise_images(best_pred_B, img2_B, t) + diffusion.noise_images(best_pred_B, img2_B, t_minus_1)
 
-                # --- RENOISING (TACOS UPDATE STEP) ---
-                x_A_next = x_A - diffusion.noise_images(best_pred_A, img2_A, t) + diffusion.noise_images(best_pred_A, img2_A, t_minus_1)
-                x_B_next = x_B - diffusion.noise_images(best_pred_B, img2_B, t) + diffusion.noise_images(best_pred_B, img2_B, t_minus_1)
-                
+                elif config == 4:
+                    # Helena Montenegro's 'with_error_removal' sampling method
+                    delta = (1 - diffusion.alteration_per_t * (t - 1)) / (1 - diffusion.alteration_per_t * t)
+                    delta = delta.view(-1, 1, 1, 1)
+                    
+                    # Path A
+                    other_image_A = pA_2_aligned.clamp(-1.0, 1.0)
+                    error_A = 0
+                    if i != init_timestep:
+                        error_A = (actual_alpha_init * best_pred_A + (1. - actual_alpha_init) * other_image_A) - superimposed_image
+                        error_A = error_A * ((diffusion.alteration_per_t * (t-1) - diffusion.alteration_per_t * t) / (actual_alpha_init - diffusion.alteration_per_t * t)).view(-1, 1, 1, 1)
+                    
+                    x_A_next = delta * x_A - (delta - 1) * other_image_A - error_A
+                    
+                    # Path B
+                    other_image_B = pB_1_aligned.clamp(-1.0, 1.0)
+                    error_B = 0
+                    if i != init_timestep:
+                        error_B = (actual_alpha_init * best_pred_B + (1. - actual_alpha_init) * other_image_B) - superimposed_image
+                        error_B = error_B * ((diffusion.alteration_per_t * (t-1) - diffusion.alteration_per_t * t) / (actual_alpha_init - diffusion.alteration_per_t * t)).view(-1, 1, 1, 1)
+                    
+                    x_B_next = delta * x_B - (delta - 1) * other_image_B - error_B
+
                 # --- ERROR CALCULATION ---
                 # Calculate the TWO possible ground truth states at t-1
                 gt_state_1 = diffusion.noise_images(gt_A, gt_B, t_minus_1)
@@ -441,16 +475,17 @@ def test_renoising_configurations(model, diffusion, dataloader, device="cuda"):
     # --- SAVE FINDINGS TO TXT ---
     output_filename = "renoise_configurations_analysis.txt"
     with open(output_filename, "w") as f:
-        f.write("TACOS Renoising Configurations - Error Propagation Analysis\n")
+        f.write("Renoising Configurations - Error Propagation Analysis\n")
         f.write("=========================================================\n\n")
         
         config_descriptions = {
-            1: "Configuration 1: Image 2 = Current model prediction of the other image (pA_2 / pB_1)",
+            1: "Configuration 1: Baseline - Image 2 = Actual Ground Truth of the other image",
             2: "Configuration 2: Image 2 = Mathematical algebraic extraction from superimposed (Current standard)",
-            3: "Configuration 3: Image 2 = The best prediction of the opposing branch (Cross-pollination)"
+            3: "Configuration 3: Image 2 = The best prediction of the opposing branch (Cross-pollination)",
+            4: "Configuration 4: Helena Montenegro's 'with_error_removal' sampling method"
         }
         
-        for config in [1, 2, 3]:
+        for config in [1, 2, 3, 4]:
             f.write(f"{config_descriptions[config]}\n")
             f.write("-" * 60 + "\n")
             for step_idx, (t_val, mse_A, mse_B) in enumerate(results[config]):
