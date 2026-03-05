@@ -50,7 +50,7 @@ class TheDataset(Dataset):
         if self.transform is not None:
             x1 = self.transform(x1)
             x2 = self.transform(x2)
-        return x2, x1
+        return x1, x2
     
     def __len__(self):
         return len(self.image_paths_1)
