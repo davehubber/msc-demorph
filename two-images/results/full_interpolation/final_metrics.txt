@@ -1,0 +1,11 @@
+--- Image 1 Metrics ---
+SSIM: 0.6127
+PSNR: 17.4673
+LPIPS: 0.1722
+Success Rate: 75.50%
+
+--- Image 2 Metrics ---
+SSIM: 0.6104
+PSNR: 17.4343
+LPIPS: 0.1768
+Success Rate: 74.20%
