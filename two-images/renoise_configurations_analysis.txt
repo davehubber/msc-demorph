@@ -1,0 +1,132 @@
+TACOS Renoising Configurations - Error Propagation Analysis
+=========================================================
+
+Configuration 1: Image 2 = Current model prediction of the other image (pA_2 / pB_1)
+------------------------------------------------------------
+Step 1 (target t=9):
+   Branch A MSE: 0.11739584
+   Branch B MSE: 0.11739584
+   Avg Step MSE: 0.11739584
+Step 2 (target t=8):
+   Branch A MSE: 0.11817048
+   Branch B MSE: 0.11817102
+   Avg Step MSE: 0.11817075
+Step 3 (target t=7):
+   Branch A MSE: 0.11894508
+   Branch B MSE: 0.11894667
+   Avg Step MSE: 0.11894588
+Step 4 (target t=6):
+   Branch A MSE: 0.11971917
+   Branch B MSE: 0.11972223
+   Avg Step MSE: 0.11972070
+Step 5 (target t=5):
+   Branch A MSE: 0.12049185
+   Branch B MSE: 0.12049673
+   Avg Step MSE: 0.12049429
+Step 6 (target t=4):
+   Branch A MSE: 0.12126273
+   Branch B MSE: 0.12126975
+   Avg Step MSE: 0.12126624
+Step 7 (target t=3):
+   Branch A MSE: 0.12203222
+   Branch B MSE: 0.12204170
+   Avg Step MSE: 0.12203696
+Step 8 (target t=2):
+   Branch A MSE: 0.12280095
+   Branch B MSE: 0.12281349
+   Avg Step MSE: 0.12280722
+Step 9 (target t=1):
+   Branch A MSE: 0.12356951
+   Branch B MSE: 0.12358575
+   Avg Step MSE: 0.12357763
+Step 10 (target t=0):
+   Branch A MSE: 0.12433847
+   Branch B MSE: 0.12435897
+   Avg Step MSE: 0.12434872
+
+Configuration 2: Image 2 = Mathematical algebraic extraction from superimposed (Current standard)
+------------------------------------------------------------
+Step 1 (target t=9):
+   Branch A MSE: 0.11718787
+   Branch B MSE: 0.11727162
+   Avg Step MSE: 0.11722975
+Step 2 (target t=8):
+   Branch A MSE: 0.11775555
+   Branch B MSE: 0.11791827
+   Avg Step MSE: 0.11783691
+Step 3 (target t=7):
+   Branch A MSE: 0.11832307
+   Branch B MSE: 0.11856397
+   Avg Step MSE: 0.11844352
+Step 4 (target t=6):
+   Branch A MSE: 0.11888649
+   Branch B MSE: 0.11920662
+   Avg Step MSE: 0.11904656
+Step 5 (target t=5):
+   Branch A MSE: 0.11944264
+   Branch B MSE: 0.11984318
+   Avg Step MSE: 0.11964291
+Step 6 (target t=4):
+   Branch A MSE: 0.11999165
+   Branch B MSE: 0.12047334
+   Avg Step MSE: 0.12023249
+Step 7 (target t=3):
+   Branch A MSE: 0.12053603
+   Branch B MSE: 0.12109884
+   Avg Step MSE: 0.12081743
+Step 8 (target t=2):
+   Branch A MSE: 0.12107806
+   Branch B MSE: 0.12172195
+   Avg Step MSE: 0.12140000
+Step 9 (target t=1):
+   Branch A MSE: 0.12161964
+   Branch B MSE: 0.12234440
+   Avg Step MSE: 0.12198202
+Step 10 (target t=0):
+   Branch A MSE: 0.12216252
+   Branch B MSE: 0.12296626
+   Avg Step MSE: 0.12256439
+
+Configuration 3: Image 2 = The best prediction of the opposing branch (Cross-pollination)
+------------------------------------------------------------
+Step 1 (target t=9):
+   Branch A MSE: 0.11739584
+   Branch B MSE: 0.11739584
+   Avg Step MSE: 0.11739584
+Step 2 (target t=8):
+   Branch A MSE: 0.11817087
+   Branch B MSE: 0.11817088
+   Avg Step MSE: 0.11817088
+Step 3 (target t=7):
+   Branch A MSE: 0.11894624
+   Branch B MSE: 0.11894625
+   Avg Step MSE: 0.11894624
+Step 4 (target t=6):
+   Branch A MSE: 0.11972135
+   Branch B MSE: 0.11972135
+   Avg Step MSE: 0.11972135
+Step 5 (target t=5):
+   Branch A MSE: 0.12049522
+   Branch B MSE: 0.12049522
+   Avg Step MSE: 0.12049522
+Step 6 (target t=4):
+   Branch A MSE: 0.12126743
+   Branch B MSE: 0.12126743
+   Avg Step MSE: 0.12126743
+Step 7 (target t=3):
+   Branch A MSE: 0.12203836
+   Branch B MSE: 0.12203836
+   Avg Step MSE: 0.12203836
+Step 8 (target t=2):
+   Branch A MSE: 0.12280887
+   Branch B MSE: 0.12280887
+   Avg Step MSE: 0.12280887
+Step 9 (target t=1):
+   Branch A MSE: 0.12357959
+   Branch B MSE: 0.12357961
+   Avg Step MSE: 0.12357960
+Step 10 (target t=0):
+   Branch A MSE: 0.12435102
+   Branch B MSE: 0.12435102
+   Avg Step MSE: 0.12435102
+
