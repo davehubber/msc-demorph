@@ -14,7 +14,6 @@ class Diffusion:
         self.device = device
         self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps
         
-        # Initialize LPIPS once here so it doesn't reload on every sample call
         self.loss_fn_alex = lpips.LPIPS(net='alex').to(self.device)
         self.loss_fn_alex.eval()
 
@@ -29,74 +28,42 @@ class Diffusion:
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
 
-        # Calculate the exact float alpha used at the initial timestep
-        actual_alpha_init = self.alteration_per_t * init_timestep
-
         with torch.no_grad():
-            x_A = superimposed_image.clone().to(self.device)
-            x_B = superimposed_image.clone().to(self.device)
+            x_t = superimposed_image.clone().to(self.device)
 
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
+                
+                pred_v = model(x_t, t)
 
                 if i == init_timestep:
-                    # Initial Prediction establishes the goals (Anchors)
-                    p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
-                    
-                    anchor_A = p_1.clamp(-1.0, 1.0)
-                    anchor_B = p_2.clamp(-1.0, 1.0)
-                    
-                    best_pred_A = anchor_A.clone()
-                    best_pred_B = anchor_B.clone()
-                    
+                    anchor_v = pred_v.clone()
+                    pred_v_aligned = pred_v
                 else:
-                    pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
-                    pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
-
-                    # --- ALIGN PATH A USING LPIPS ---
-                    lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
-                    lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
+                    dist_straight = F.mse_loss(pred_v, anchor_v, reduction='none').view(n, -1).mean(dim=1)
+                    dist_crossed  = F.mse_loss(pred_v, -anchor_v, reduction='none').view(n, -1).mean(dim=1)
                     
-                    swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
-                    pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
-
-                    # --- ALIGN PATH B USING LPIPS ---
-                    lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
-                    lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
+                    swap_mask = (dist_crossed < dist_straight).view(-1, 1, 1, 1)
                     
-                    swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
-                    pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
-
-                    # Goals extracted from aligned paths
-                    best_pred_A = pA_1_aligned.clamp(-1.0, 1.0)
-                    best_pred_B = pB_2_aligned.clamp(-1.0, 1.0)
+                    pred_v_aligned = torch.where(swap_mask, -pred_v, pred_v)
                     
-                    # Update Anchors ONLY if they swapped (shifted concepts)
-                    anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
-                    anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
+                    anchor_v = torch.where(swap_mask, pred_v_aligned.clone(), anchor_v)
 
-                # --- ALGEBRAIC EXTRACTION (From Initial State) ---
-                # Using the original superimposed_image and the scalar actual_alpha_init
-                extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
-                extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
+                x_t = x_t - self.alteration_per_t * pred_v_aligned
                 
-                # Clamp the extracted replicas to prevent numerical overshoots
-                extracted_B_from_A = extracted_B_from_A.clamp(-1.0, 1.0)
-                extracted_A_from_B = extracted_A_from_B.clamp(-1.0, 1.0)
+            model.train()
 
-                # --- RENOISE (COLD DIFFUSION STEP) ---
-                x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
-                x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
-        
-        model.train()
+            best_pred_A = x_t.clamp(-1.0, 1.0)
+            
+            best_pred_B = (x_t + pred_v_aligned).clamp(-1.0, 1.0)
 
-        final_A = (best_pred_A + 1) / 2
-        final_A = (final_A * 255).type(torch.uint8)
-        
-        final_B = (best_pred_B + 1) / 2
-        final_B = (final_B * 255).type(torch.uint8)
+            final_A = (best_pred_A + 1) / 2
+            final_A = (final_A * 255).type(torch.uint8)
+            
+            final_B = (best_pred_B + 1) / 2
+            final_B = (final_B * 255).type(torch.uint8)
 
-        return final_A, final_B
+            return final_A, final_B
 
 def train(args):
     setup_logging(args.run_name)
@@ -104,7 +71,7 @@ def train(args):
     train_dataloader = get_data(args, 'train')
     test_dataloader = get_data(args, 'test')
 
-    model = UNet(c_in=3, c_out=6, device=device).to(device)
+    model = UNet(c_in=3, c_out=3, device=device).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
 
     diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
@@ -114,6 +81,11 @@ def train(args):
         name=args.run_name,
         config=vars(args)
     )
+
+    fixed_images, fixed_images_add = next(iter(test_dataloader))
+    fixed_images = fixed_images[:4].to(device)
+    fixed_images_add = fixed_images_add[:4].to(device)
+    fixed_superimposed = (fixed_images + fixed_images_add) / 2.
     
     global_step = 0
     scaler = torch.amp.GradScaler("cuda")
@@ -131,14 +103,12 @@ def train(args):
             with torch.amp.autocast("cuda"):
                 x_t = diffusion.noise_images(images, images_add, t)
 
-                predicted_both = model(x_t, t)
-                pred_1, pred_2 = torch.chunk(predicted_both, 2, dim=1)
+                v_target = images_add - images
 
-                mse_straight = F.mse_loss(pred_1, images, reduction='none').view(images.shape[0], -1).mean(dim=1) + \
-                               F.mse_loss(pred_2, images_add, reduction='none').view(images.shape[0], -1).mean(dim=1)
-                
-                mse_crossed = F.mse_loss(pred_1, images_add, reduction='none').view(images.shape[0], -1).mean(dim=1) + \
-                              F.mse_loss(pred_2, images, reduction='none').view(images.shape[0], -1).mean(dim=1)
+                pred_v = model(x_t, t)
+
+                mse_straight = F.mse_loss(pred_v, v_target, reduction='none').view(images.shape[0], -1).mean(dim=1)
+                mse_crossed  = F.mse_loss(pred_v, -v_target, reduction='none').view(images.shape[0], -1).mean(dim=1)
                 
                 loss = torch.min(mse_straight, mse_crossed).mean()
 
@@ -154,23 +124,16 @@ def train(args):
                     "epoch": epoch
                 })
 
-        # Sample and save images every 10 epochs (No metric calculation)
         if (epoch + 1) % 10 == 0:
-            for _, (images, images_add) in enumerate(test_dataloader):
-                images = images.to(device)
-                images_add = images_add.to(device)
+            sampled_A, sampled_B = diffusion.sample(model, fixed_superimposed, alpha_init=args.alpha_init)
 
-                superimposed = (images + images_add) / 2.
-                # Passed ground truth images here
-                sampled_A, sampled_B = diffusion.sample(model, superimposed, alpha_init=args.alpha_init)
+            disp_images = (fixed_images.clamp(-1, 1) + 1) / 2
+            disp_images = (disp_images * 255).type(torch.uint8)
+            
+            disp_images_add = (fixed_images_add.clamp(-1, 1) + 1) / 2
+            disp_images_add = (disp_images_add * 255).type(torch.uint8)
 
-                images = (images.clamp(-1, 1) + 1) / 2
-                images = (images * 255).type(torch.uint8)
-                images_add = (images_add.clamp(-1, 1) + 1) / 2
-                images_add = (images_add * 255).type(torch.uint8)
-
-                save_images(sampled_A, sampled_B, images, images_add, os.path.join("results", args.run_name, f"{epoch+1}.jpg"))
-                break
+            save_images(sampled_A, sampled_B, disp_images, disp_images_add, os.path.join("results", args.run_name, f"{epoch+1}.jpg"))
         
         torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
 
@@ -342,7 +305,7 @@ def launch():
 
     if args.mode == 'train':
         train(args)
-        eval(args)
+        # eval(args)
     elif args.mode == 'eval':
         eval(args)
 
