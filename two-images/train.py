@@ -18,7 +18,7 @@ class Diffusion:
         return original_image * (1. - self.alteration_per_t * t)[:, None, None, None] + added_image * (self.alteration_per_t * t)[:, None, None, None]
 
     def sample_timesteps(self, n):
-        return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
+        return torch.randint(low=1, high=self.max_timesteps + 1, size=(n,), device=self.device)
 
     def sample(self, model, superimposed_image, alpha_init = 0.5, prediction="original", sampling_method="with_error"):
         n = len(superimposed_image)
