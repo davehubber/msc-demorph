@@ -365,7 +365,7 @@ def launch():
 
     #train(args)
     eval(args)
-    #one_shot_eval(args)
+    one_shot_eval(args)
 
 if __name__ == '__main__':
     launch()
