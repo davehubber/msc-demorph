@@ -72,12 +72,12 @@ class Diffusion:
                     if prediction == "added":
                         other_image = (x - alpha_t * predicted_image) / (1. - alpha_t)
                         
-                        x_t = self.noise_images(other_image, predicted_image, t-1) + x - self.noise_images(other_image, predicted_image, t)
+                        x_t = self.noise_images(other_image_i, predicted_image, t-1) + x - self.noise_images(other_image_i, predicted_image, t)
                         
                     elif prediction == "original":
                         other_image = (x - (1. - alpha_t) * predicted_image) / alpha_t
                         
-                        x_t = self.noise_images(predicted_image, other_image, t-1) + x - self.noise_images(predicted_image, other_image, t)
+                        x_t = self.noise_images(predicted_image, other_image_i, t-1) + x - self.noise_images(predicted_image, other_image_i, t)
                         
                     else:
                         print("Invalid prediction/sampling_method combination.")
