@@ -178,38 +178,47 @@ def eval(args):
     model.eval()
     diffusion = Diffusion(img_size=args.image_size, device=device)
     
-    # Initialize the standard LPIPS model once
     lpips_model = lpips.LPIPS(net='alex').to(device)
 
-    sample_dir = os.path.join("samples", args.sampling_name)
-    os.makedirs(sample_dir, exist_ok=True)
+    ssim_o, ssim_a, lpips_o, lpips_a, psnr_o, psnr_a = [], [], [], [], [], []
+    success_count = 0
+    total_count = 0
 
-    ssim_o = []
-    ssim_a = []
-    lpips_o = []
-    lpips_a = []
-    psnr_o = []
-    psnr_a = []
     for i, (images, images_add) in enumerate(test_dataloader):
         images = images.to(device)
         images_add = images_add.to(device)
-        sampled_images, sampled_other_image = diffusion.sample(model, images * (1-args.alpha_init) + images_add * args.alpha_init, args.alpha_init, prediction=args.prediction, sampling_method=args.sampling_method)
+        
+        # Explicitly define the superimposed image so we can use it for the %S metric
+        superimposed = images * (1 - args.alpha_init) + images_add * args.alpha_init
+        
+        sampled_images, sampled_other_image = diffusion.sample(model, superimposed, args.alpha_init, prediction=args.prediction, sampling_method=args.sampling_method)
+        
+        # Scale all images to 0-255 uint8
         images = (images.clamp(-1, 1) + 1) / 2
         images = (images * 255).type(torch.uint8)
+        
         images_add = (images_add.clamp(-1, 1) + 1) / 2
         images_add = (images_add * 255).type(torch.uint8)
+        
+        superimposed = (superimposed.clamp(-1, 1) + 1) / 2
+        superimposed = (superimposed * 255).type(torch.uint8)
+        
         sampled_images.to(device)
         save_images(sampled_images, sampled_other_image, images, images_add, os.path.join("samples", args.sampling_name, f"{i}.jpg"))
 
+        # Convert to numpy for skimage metrics
         images_np = images.to('cpu').permute(0, 2, 3, 1).numpy()
         sampled_images_np = sampled_images.to('cpu').permute(0, 2, 3, 1).numpy()
         images_add_np = images_add.to('cpu').permute(0, 2, 3, 1).numpy()
         sampled_other_image_np = sampled_other_image.to('cpu').permute(0, 2, 3, 1).numpy()
+        superimposed_np = superimposed.to('cpu').permute(0, 2, 3, 1).numpy()
         
         with torch.no_grad():
             for k in range(len(images_np)):
                 ssim_1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
                 ssim_2 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+                
+                # Identify which prediction belongs to which ground truth
                 if ssim_1 > ssim_2:
                     so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_images_np[k], sampled_other_image_np[k])
                     lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
@@ -219,6 +228,18 @@ def eval(args):
                     lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
                     la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
                 
+                # --- NEW: Success Rate of Reversal (%S) ---
+                # Calculate SSIM between the input superimposed image and both ground truths
+                ssim_s_o = structural_similarity(images_np[k], superimposed_np[k], data_range=255, channel_axis=-1)
+                ssim_s_a = structural_similarity(images_add_np[k], superimposed_np[k], data_range=255, channel_axis=-1)
+                
+                if so > ssim_s_o:
+                    success_count += 1
+                if sa > ssim_s_a:
+                    success_count += 1
+                total_count += 2
+                # ------------------------------------------
+
                 ssim_o.append(so)
                 ssim_a.append(sa)
                 psnr_o.append(po)
@@ -232,17 +253,17 @@ def eval(args):
     avg_psnr_a = np.average(psnr_a)
     avg_lpips_o = np.average(lpips_o)
     avg_lpips_a = np.average(lpips_a)
+    success_rate = (success_count / total_count) * 100
 
     print('\nMetrics organized by original images:')
+    print(f'SSIM Original: {avg_ssim_o}')
+    print(f'SSIM Added: {avg_ssim_a}')
+    print(f'PSNR Original: {avg_psnr_o}')
+    print(f'PSNR Added: {avg_psnr_a}')
+    print(f'LPIPS Original: {avg_lpips_o}')
+    print(f'LPIPS Added: {avg_lpips_a}')
+    print(f'Success Rate of Reversal (%S): {success_rate:.2f}%')
 
-    print('SSIM Original: ' + str(np.average(avg_ssim_o)))
-    print('SSIM Added: ' + str(np.average(avg_ssim_a)))
-    print('PSNR Original: ' + str(np.average(avg_psnr_o)))
-    print('PSNR Added: ' + str(np.average(avg_psnr_a)))
-    print('LPIPS Original: ' + str(np.average(avg_lpips_o)))
-    print('LPIPS Added: ' + str(np.average(avg_lpips_a)))
-
-    # Save metrics to txt file
     metrics_report = (
         f"Metrics organized by original images:\n"
         f"SSIM Original: {avg_ssim_o}\n"
@@ -251,6 +272,7 @@ def eval(args):
         f"PSNR Added: {avg_psnr_a}\n"
         f"LPIPS Original: {avg_lpips_o}\n"
         f"LPIPS Added: {avg_lpips_a}\n"
+        f"Success Rate of Reversal (%S): {success_rate:.2f}%\n"
     )
     
     results_dir = os.path.join("results", args.run_name)
@@ -260,7 +282,6 @@ def eval(args):
 
 def one_shot_eval(args):
     device = args.device
-    
     test_dataloader = get_data(args, 'test')
     images, images_add = next(iter(test_dataloader))
     images = images.to(device)
@@ -296,15 +317,16 @@ def one_shot_eval(args):
 
     images = (images.clamp(-1, 1) + 1) / 2
     images = (images * 255).type(torch.uint8)
-    
     images_add = (images_add.clamp(-1, 1) + 1) / 2
     images_add = (images_add * 255).type(torch.uint8)
-    
     sampled_images = (sampled_images.clamp(-1, 1) + 1) / 2
     sampled_images = (sampled_images * 255).type(torch.uint8)
-    
     sampled_other_image = (sampled_other_image.clamp(-1, 1) + 1) / 2
     sampled_other_image = (sampled_other_image * 255).type(torch.uint8)
+    
+    # Format initial superimposed image
+    S_formatted = (S.clamp(-1, 1) + 1) / 2
+    S_formatted = (S_formatted * 255).type(torch.uint8)
 
     save_dir = os.path.join("samples", args.run_name)
     os.makedirs(save_dir, exist_ok=True)
@@ -314,8 +336,11 @@ def one_shot_eval(args):
     sampled_images_np = sampled_images.cpu().permute(0, 2, 3, 1).numpy()
     images_add_np = images_add.cpu().permute(0, 2, 3, 1).numpy()
     sampled_other_image_np = sampled_other_image.cpu().permute(0, 2, 3, 1).numpy()
+    S_np = S_formatted.cpu().permute(0, 2, 3, 1).numpy()
     
     ssim_o, ssim_a, psnr_o, psnr_a, lpips_o, lpips_a = [], [], [], [], [], []
+    success_count = 0
+    total_count = 0
     
     with torch.no_grad():
         for k in range(n):
@@ -331,6 +356,16 @@ def one_shot_eval(args):
                 lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
                 la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
             
+            # --- Success Rate of Reversal (%S) ---
+            ssim_s_o = structural_similarity(images_np[k], S_np[k], data_range=255, channel_axis=-1)
+            ssim_s_a = structural_similarity(images_add_np[k], S_np[k], data_range=255, channel_axis=-1)
+            
+            if so > ssim_s_o:
+                success_count += 1
+            if sa > ssim_s_a:
+                success_count += 1
+            total_count += 2
+            
             ssim_o.append(so)
             ssim_a.append(sa)
             psnr_o.append(po)
@@ -338,13 +373,30 @@ def one_shot_eval(args):
             lpips_o.append(lo.detach().cpu().numpy())
             lpips_a.append(la.detach().cpu().numpy())
 
-    print('\n--- One-Shot Evaluation Metrics (First Batch) ---')
-    print(f'SSIM Original: {np.average(ssim_o):.4f}')
-    print(f'SSIM Added: {np.average(ssim_a):.4f}')
-    print(f'PSNR Original: {np.average(psnr_o):.4f}')
-    print(f'PSNR Added: {np.average(psnr_a):.4f}')
-    print(f'LPIPS Original: {np.average(lpips_o):.4f}')
-    print(f'LPIPS Added: {np.average(lpips_a):.4f}')
+    # Calculate averages
+    avg_ssim_o, avg_ssim_a = np.average(ssim_o), np.average(ssim_a)
+    avg_psnr_o, avg_psnr_a = np.average(psnr_o), np.average(psnr_a)
+    avg_lpips_o, avg_lpips_a = np.average(lpips_o), np.average(lpips_a)
+    success_rate = (success_count / total_count) * 100
+
+    metrics_report = (
+        f"--- One-Shot Evaluation Metrics (First Batch) ---\n"
+        f"SSIM Original: {avg_ssim_o:.4f}\n"
+        f"SSIM Added: {avg_ssim_a:.4f}\n"
+        f"PSNR Original: {avg_psnr_o:.4f}\n"
+        f"PSNR Added: {avg_psnr_a:.4f}\n"
+        f"LPIPS Original: {avg_lpips_o:.4f}\n"
+        f"LPIPS Added: {avg_lpips_a:.4f}\n"
+        f"Success Rate of Reversal (%S): {success_rate:.2f}%\n"
+    )
+    
+    print(f"\n{metrics_report}")
+    
+    # Save the text file
+    results_dir = os.path.join("results", args.run_name)
+    os.makedirs(results_dir, exist_ok=True)
+    with open(os.path.join(results_dir, "one_shot_metrics.txt"), "w") as f:
+        f.write(metrics_report)
 
 def launch():
     import argparse
