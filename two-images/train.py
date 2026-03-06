@@ -253,6 +253,94 @@ def eval(args):
     with open(os.path.join(results_dir, "final_metrics.txt"), "w") as f:
         f.write(metrics_report)
 
+def one_shot_eval(args):
+    device = args.device
+    
+    test_dataloader = get_data(args, 'test')
+    images, images_add = next(iter(test_dataloader))
+    images = images.to(device)
+    images_add = images_add.to(device)
+    n = len(images)
+    
+    model = UNet().to(device)
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.eval()
+    
+    diffusion = Diffusion(img_size=args.image_size, device=device)
+    lpips_model = lpips.LPIPS(net='alex').to(device)
+    
+    S = images * (1 - args.alpha_init) + images_add * args.alpha_init
+    init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+    t = (torch.ones(n) * init_timestep).long().to(device)
+    
+    with torch.no_grad():
+        predicted_image = model(S, t)
+        
+        if args.prediction == "original":
+            sampled_images = predicted_image
+            sampled_other_image = (S - (1 - args.alpha_init) * sampled_images) / args.alpha_init
+        elif args.prediction == "added":
+            sampled_other_image = predicted_image
+            sampled_images = (S - args.alpha_init * sampled_other_image) / (1 - args.alpha_init)
+        elif args.prediction == "differences":
+            sampled_images = S + predicted_image * t[:, None, None, None]
+            sampled_other_image = (S - (1 - args.alpha_init) * sampled_images) / args.alpha_init
+        else:
+            print("Invalid model prediction argument.")
+            return
+
+    images = (images.clamp(-1, 1) + 1) / 2
+    images = (images * 255).type(torch.uint8)
+    
+    images_add = (images_add.clamp(-1, 1) + 1) / 2
+    images_add = (images_add * 255).type(torch.uint8)
+    
+    sampled_images = (sampled_images.clamp(-1, 1) + 1) / 2
+    sampled_images = (sampled_images * 255).type(torch.uint8)
+    
+    sampled_other_image = (sampled_other_image.clamp(-1, 1) + 1) / 2
+    sampled_other_image = (sampled_other_image * 255).type(torch.uint8)
+
+    save_dir = os.path.join("samples", args.run_name)
+    os.makedirs(save_dir, exist_ok=True)
+    save_images(sampled_images, sampled_other_image, images, images_add, os.path.join(save_dir, "one_shot_batch_0.jpg"))
+
+    images_np = images.cpu().permute(0, 2, 3, 1).numpy()
+    sampled_images_np = sampled_images.cpu().permute(0, 2, 3, 1).numpy()
+    images_add_np = images_add.cpu().permute(0, 2, 3, 1).numpy()
+    sampled_other_image_np = sampled_other_image.cpu().permute(0, 2, 3, 1).numpy()
+    
+    ssim_o, ssim_a, psnr_o, psnr_a, lpips_o, lpips_a = [], [], [], [], [], []
+    
+    with torch.no_grad():
+        for k in range(n):
+            ssim_1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+            ssim_2 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+            
+            if ssim_1 > ssim_2:
+                so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_images_np[k], sampled_other_image_np[k])
+                lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
+                la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
+            else:
+                so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_other_image_np[k], sampled_images_np[k])
+                lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
+                la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
+            
+            ssim_o.append(so)
+            ssim_a.append(sa)
+            psnr_o.append(po)
+            psnr_a.append(pa)
+            lpips_o.append(lo.detach().cpu().numpy())
+            lpips_a.append(la.detach().cpu().numpy())
+
+    print('\n--- One-Shot Evaluation Metrics (First Batch) ---')
+    print(f'SSIM Original: {np.average(ssim_o):.4f}')
+    print(f'SSIM Added: {np.average(ssim_a):.4f}')
+    print(f'PSNR Original: {np.average(psnr_o):.4f}')
+    print(f'PSNR Added: {np.average(psnr_a):.4f}')
+    print(f'LPIPS Original: {np.average(lpips_o):.4f}')
+    print(f'LPIPS Added: {np.average(lpips_a):.4f}')
+
 def launch():
     import argparse
     parser = argparse.ArgumentParser()
@@ -268,11 +356,14 @@ def launch():
     parser.add_argument('--epochs', default=1000, help='Number of epochs', type=int, required=False)
     parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
     parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
+
     args = parser.parse_args()
     args.image_size = (args.image_size, args.image_size)
     args.sampling_name = args.run_name
-    train(args)
-    eval(args)
+
+    #train(args)
+    #eval(args)
+    one_shot_eval(args)
 
 if __name__ == '__main__':
     launch()
