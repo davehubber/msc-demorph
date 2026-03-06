@@ -181,6 +181,9 @@ def eval(args):
     # Initialize the standard LPIPS model once
     lpips_model = lpips.LPIPS(net='alex').to(device)
 
+    sample_dir = os.path.join("samples", args.sampling_name)
+    os.makedirs(sample_dir, exist_ok=True)
+
     ssim_o = []
     ssim_a = []
     lpips_o = []
