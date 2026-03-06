@@ -8,4 +8,4 @@
 
 # Commands / scripts to run (e.g., python3 train.py)
 
-python train.py --dataset_path "/nas-ctm01/datasets/public/Oxford102Flowers/jpg" --run_name "baseline" --partition_file "partition.csv" --batch_size 256
+python train.py --dataset_path "/nas-ctm01/datasets/public/Oxford102Flowers/jpg" --run_name "baseline" --partition_file "partition.csv" --sampling_method "cold_diffusion" --batch_size 256
