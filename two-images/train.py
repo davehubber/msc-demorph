@@ -42,11 +42,13 @@ class Diffusion:
                     x = x + predicted_image
 
                 elif prediction == "original" and sampling_method == "with_error_removal":
-                    other_image = (x - (1-alpha_init) * predicted_image) / (alpha_init) 
+                    alpha_t = (self.alteration_per_t * t)[:, None, None, None]
+                    
+                    other_image = (x - (1 - alpha_t) * predicted_image) / alpha_t 
                     
                     error = 0
                     if i != init_timestep:
-                        error = (alpha_init * predicted_image + (1.-alpha_init) * other_image) - superimposed_image
+                        error = ((1. - alpha_init) * predicted_image + alpha_init * other_image) - superimposed_image
                         error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (alpha_init - self.alteration_per_t * t))[:, None, None, None]
                     
                     delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
@@ -362,8 +364,8 @@ def launch():
     args.sampling_name = args.run_name
 
     #train(args)
-    #eval(args)
-    one_shot_eval(args)
+    eval(args)
+    #one_shot_eval(args)
 
 if __name__ == '__main__':
     launch()
