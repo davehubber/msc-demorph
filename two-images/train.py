@@ -180,6 +180,9 @@ def eval(args):
     
     lpips_model = lpips.LPIPS(net='alex').to(device)
 
+    sample_dir = os.path.join("samples", args.sampling_name)
+    os.makedirs(sample_dir, exist_ok=True)
+
     ssim_o, ssim_a, lpips_o, lpips_a, psnr_o, psnr_a = [], [], [], [], [], []
     success_count = 0
     total_count = 0
@@ -294,6 +297,9 @@ def one_shot_eval(args):
     
     diffusion = Diffusion(img_size=args.image_size, device=device)
     lpips_model = lpips.LPIPS(net='alex').to(device)
+
+    sample_dir = os.path.join("samples", args.sampling_name)
+    os.makedirs(sample_dir, exist_ok=True)
     
     S = images * (1 - args.alpha_init) + images_add * args.alpha_init
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
