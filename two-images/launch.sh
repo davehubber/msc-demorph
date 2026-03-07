@@ -8,4 +8,4 @@
 
 # Commands / scripts to run (e.g., python3 train.py)
 
-python train.py --dataset_path "/nas-ctm01/datasets/public/Oxford102Flowers/jpg" --run_name "faster_baseline_2" --partition_file "partition.csv" --sampling_method "cold_diffusion" --batch_size 512 --epochs 750
+python train.py --dataset_path "/nas-ctm01/datasets/public/Oxford102Flowers/jpg" --run_name "faster_baseline_2" --partition_file "partition.csv" --sampling_method "cold_diffusion" --batch_size 128 --epochs 750
