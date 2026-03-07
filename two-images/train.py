@@ -109,10 +109,16 @@ def train(args):
     device = args.device
     train_dataloader = get_data(args, 'train')
     test_dataloader = get_data(args, 'test')
+
     model = UNet(device=device).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     mse = nn.MSELoss()
     diffusion = Diffusion(img_size=args.image_size, device=device)
+
+    ema = EMA(beta=0.995)
+    ema_model = UNet(device=device).to(device)
+    ema_model.load_state_dict(model.state_dict())
+    ema_model.eval()
 
     wandb.init(
         project="demorph",
@@ -148,6 +154,8 @@ def train(args):
             scaler.step(optimizer)
             scaler.update()
 
+            ema.step_ema(ema_model, model)
+
             global_step += 1
             if global_step % 100 == 0:
                 wandb.log({
@@ -160,7 +168,9 @@ def train(args):
             for _, (images, images_add) in enumerate(test_dataloader):
                 images = images.to(device)
                 images_add = images_add.to(device)
-                sampled_images, other_images = diffusion.sample(model, (images + images_add) / 2., prediction=args.prediction, sampling_method=args.sampling_method)
+
+                sampled_images, other_images = diffusion.sample(ema_model, (images + images_add) / 2., prediction=args.prediction, sampling_method=args.sampling_method)
+
                 images = (images.clamp(-1, 1) + 1) / 2
                 images = (images * 255).type(torch.uint8)
                 images_add = (images_add.clamp(-1, 1) + 1) / 2
@@ -169,6 +179,7 @@ def train(args):
                 break
         
         torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
+        torch.save(ema_model.state_dict(), os.path.join("models", args.run_name, f"ema_ckpt.pt"))
 
 def calculate_metrics(image, add_image, result_ori_image, result_add_image):
     ssim_original = structural_similarity(image, result_ori_image, data_range=255, channel_axis=-1)
@@ -181,7 +192,9 @@ def eval(args):
     device = args.device
     test_dataloader = get_data(args, 'test')
     model = UNet().to(device)
-    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ema_ckpt.pt"), map_location=torch.device(device)))
+
     model.to(device)
     model.eval()
     diffusion = Diffusion(img_size=args.image_size, device=device)
@@ -300,7 +313,7 @@ def one_shot_eval(args):
     n = len(images)
     
     model = UNet().to(device)
-    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ema_ckpt.pt"), map_location=torch.device(device)))
     model.eval()
     
     diffusion = Diffusion(img_size=args.image_size, device=device)
