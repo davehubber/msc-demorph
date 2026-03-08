@@ -8,13 +8,12 @@ from modules import UNet
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
 
 class Diffusion:
-    def __init__(self, max_timesteps=300, alpha_start=0., alpha_max=0.5, img_size=256, device="cuda"):
+    def __init__(self, max_timesteps=250, alpha_start=0., alpha_max=0.5, img_size=256, device="cuda"):
         self.max_timesteps = max_timesteps
         self.img_size = img_size
         self.device = device
         self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps
         
-        # Initialize LPIPS once here so it doesn't reload on every sample call
         self.loss_fn_alex = lpips.LPIPS(net='alex').to(self.device)
         self.loss_fn_alex.eval()
 
@@ -29,7 +28,6 @@ class Diffusion:
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
 
-        # Calculate the exact float alpha used at the initial timestep
         actual_alpha_init = self.alteration_per_t * init_timestep
 
         with torch.no_grad():
@@ -40,7 +38,6 @@ class Diffusion:
                 t = (torch.ones(n) * i).long().to(self.device)
 
                 if i == init_timestep:
-                    # Initial Prediction establishes the goals (Anchors)
                     p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
                     
                     anchor_A = p_1.clamp(-1.0, 1.0)
@@ -53,38 +50,30 @@ class Diffusion:
                     pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                     pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
-                    # --- ALIGN PATH A USING LPIPS ---
                     lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
                     lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
                     
                     swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
                     pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
 
-                    # --- ALIGN PATH B USING LPIPS ---
                     lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
                     lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
                     
                     swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
                     pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
 
-                    # Goals extracted from aligned paths
                     best_pred_A = pA_1_aligned.clamp(-1.0, 1.0)
                     best_pred_B = pB_2_aligned.clamp(-1.0, 1.0)
                     
-                    # Update Anchors ONLY if they swapped (shifted concepts)
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
 
-                # --- ALGEBRAIC EXTRACTION (From Initial State) ---
-                # Using the original superimposed_image and the scalar actual_alpha_init
                 extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
                 extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
                 
-                # Clamp the extracted replicas to prevent numerical overshoots
                 extracted_B_from_A = extracted_B_from_A.clamp(-1.0, 1.0)
                 extracted_A_from_B = extracted_A_from_B.clamp(-1.0, 1.0)
 
-                # --- RENOISE (COLD DIFFUSION STEP) ---
                 x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
                 x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
         
@@ -154,14 +143,12 @@ def train(args):
                     "epoch": epoch
                 })
 
-        # Sample and save images every 10 epochs (No metric calculation)
         if (epoch + 1) % 10 == 0:
             for _, (images, images_add) in enumerate(test_dataloader):
                 images = images.to(device)
                 images_add = images_add.to(device)
 
                 superimposed = (images + images_add) / 2.
-                # Passed ground truth images here
                 sampled_A, sampled_B = diffusion.sample(model, superimposed, alpha_init=args.alpha_init)
 
                 images = (images.clamp(-1, 1) + 1) / 2
@@ -193,7 +180,6 @@ def eval(args):
 
     loss_fn_alex = lpips.LPIPS(net='alex').to(device)
 
-    # 1. Track metrics separately for Image 1 and Image 2
     results = {
         "ssim_1": [], "ssim_2": [], 
         "psnr_1": [], "psnr_2": [], 
@@ -204,11 +190,9 @@ def eval(args):
     
     saved_grid = False
 
-    # Ensure output directories exist before writing files
     os.makedirs(os.path.join("samples", args.sampling_name), exist_ok=True)
     os.makedirs(os.path.join("results", args.run_name), exist_ok=True)
     
-    # Create a directory specifically for the individual separated images
     ind_dir = os.path.join("samples", args.sampling_name, "individual")
     os.makedirs(ind_dir, exist_ok=True)
 
@@ -219,7 +203,6 @@ def eval(args):
         superimposed = (images + images_add) / 2.
         superimposed_np = ((superimposed.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8).cpu().permute(0, 2, 3, 1).numpy()
 
-        # Passed ground truth images here
         sampled_A, sampled_B = diffusion.sample(model, superimposed, args.alpha_init)
         
         gt_A_eval = ((images.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
@@ -257,7 +240,6 @@ def eval(args):
             l_A = loss_fn_alex(images[k], (tensor_s_A.float() / 127.5) - 1.0).item()
             l_B = loss_fn_alex(images_add[k], (tensor_s_B.float() / 127.5) - 1.0).item()
 
-            # Append metrics independently
             results["ssim_1"].append(s_A)
             results["ssim_2"].append(s_B)
             results["psnr_1"].append(p_A)
@@ -268,7 +250,6 @@ def eval(args):
             ssim_avg_A = structural_similarity(cur_gt_A, cur_super, data_range=255, channel_axis=-1)
             ssim_avg_B = structural_similarity(cur_gt_B, cur_super, data_range=255, channel_axis=-1)
 
-            # Track success independently
             if s_A > ssim_avg_A:
                 results["success_count_1"] += 1
             if s_B > ssim_avg_B:
@@ -282,11 +263,9 @@ def eval(args):
             aligned_A_stack = torch.stack(batch_s_A)
             aligned_B_stack = torch.stack(batch_s_B)
             
-            # Still save the grid for a quick overview
             save_images(aligned_A_stack, aligned_B_stack, gt_A_eval, gt_B_eval, 
                         os.path.join("samples", args.sampling_name, "eval_grid.jpg"))
             
-            # 2. Save individual image files
             for b_idx in range(len(batch_s_A)):
                 img_A_np = batch_s_A[b_idx].cpu().permute(1, 2, 0).numpy()
                 img_B_np = batch_s_B[b_idx].cpu().permute(1, 2, 0).numpy()
@@ -296,7 +275,6 @@ def eval(args):
 
             saved_grid = True
 
-    # Calculate final averages
     avg_ssim_1, avg_ssim_2 = np.mean(results["ssim_1"]), np.mean(results["ssim_2"])
     avg_psnr_1, avg_psnr_2 = np.mean(results["psnr_1"]), np.mean(results["psnr_2"])
     avg_lpips_1, avg_lpips_2 = np.mean(results["lpips_1"]), np.mean(results["lpips_2"])
@@ -331,7 +309,7 @@ def launch():
     parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
     parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
     parser.add_argument('--batch_size', default=16, help='Batch size', type=int, required=False)
-    parser.add_argument('--epochs', default=800, help='Number of epochs', type=int, required=False)
+    parser.add_argument('--epochs', default=1000, help='Number of epochs', type=int, required=False)
     parser.add_argument('--lr', default=3e-4, help='Learning rate', type=float, required=False)
     parser.add_argument('--device', default='cuda', help='Device, choose between [cuda, cpu]', required=False)
     parser.add_argument('--mode', default='train', choices=['train', 'eval'], help='Mode to run')
