@@ -21,7 +21,7 @@ class Diffusion:
         return image_1 * (1. - self.alteration_per_t * t)[:, None, None, None] + image_2 * (self.alteration_per_t * t)[:, None, None, None]
 
     def sample_timesteps(self, n):
-        return torch.randint(low=1, high=self.max_timesteps, size=(n,), device=self.device)
+        return torch.randint(low=1, high=self.max_timesteps + 1, size=(n,), device=self.device)
 
     def sample(self, model, superimposed_image, alpha_init=0.5):
         n = len(superimposed_image)
@@ -107,6 +107,10 @@ def train(args):
     global_step = 0
     scaler = torch.amp.GradScaler("cuda")
 
+    fixed_test_images, fixed_test_images_add = next(iter(test_dataloader))
+    fixed_test_images = fixed_test_images[:4].to(device)
+    fixed_test_images_add = fixed_test_images_add[:4].to(device)
+
     for epoch in range(args.epochs):
         for _, (images, images_add) in enumerate(train_dataloader):
             images = images.to(device)
@@ -143,21 +147,17 @@ def train(args):
                     "epoch": epoch
                 })
 
-        if (epoch + 1) % 10 == 0:
-            for _, (images, images_add) in enumerate(test_dataloader):
-                images = images.to(device)
-                images_add = images_add.to(device)
-
-                superimposed = (images + images_add) / 2.
+            if (epoch + 1) % 10 == 0:
+                superimposed = (fixed_test_images + fixed_test_images_add) / 2.
                 sampled_A, sampled_B = diffusion.sample(model, superimposed, alpha_init=args.alpha_init)
 
-                images = (images.clamp(-1, 1) + 1) / 2
-                images = (images * 255).type(torch.uint8)
-                images_add = (images_add.clamp(-1, 1) + 1) / 2
-                images_add = (images_add * 255).type(torch.uint8)
+                imgs_to_save = (fixed_test_images.clamp(-1, 1) + 1) / 2
+                imgs_to_save = (imgs_to_save * 255).type(torch.uint8)
+                
+                imgs_add_to_save = (fixed_test_images_add.clamp(-1, 1) + 1) / 2
+                imgs_add_to_save = (imgs_add_to_save * 255).type(torch.uint8)
 
-                save_images(sampled_A, sampled_B, images, images_add, os.path.join("results", args.run_name, f"{epoch+1}.jpg"))
-                break
+                save_images(sampled_A, sampled_B, imgs_to_save, imgs_add_to_save, os.path.join("results", args.run_name, f"{epoch+1}.jpg"))
         
         torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
 
@@ -218,8 +218,8 @@ def eval(args):
             cur_s_B = sampled_B[k].cpu().permute(1, 2, 0).numpy()
             cur_super = superimposed_np[k]
 
-            mse_straight = np.mean((cur_s_A - cur_gt_A)**2) + np.mean((cur_s_B - cur_gt_B)**2)
-            mse_crossed  = np.mean((cur_s_A - cur_gt_B)**2) + np.mean((cur_s_B - cur_gt_A)**2)
+            mse_straight = np.mean((cur_s_A.astype(np.float32) - cur_gt_A.astype(np.float32))**2) + np.mean((cur_s_B.astype(np.float32) - cur_gt_B.astype(np.float32))**2)
+            mse_crossed  = np.mean((cur_s_A.astype(np.float32) - cur_gt_B.astype(np.float32))**2) + np.mean((cur_s_B.astype(np.float32) - cur_gt_A.astype(np.float32))**2)
 
             if mse_crossed < mse_straight:
                 cur_s_A, cur_s_B = cur_s_B, cur_s_A
@@ -237,8 +237,8 @@ def eval(args):
             p_A = peak_signal_noise_ratio(cur_gt_A, cur_s_A, data_range=255)
             p_B = peak_signal_noise_ratio(cur_gt_B, cur_s_B, data_range=255)
 
-            l_A = loss_fn_alex(images[k], (tensor_s_A.float() / 127.5) - 1.0).item()
-            l_B = loss_fn_alex(images_add[k], (tensor_s_B.float() / 127.5) - 1.0).item()
+            l_A = loss_fn_alex(images[k].unsqueeze(0), ((tensor_s_A.float() / 127.5) - 1.0).unsqueeze(0)).item()
+            l_B = loss_fn_alex(images_add[k].unsqueeze(0), ((tensor_s_B.float() / 127.5) - 1.0).unsqueeze(0)).item()
 
             results["ssim_1"].append(s_A)
             results["ssim_2"].append(s_B)
