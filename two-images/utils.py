@@ -77,7 +77,7 @@ def get_data(args, partition):
     shuffle = True
     if partition == 'test':
         shuffle = False
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=0, pin_memory=True)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=0, pin_memory=False)
     return dataloader
 
 def setup_logging(run_name):

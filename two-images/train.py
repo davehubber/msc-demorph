@@ -2,6 +2,7 @@ import os, torch, numpy as np, math
 import torch.nn.functional as F
 import wandb
 import lpips
+import argparse
 from torch import optim
 from utils import *
 from modules import UNet
@@ -147,7 +148,7 @@ def train(args):
                     "epoch": epoch
                 })
 
-            if (epoch + 1) % 10 == 0:
+            if (epoch + 1) % 50 == 0:
                 superimposed = (fixed_test_images + fixed_test_images_add) / 2.
                 sampled_A, sampled_B = diffusion.sample(model, superimposed, alpha_init=args.alpha_init)
 
@@ -192,9 +193,6 @@ def eval(args):
 
     os.makedirs(os.path.join("samples", args.sampling_name), exist_ok=True)
     os.makedirs(os.path.join("results", args.run_name), exist_ok=True)
-    
-    ind_dir = os.path.join("samples", args.sampling_name, "individual")
-    os.makedirs(ind_dir, exist_ok=True)
 
     for i, (images, images_add) in enumerate(test_dataloader):
         images = images.to(device)
@@ -258,20 +256,17 @@ def eval(args):
             results["total_pairs"] += 1
 
         if i == 0 and not saved_grid:
-            from PIL import Image
             
             aligned_A_stack = torch.stack(batch_s_A)
             aligned_B_stack = torch.stack(batch_s_B)
             
-            save_images(aligned_A_stack, aligned_B_stack, gt_A_eval, gt_B_eval, 
-                        os.path.join("samples", args.sampling_name, "eval_grid.jpg"))
+            grid_limit = min(8, len(aligned_A_stack))
             
-            for b_idx in range(len(batch_s_A)):
-                img_A_np = batch_s_A[b_idx].cpu().permute(1, 2, 0).numpy()
-                img_B_np = batch_s_B[b_idx].cpu().permute(1, 2, 0).numpy()
-                
-                Image.fromarray(img_A_np).save(os.path.join(ind_dir, f"sample_{b_idx}_img1.jpg"))
-                Image.fromarray(img_B_np).save(os.path.join(ind_dir, f"sample_{b_idx}_img2.jpg"))
+            save_images(aligned_A_stack[:grid_limit], 
+                        aligned_B_stack[:grid_limit], 
+                        gt_A_eval[:grid_limit], 
+                        gt_B_eval[:grid_limit], 
+                        os.path.join("samples", args.sampling_name, "eval_grid.jpg"))
 
             saved_grid = True
 
@@ -300,7 +295,6 @@ def eval(args):
         f.write(metrics_report)
 
 def launch():
-    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_path', help='Path to dataset', required=True)
     parser.add_argument('--run_name', help='Name of the experiment for saving models and results', required=True)
