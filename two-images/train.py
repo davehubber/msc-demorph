@@ -8,7 +8,7 @@ from modules import UNet
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
 
 class Diffusion:
-    def __init__(self, max_timesteps=250, alpha_start=0., alpha_max=0.8, img_size=256, device="cuda"):
+    def __init__(self, max_timesteps=250, alpha_start=0., alpha_max=0.5, img_size=256, device="cuda"):
         self.max_timesteps = max_timesteps
         self.img_size = img_size
         self.device = device
@@ -90,6 +90,15 @@ class Diffusion:
                     other_image = (x - (1-self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (self.alteration_per_t * t)[:, None, None, None]
                     delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
                     x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image
+                elif prediction == 'added_residual' and sampling_method == "residual_step":
+                    alpha_t = (self.alteration_per_t * t)[:, None, None, None]
+                    alpha_t_minus_1 = (self.alteration_per_t * (t - 1))[:, None, None, None]
+                    
+                    c1 = (1. - alpha_t_minus_1) / (1. - alpha_t)
+                    
+                    c2 = (alpha_t_minus_1 / alpha_t) - c1
+                    
+                    x_t = x * c1 + predicted_image * c2
                 else:
                     print(f"Invalid prediction - {prediction} - and sampling_method - {sampling_method} - combination.")
                     exit(-1)
@@ -140,6 +149,10 @@ def train(args):
                 elif args.prediction == "differences":
                     x_diff = diffusion.noise_images(images, images_add, t-1) - x_t
                     loss = mse(x_diff, predicted_image)
+                elif args.prediction == "added_residual":
+                    alpha_t = (diffusion.alteration_per_t * t)[:, None, None, None]
+                    target_residual = images_add * alpha_t
+                    loss = mse(target_residual, predicted_image)
                 else:
                     print("Invalid model prediction.")
                     exit(-1)
@@ -330,6 +343,10 @@ def one_shot_eval(args):
         elif args.prediction == "differences":
             sampled_images = S + predicted_image * t[:, None, None, None]
             sampled_other_image = (S - (1 - args.alpha_init) * sampled_images) / args.alpha_init
+        elif args.prediction == "added_residual":
+            alpha_t = (diffusion.alteration_per_t * t)[:, None, None, None]
+            sampled_other_image = predicted_image / alpha_t
+            sampled_images = (S - predicted_image) / (1. - alpha_t)
         else:
             print("Invalid model prediction argument.")
             return
@@ -423,9 +440,9 @@ def launch():
     parser.add_argument('--dataset_path', help='Path to dataset', required=True)
     parser.add_argument('--run_name', help='Name of the experiment for saving models and results', required=True)
     parser.add_argument('--partition_file', help='CSV file with test indexes', required=True)
-    parser.add_argument('--prediction', default='original', help='The prediction of the model, choose between [added, original, differences]', required=False)
-    parser.add_argument('--sampling_method', default='with_error_removal', help='Choose between [cold_diffusion, with_error_removal, one_step, without_error_removal, differences]', required=False)
-    parser.add_argument('--alpha_max', default=0.8, type=float, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max', required=False)
+    parser.add_argument('--prediction', default='original', help='The prediction of the model, choose between [added, original, differences, added_residual]', required=False)
+    parser.add_argument('--sampling_method', default='with_error_removal', help='Choose between [cold_diffusion, with_error_removal, one_step, without_error_removal, differences, residual_step]', required=False)
+    parser.add_argument('--alpha_max', default=0.5, type=float, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max', required=False)
     parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
     parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
     parser.add_argument('--batch_size', default=16, help='Batch size', type=int, required=False)

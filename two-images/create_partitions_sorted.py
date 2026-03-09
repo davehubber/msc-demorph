@@ -45,8 +45,8 @@ def generate_partition_csv(folder_path, output_csv="partition.csv"):
                 
             data.append({
                 'partition': partition_name,
-                'Image1': image_brighter,
-                'Image2': image_darker
+                'Image1': image_darker,
+                'Image2': image_brighter
             })
 
     print("Generating train and test pairs...")

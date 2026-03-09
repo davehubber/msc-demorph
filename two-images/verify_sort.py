@@ -48,9 +48,9 @@ def verify_partition_csv(csv_path, folder_path):
             intensity_cache[img2_name] = calculate_average_intensity(img2_path)
         int2 = intensity_cache[img2_name]
         
-        if int1 > int2:
+        if int2 > int1:
             correct_count += 1
-        elif int1 < int2:
+        elif int2 < int1:
             incorrect_count += 1
         else:
             equal_count += 1
