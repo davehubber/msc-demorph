@@ -90,15 +90,17 @@ class Diffusion:
                     other_image = (x - (1-self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (self.alteration_per_t * t)[:, None, None, None]
                     delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
                     x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image
-                elif prediction == 'added_residual' and sampling_method == "residual_step":
+                elif prediction == 'added' and sampling_method == "residual_step":
                     alpha_t = (self.alteration_per_t * t)[:, None, None, None]
                     alpha_t_minus_1 = (self.alteration_per_t * (t - 1))[:, None, None, None]
                     
-                    c1 = (1. - alpha_t_minus_1) / (1. - alpha_t)
+                    residual = predicted_image * alpha_t
                     
+                    c1 = (1. - alpha_t_minus_1) / (1. - alpha_t)
                     c2 = (alpha_t_minus_1 / alpha_t) - c1
                     
-                    x_t = x * c1 + predicted_image * c2
+                    x_t = x * c1 + residual * c2
+                    x_t = torch.clamp(x_t, min=-1.0, max=1.0)
                 else:
                     print(f"Invalid prediction - {prediction} - and sampling_method - {sampling_method} - combination.")
                     exit(-1)
@@ -149,10 +151,6 @@ def train(args):
                 elif args.prediction == "differences":
                     x_diff = diffusion.noise_images(images, images_add, t-1) - x_t
                     loss = mse(x_diff, predicted_image)
-                elif args.prediction == "added_residual":
-                    alpha_t = (diffusion.alteration_per_t * t)[:, None, None, None]
-                    target_residual = images_add * alpha_t
-                    loss = mse(target_residual, predicted_image)
                 else:
                     print("Invalid model prediction.")
                     exit(-1)
@@ -170,7 +168,7 @@ def train(args):
                 })
 
         # Sample and save images every 10 epochs (No metric calculation)
-        if (epoch + 1) % 10 == 0:
+        if (epoch + 1) % 50 == 0:
             for _, (images, images_add) in enumerate(test_dataloader):
                 images = images.to(device)
                 images_add = images_add.to(device)
