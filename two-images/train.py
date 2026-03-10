@@ -114,8 +114,8 @@ def train(args):
 
     for epoch in range(args.epochs):
         for _, (images, images_add) in enumerate(train_dataloader):
-            images = images.to(device, non_blocking=True)
-            images_add = images_add.to(device, non_blocking=True)
+            images = images.to(device)
+            images_add = images_add.to(device)
 
             if torch.rand(1).item() > 0.5:
                 images, images_add = images_add, images
