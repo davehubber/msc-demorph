@@ -9,74 +9,85 @@ from modules import UNet
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
 
 class Diffusion:
-    def __init__(self, max_timesteps=250, alpha_start=0., alpha_max=0.5, img_size=256, device="cuda"):
+    def __init__(self, max_timesteps=250, arch="6-channel", img_size=64, device="cuda"):
         self.max_timesteps = max_timesteps
         self.img_size = img_size
         self.device = device
-        self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps
+        self.arch = arch
         
         self.loss_fn_alex = lpips.LPIPS(net='alex').to(self.device)
         self.loss_fn_alex.eval()
 
-    def noise_images(self, image_1, image_2, t):
-        return image_1 * (1. - self.alteration_per_t * t)[:, None, None, None] + image_2 * (self.alteration_per_t * t)[:, None, None, None]
+    def noise_images(self, image_A, image_B, t):
+        alpha_t = (t / self.max_timesteps).view(-1, 1, 1, 1)
+        
+        if self.arch == "6-channel":
+            # Linear cross-fade into each other
+            x_top = (1. - alpha_t / 2.) * image_A + (alpha_t / 2.) * image_B
+            x_bot = (alpha_t / 2.) * image_A + (1. - alpha_t / 2.) * image_B
+            return torch.cat([x_top, x_bot], dim=1)
+            
+        elif self.arch == "9-channel":
+            # Square root scheduling for variance stability as they fade into the middle
+            x_top = torch.sqrt(1. - alpha_t) * image_A
+            x_mid = torch.sqrt(alpha_t) * (image_A + image_B) / 2.0
+            x_bot = torch.sqrt(1. - alpha_t) * image_B
+            return torch.cat([x_top, x_mid, x_bot], dim=1)
 
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps + 1, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, alpha_init=0.5):
+    def sample(self, model, superimposed_image):
         n = len(superimposed_image)
-        init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
 
-        actual_alpha_init = self.alteration_per_t * init_timestep
-
         with torch.no_grad():
-            x_A = superimposed_image.clone().to(self.device)
-            x_B = superimposed_image.clone().to(self.device)
+            # 1. Construct initial fully degraded state x_T
+            if self.arch == "6-channel":
+                x_s = torch.cat([superimposed_image, superimposed_image], dim=1)
+            else: # 9-channel
+                zeros = torch.zeros_like(superimposed_image)
+                x_s = torch.cat([zeros, superimposed_image, zeros], dim=1)
 
-            for i in reversed(range(1, init_timestep + 1)):
-                t = (torch.ones(n) * i).long().to(self.device)
+            # 2. Break Symmetry: Inject tiny noise to give the UNet distinct local features
+            x_s = x_s + torch.randn_like(x_s) * 0.002
+            x_s = x_s.clamp(-1.0, 1.0)
 
-                if i == init_timestep:
-                    p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
+            for i in reversed(range(1, self.max_timesteps + 1)):
+                t_s = (torch.ones(n) * i).long().to(self.device)
+                t_prev = (torch.ones(n) * (i - 1)).long().to(self.device)
+
+                # Predict clean state
+                pred_x0 = model(x_s, t_s)
+                
+                if self.arch == "6-channel":
+                    p_A, p_B = torch.chunk(pred_x0, 2, dim=1)
+                else:
+                    p_A, p_0, p_B = torch.chunk(pred_x0, 3, dim=1)
                     
-                    anchor_A = p_1.clamp(-1.0, 1.0)
-                    anchor_B = p_2.clamp(-1.0, 1.0)
-                    
+                # 3. Handle Permutation Invariance Alignment
+                if i == self.max_timesteps:
+                    anchor_A = p_A.clamp(-1.0, 1.0)
+                    anchor_B = p_B.clamp(-1.0, 1.0)
                     best_pred_A = anchor_A.clone()
                     best_pred_B = anchor_B.clone()
-                    
                 else:
-                    pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
-                    pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
-
-                    lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
-                    lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
+                    lpips_straight = self.loss_fn_alex(p_A, anchor_A) + self.loss_fn_alex(p_B, anchor_B)
+                    lpips_crossed  = self.loss_fn_alex(p_A, anchor_B) + self.loss_fn_alex(p_B, anchor_A)
                     
-                    swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
-                    pA_1_aligned = torch.where(swap_mask_A, pA_2, pA_1)
-
-                    lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
-                    lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
+                    swap_mask = (lpips_crossed < lpips_straight).view(-1, 1, 1, 1)
                     
-                    swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
-                    pB_2_aligned = torch.where(swap_mask_B, pB_1, pB_2)
-
-                    best_pred_A = pA_1_aligned.clamp(-1.0, 1.0)
-                    best_pred_B = pB_2_aligned.clamp(-1.0, 1.0)
+                    best_pred_A = torch.where(swap_mask, p_B, p_A).clamp(-1.0, 1.0)
+                    best_pred_B = torch.where(swap_mask, p_A, p_B).clamp(-1.0, 1.0)
                     
-                    anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
-                    anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
+                    anchor_A = torch.where(swap_mask, best_pred_A.clone(), anchor_A)
+                    anchor_B = torch.where(swap_mask, best_pred_B.clone(), anchor_B)
 
-                extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
-                extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
+                # 4. Pure TACOS Algorithm: x_{s-1} = x_s - D(x_0, s) + D(x_0, s-1)
+                D_x0_s = self.noise_images(best_pred_A, best_pred_B, t_s)
+                D_x0_s_prev = self.noise_images(best_pred_A, best_pred_B, t_prev)
                 
-                extracted_B_from_A = extracted_B_from_A.clamp(-1.0, 1.0)
-                extracted_A_from_B = extracted_A_from_B.clamp(-1.0, 1.0)
-
-                x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
-                x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
+                x_s = x_s - D_x0_s + D_x0_s_prev
         
         model.train()
 
@@ -94,10 +105,11 @@ def train(args):
     train_dataloader = get_data(args, 'train')
     test_dataloader = get_data(args, 'test')
 
-    model = UNet(c_in=3, c_out=6, device=device).to(device)
+    c_in = 6 if args.architecture == "6-channel" else 9
+    model = UNet(c_in=c_in, c_out=c_in, device=device).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
 
-    diffusion = Diffusion(img_size=args.image_size, device=device, alpha_max=args.alpha_max)
+    diffusion = Diffusion(img_size=args.image_size, device=device, arch=args.architecture, max_timesteps=args.max_timesteps)
 
     wandb.init(
         project="demorph",
@@ -124,17 +136,33 @@ def train(args):
 
             with torch.amp.autocast("cuda"):
                 x_t = diffusion.noise_images(images, images_add, t)
-
                 predicted_both = model(x_t, t)
-                pred_1, pred_2 = torch.chunk(predicted_both, 2, dim=1)
 
-                mse_straight = F.mse_loss(pred_1, images, reduction='none').view(images.shape[0], -1).mean(dim=1) + \
-                               F.mse_loss(pred_2, images_add, reduction='none').view(images.shape[0], -1).mean(dim=1)
-                
-                mse_crossed = F.mse_loss(pred_1, images_add, reduction='none').view(images.shape[0], -1).mean(dim=1) + \
-                              F.mse_loss(pred_2, images, reduction='none').view(images.shape[0], -1).mean(dim=1)
-                
-                loss = torch.min(mse_straight, mse_crossed).mean()
+                # Calculate permutation invariant loss based on architecture
+                if args.architecture == "6-channel":
+                    pred_1, pred_2 = torch.chunk(predicted_both, 2, dim=1)
+                    
+                    mse_straight = F.mse_loss(pred_1, images, reduction='none').mean(dim=(1,2,3)) + \
+                                   F.mse_loss(pred_2, images_add, reduction='none').mean(dim=(1,2,3))
+                    
+                    mse_crossed = F.mse_loss(pred_1, images_add, reduction='none').mean(dim=(1,2,3)) + \
+                                  F.mse_loss(pred_2, images, reduction='none').mean(dim=(1,2,3))
+                                  
+                    loss = torch.min(mse_straight, mse_crossed).mean()
+                    
+                else: # 9-channel
+                    pred_1, pred_0, pred_2 = torch.chunk(predicted_both, 3, dim=1)
+                    
+                    # Force the middle channel to route information outwards (target 0)
+                    mse_0 = F.mse_loss(pred_0, torch.zeros_like(pred_0), reduction='none').mean(dim=(1,2,3))
+                    
+                    mse_straight = F.mse_loss(pred_1, images, reduction='none').mean(dim=(1,2,3)) + \
+                                   F.mse_loss(pred_2, images_add, reduction='none').mean(dim=(1,2,3)) + mse_0
+                                   
+                    mse_crossed = F.mse_loss(pred_1, images_add, reduction='none').mean(dim=(1,2,3)) + \
+                                  F.mse_loss(pred_2, images, reduction='none').mean(dim=(1,2,3)) + mse_0
+                                  
+                    loss = torch.min(mse_straight, mse_crossed).mean()
 
             optimizer.zero_grad(set_to_none=True)
             scaler.scale(loss).backward()
@@ -150,7 +178,7 @@ def train(args):
 
             if (epoch + 1) % 50 == 0:
                 superimposed = (fixed_test_images + fixed_test_images_add) / 2.
-                sampled_A, sampled_B = diffusion.sample(model, superimposed, alpha_init=args.alpha_init)
+                sampled_A, sampled_B = diffusion.sample(model, superimposed)
 
                 imgs_to_save = (fixed_test_images.clamp(-1, 1) + 1) / 2
                 imgs_to_save = (imgs_to_save * 255).type(torch.uint8)
@@ -162,23 +190,16 @@ def train(args):
         
         torch.save(model.state_dict(), os.path.join("models", args.run_name, f"ckpt.pt"))
 
-def calculate_metrics(image, add_image, result_ori_image, result_add_image):
-    ssim_original = structural_similarity(image, result_ori_image, data_range=255, channel_axis=-1)
-    ssim_added = structural_similarity(add_image, result_add_image, data_range=255, channel_axis=-1)
-    psnr_original = peak_signal_noise_ratio(image, result_ori_image, data_range=255)
-    psnr_added = peak_signal_noise_ratio(add_image, result_add_image, data_range=255)
-    return ssim_original, ssim_added, psnr_original, psnr_added
-
 def eval(args):
     device = args.device
     test_dataloader = get_data(args, 'test')
 
-    model = UNet(c_in=3, c_out=6, device=device).to(device)
+    c_in = 6 if args.architecture == "6-channel" else 9
+    model = UNet(c_in=c_in, c_out=c_in, device=device).to(device)
     model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
     model.eval()
 
-    diffusion = Diffusion(img_size=args.image_size, device=device)
-
+    diffusion = Diffusion(img_size=args.image_size, device=device, arch=args.architecture, max_timesteps=args.max_timesteps)
     loss_fn_alex = lpips.LPIPS(net='alex').to(device)
 
     results = {
@@ -201,7 +222,7 @@ def eval(args):
         superimposed = (images + images_add) / 2.
         superimposed_np = ((superimposed.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8).cpu().permute(0, 2, 3, 1).numpy()
 
-        sampled_A, sampled_B = diffusion.sample(model, superimposed, args.alpha_init)
+        sampled_A, sampled_B = diffusion.sample(model, superimposed)
         
         gt_A_eval = ((images.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
         gt_B_eval = ((images_add.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
@@ -256,10 +277,8 @@ def eval(args):
             results["total_pairs"] += 1
 
         if i == 0 and not saved_grid:
-            
             aligned_A_stack = torch.stack(batch_s_A)
             aligned_B_stack = torch.stack(batch_s_B)
-            
             grid_limit = min(8, len(aligned_A_stack))
             
             save_images(aligned_A_stack[:grid_limit], 
@@ -267,7 +286,6 @@ def eval(args):
                         gt_A_eval[:grid_limit], 
                         gt_B_eval[:grid_limit], 
                         os.path.join("samples", args.sampling_name, "eval_grid.jpg"))
-
             saved_grid = True
 
     avg_ssim_1, avg_ssim_2 = np.mean(results["ssim_1"]), np.mean(results["ssim_2"])
@@ -299,8 +317,8 @@ def launch():
     parser.add_argument('--dataset_path', help='Path to dataset', required=True)
     parser.add_argument('--run_name', help='Name of the experiment for saving models and results', required=True)
     parser.add_argument('--partition_file', help='CSV file with test indexes', required=True)
-    parser.add_argument('--alpha_max', default=0.5, type=float, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max', required=False)
-    parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
+    parser.add_argument('--architecture', default='6-channel', choices=['6-channel', '9-channel'], help='Architecture to use')
+    parser.add_argument('--max_timesteps', default=250, type=int, help='Total timesteps for diffusion')
     parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
     parser.add_argument('--batch_size', default=16, help='Batch size', type=int, required=False)
     parser.add_argument('--epochs', default=1000, help='Number of epochs', type=int, required=False)
