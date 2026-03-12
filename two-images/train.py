@@ -35,10 +35,10 @@ class Diffusion:
             noise_A = torch.randn_like(superimposed_image) * 0.002
             noise_B = torch.randn_like(superimposed_image) * 0.002
             
-            x_A = (superimposed_image.clone() + noise_A).to(self.device)
-            x_B = (superimposed_image.clone() + noise_B).to(self.device)
+            x_A = (superimposed_image.clone() + noise_A).clamp(-1.0, 1.0).to(self.device)
+            x_B = (superimposed_image.clone() + noise_B).clamp(-1.0, 1.0).to(self.device)
 
-            target_sum = 2.0 * superimposed_image.to(self.device)
+            #target_sum = 2.0 * superimposed_image.to(self.device)
 
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
@@ -55,6 +55,9 @@ class Diffusion:
                 else:
                     pA_1, pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                     pB_1, pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
+
+                    pA_1, pA_2 = pA_1.clamp(-1.0, 1.0), pA_2.clamp(-1.0, 1.0)
+                    pB_1, pB_2 = pB_1.clamp(-1.0, 1.0), pB_2.clamp(-1.0, 1.0)
 
                     lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
                     lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
@@ -73,11 +76,11 @@ class Diffusion:
                     
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
-
-                pred_sum = best_pred_A + best_pred_B
-                error_pred = target_sum - pred_sum
-                best_pred_A = (best_pred_A + error_pred / 2.0).clamp(-1.0, 1.0)
-                best_pred_B = (best_pred_B + error_pred / 2.0).clamp(-1.0, 1.0)
+                
+                #pred_sum = best_pred_A + best_pred_B
+                #error_pred = target_sum - pred_sum
+                #best_pred_A = (best_pred_A + error_pred / 2.0).clamp(-1.0, 1.0)
+                #best_pred_B = (best_pred_B + error_pred / 2.0).clamp(-1.0, 1.0)
 
                 extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
                 extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
@@ -88,10 +91,10 @@ class Diffusion:
                 x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
                 x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
                 
-                current_sum = x_A + x_B
-                error_x = target_sum - current_sum
-                x_A = x_A + error_x / 2.0
-                x_B = x_B + error_x / 2.0
+                #current_sum = x_A + x_B
+                #error_x = target_sum - current_sum
+                #x_A = x_A + error_x / 2.0
+                #x_B = x_B + error_x / 2.0
         
         model.train()
 
@@ -154,8 +157,11 @@ def train(args):
                               F.mse_loss(pred_2, images, reduction='none').view(images.shape[0], -1).mean(dim=1)
                 
                 if args.use_lpips_loss:
-                    lpips_straight = (loss_fn_alex_train(pred_1, images) + loss_fn_alex_train(pred_2, images_add)).view(-1)
-                    lpips_crossed = (loss_fn_alex_train(pred_1, images_add) + loss_fn_alex_train(pred_2, images)).view(-1)
+                    pred_1_c = pred_1.clamp(-1.0, 1.0)
+                    pred_2_c = pred_2.clamp(-1.0, 1.0)
+
+                    lpips_straight = (loss_fn_alex_train(pred_1_c, images) + loss_fn_alex_train(pred_2_c, images_add)).view(-1)
+                    lpips_crossed = (loss_fn_alex_train(pred_1_c, images_add) + loss_fn_alex_train(pred_2_c, images)).view(-1)
                     
                     loss_straight = mse_straight + args.lambda_lpips * lpips_straight
                     loss_crossed = mse_crossed + args.lambda_lpips * lpips_crossed
@@ -166,6 +172,8 @@ def train(args):
 
             optimizer.zero_grad(set_to_none=True)
             scaler.scale(loss).backward()
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             scaler.step(optimizer)
             scaler.update()
 
