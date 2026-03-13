@@ -24,51 +24,12 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps + 1, size=(n,), device=self.device)
 
-    @staticmethod
-    def _append_clamp_stats(stats_dict, name, x, low=-1.0, high=1.0):
-        below = (x < low).float().mean().item()
-        above = (x > high).float().mean().item()
-        stats_dict[f"{name}_below"].append(below)
-        stats_dict[f"{name}_above"].append(above)
-        stats_dict[f"{name}_oor"].append(below + above)  # out-of-range fraction
-        stats_dict[f"{name}_min"].append(x.min().item())
-        stats_dict[f"{name}_max"].append(x.max().item())
-
-    @staticmethod
-    def _summarize_clamp_stats(stats_dict):
-        summary = {}
-        per_step = {}
-        for k, v in stats_dict.items():
-            per_step[k] = v
-            if len(v) > 0:
-                summary[f"{k}_mean"] = float(np.mean(v))
-                summary[f"{k}_max"] = float(np.max(v))
-            else:
-                summary[f"{k}_mean"] = 0.0
-                summary[f"{k}_max"] = 0.0
-        return {"summary": summary, "per_step": per_step}
-
-    def sample(self, model, superimposed_image, alpha_init=0.5, return_clamp_stats=False):
+    def sample(self, model, superimposed_image, alpha_init=0.5):
         n = len(superimposed_image)
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
 
         actual_alpha_init = self.alteration_per_t * init_timestep
-
-        clamp_stats = None
-        if return_clamp_stats:
-            clamp_stats = {
-                "anchor_A_below": [], "anchor_A_above": [], "anchor_A_oor": [], "anchor_A_min": [], "anchor_A_max": [],
-                "anchor_B_below": [], "anchor_B_above": [], "anchor_B_oor": [], "anchor_B_min": [], "anchor_B_max": [],
-                "pA_1_below": [], "pA_1_above": [], "pA_1_oor": [], "pA_1_min": [], "pA_1_max": [],
-                "pA_2_below": [], "pA_2_above": [], "pA_2_oor": [], "pA_2_min": [], "pA_2_max": [],
-                "pB_1_below": [], "pB_1_above": [], "pB_1_oor": [], "pB_1_min": [], "pB_1_max": [],
-                "pB_2_below": [], "pB_2_above": [], "pB_2_oor": [], "pB_2_min": [], "pB_2_max": [],
-                "best_pred_A_below": [], "best_pred_A_above": [], "best_pred_A_oor": [], "best_pred_A_min": [], "best_pred_A_max": [],
-                "best_pred_B_below": [], "best_pred_B_above": [], "best_pred_B_oor": [], "best_pred_B_min": [], "best_pred_B_max": [],
-                "extracted_B_from_A_below": [], "extracted_B_from_A_above": [], "extracted_B_from_A_oor": [], "extracted_B_from_A_min": [], "extracted_B_from_A_max": [],
-                "extracted_A_from_B_below": [], "extracted_A_from_B_above": [], "extracted_A_from_B_oor": [], "extracted_A_from_B_min": [], "extracted_A_from_B_max": [],
-            }
 
         with torch.no_grad():
             x_A = superimposed_image.clone().to(self.device)
@@ -78,81 +39,76 @@ class Diffusion:
                 t = (torch.ones(n) * i).long().to(self.device)
 
                 if i == init_timestep:
-                    p_1, p_2 = torch.chunk(model(x_A, t), 2, dim=1)
+                    raw_p1, raw_p2 = torch.chunk(model(x_A, t), 2, dim=1)
 
-                    if return_clamp_stats:
-                        self._append_clamp_stats(clamp_stats, "anchor_A", p_1)
-                        self._append_clamp_stats(clamp_stats, "anchor_B", p_2)
+                    # Clamped copies only for anchor initialization / LPIPS reference
+                    p1_lp = raw_p1.clamp(-1.0, 1.0)
+                    p2_lp = raw_p2.clamp(-1.0, 1.0)
 
-                    anchor_A = p_1.clamp(-1.0, 1.0)
-                    anchor_B = p_2.clamp(-1.0, 1.0)
+                    anchor_A = p1_lp.clone()
+                    anchor_B = p2_lp.clone()
 
-                    best_pred_A = anchor_A.clone()
-                    best_pred_B = anchor_B.clone()
-
-                    # Optional: if you want to log init best_pred too
-                    if return_clamp_stats:
-                        self._append_clamp_stats(clamp_stats, "best_pred_A", p_1)
-                        self._append_clamp_stats(clamp_stats, "best_pred_B", p_2)
+                    # Raw predictions drive the reverse process
+                    best_pred_A = raw_p1
+                    best_pred_B = raw_p2
 
                 else:
                     raw_pA_1, raw_pA_2 = torch.chunk(model(x_A, t), 2, dim=1)
                     raw_pB_1, raw_pB_2 = torch.chunk(model(x_B, t), 2, dim=1)
 
-                    if return_clamp_stats:
-                        self._append_clamp_stats(clamp_stats, "pA_1", raw_pA_1)
-                        self._append_clamp_stats(clamp_stats, "pA_2", raw_pA_2)
-                        self._append_clamp_stats(clamp_stats, "pB_1", raw_pB_1)
-                        self._append_clamp_stats(clamp_stats, "pB_2", raw_pB_2)
+                    # Clamped copies only for LPIPS matching
+                    pA_1_lp = raw_pA_1.clamp(-1.0, 1.0)
+                    pA_2_lp = raw_pA_2.clamp(-1.0, 1.0)
+                    pB_1_lp = raw_pB_1.clamp(-1.0, 1.0)
+                    pB_2_lp = raw_pB_2.clamp(-1.0, 1.0)
 
-                    pA_1, pA_2 = raw_pA_1.clamp(-1.0, 1.0), raw_pA_2.clamp(-1.0, 1.0)
-                    pB_1, pB_2 = raw_pB_1.clamp(-1.0, 1.0), raw_pB_2.clamp(-1.0, 1.0)
-
-                    lpips_A_straight = self.loss_fn_alex(pA_1, anchor_A) + self.loss_fn_alex(pA_2, anchor_B)
-                    lpips_A_crossed  = self.loss_fn_alex(pA_1, anchor_B) + self.loss_fn_alex(pA_2, anchor_A)
+                    lpips_A_straight = self.loss_fn_alex(pA_1_lp, anchor_A) + self.loss_fn_alex(pA_2_lp, anchor_B)
+                    lpips_A_crossed  = self.loss_fn_alex(pA_1_lp, anchor_B) + self.loss_fn_alex(pA_2_lp, anchor_A)
 
                     swap_mask_A = (lpips_A_crossed < lpips_A_straight).view(-1, 1, 1, 1)
-                    raw_best_pred_A = torch.where(swap_mask_A, pA_2, pA_1)
 
-                    lpips_B_straight = self.loss_fn_alex(pB_1, anchor_A) + self.loss_fn_alex(pB_2, anchor_B)
-                    lpips_B_crossed  = self.loss_fn_alex(pB_1, anchor_B) + self.loss_fn_alex(pB_2, anchor_A)
+                    # Raw aligned prediction for the update
+                    best_pred_A = torch.where(swap_mask_A, raw_pA_2, raw_pA_1)
+
+                    # Clamped aligned copy for anchor maintenance
+                    aligned_A_lp = torch.where(swap_mask_A, pA_2_lp, pA_1_lp)
+
+                    lpips_B_straight = self.loss_fn_alex(pB_1_lp, anchor_A) + self.loss_fn_alex(pB_2_lp, anchor_B)
+                    lpips_B_crossed  = self.loss_fn_alex(pB_1_lp, anchor_B) + self.loss_fn_alex(pB_2_lp, anchor_A)
 
                     swap_mask_B = (lpips_B_crossed < lpips_B_straight).view(-1, 1, 1, 1)
-                    raw_best_pred_B = torch.where(swap_mask_B, pB_1, pB_2)
 
-                    if return_clamp_stats:
-                        self._append_clamp_stats(clamp_stats, "best_pred_A", raw_best_pred_A)
-                        self._append_clamp_stats(clamp_stats, "best_pred_B", raw_best_pred_B)
+                    # Matches your original B-branch selection logic
+                    best_pred_B = torch.where(swap_mask_B, raw_pB_1, raw_pB_2)
 
-                    best_pred_A = raw_best_pred_A.clamp(-1.0, 1.0)
-                    best_pred_B = raw_best_pred_B.clamp(-1.0, 1.0)
+                    # Clamped aligned copy for anchor maintenance
+                    aligned_B_lp = torch.where(swap_mask_B, pB_1_lp, pB_2_lp)
 
-                    anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
-                    anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
+                    # Preserve your original anchor-update behavior
+                    anchor_A = torch.where(swap_mask_A, aligned_A_lp.clone(), anchor_A)
+                    anchor_B = torch.where(swap_mask_B, aligned_B_lp.clone(), anchor_B)
 
-                raw_extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
-                raw_extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
+                # Keep clamping only here: this is where your logs showed real out-of-range activity
+                extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
+                extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
 
-                if return_clamp_stats:
-                    self._append_clamp_stats(clamp_stats, "extracted_B_from_A", raw_extracted_B_from_A)
-                    self._append_clamp_stats(clamp_stats, "extracted_A_from_B", raw_extracted_A_from_B)
+                extracted_B_from_A = extracted_B_from_A.clamp(-1.0, 1.0)
+                extracted_A_from_B = extracted_A_from_B.clamp(-1.0, 1.0)
 
-                extracted_B_from_A = raw_extracted_B_from_A.clamp(-1.0, 1.0)
-                extracted_A_from_B = raw_extracted_A_from_B.clamp(-1.0, 1.0)
+                x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + \
+                            self.noise_images(best_pred_A, extracted_B_from_A, t - 1)
 
-                x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
-                x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
+                x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + \
+                            self.noise_images(best_pred_B, extracted_A_from_B, t - 1)
 
         model.train()
 
-        final_A = (best_pred_A + 1) / 2
+        # Clamp only for safe image conversion at the very end
+        final_A = (best_pred_A.clamp(-1.0, 1.0) + 1) / 2
         final_A = (final_A * 255).type(torch.uint8)
 
-        final_B = (best_pred_B + 1) / 2
+        final_B = (best_pred_B.clamp(-1.0, 1.0) + 1) / 2
         final_B = (final_B * 255).type(torch.uint8)
-
-        if return_clamp_stats:
-            return final_A, final_B, self._summarize_clamp_stats(clamp_stats)
 
         return final_A, final_B
 
@@ -287,20 +243,7 @@ def eval(args):
         superimposed = (images + images_add) / 2.
         superimposed_np = ((superimposed.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8).cpu().permute(0, 2, 3, 1).numpy()
 
-        sampled_A, sampled_B, clamp_stats = diffusion.sample(
-            model,
-            superimposed,
-            args.alpha_init,
-            return_clamp_stats=True
-        )
-
-        print(
-            f"[eval batch {i}] "
-            f"best_pred_A_oor={clamp_stats['summary']['best_pred_A_oor_mean']:.4f}, "
-            f"best_pred_B_oor={clamp_stats['summary']['best_pred_B_oor_mean']:.4f}, "
-            f"extracted_B_from_A_oor={clamp_stats['summary']['extracted_B_from_A_oor_mean']:.4f}, "
-            f"extracted_A_from_B_oor={clamp_stats['summary']['extracted_A_from_B_oor_mean']:.4f}"
-        )
+        sampled_A, sampled_B = diffusion.sample(model, superimposed, args.alpha_init)
         
         gt_A_eval = ((images.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
         gt_B_eval = ((images_add.clamp(-1, 1) + 1) / 2 * 255).type(torch.uint8)
