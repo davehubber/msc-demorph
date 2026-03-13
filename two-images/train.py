@@ -93,8 +93,8 @@ class Diffusion:
                 pred_sum = best_pred_A + best_pred_B
                 error_pred = target_sum - pred_sum
 
-                best_pred_A = (best_pred_A + error_pred / 2.0).clamp(-1.0, 1.0)
-                best_pred_B = (best_pred_B + error_pred / 2.0).clamp(-1.0, 1.0)
+                best_pred_A = best_pred_A + error_pred / 2.0
+                best_pred_B = best_pred_B + error_pred / 2.0
 
                 # Keep clamping only here: this is where your logs showed real out-of-range activity
                 extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
