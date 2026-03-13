@@ -32,13 +32,12 @@ class Diffusion:
         actual_alpha_init = self.alteration_per_t * init_timestep
 
         with torch.no_grad():
-            #noise_A = torch.randn_like(superimposed_image) * 0.002
-            #noise_B = torch.randn_like(superimposed_image) * 0.002
+            noise = torch.randn_like(superimposed_image) * 0.002
             
-            x_A = superimposed_image.clone().to(self.device) #(superimposed_image.clone() + noise_A).clamp(-1.0, 1.0).to(self.device)
-            x_B = superimposed_image.clone().to(self.device) #(superimposed_image.clone() + noise_B).clamp(-1.0, 1.0).to(self.device)
+            x_A = (superimposed_image.clone() + noise).clamp(-1.0, 1.0).to(self.device)
+            x_B = (superimposed_image.clone() + noise).clamp(-1.0, 1.0).to(self.device)
 
-            target_sum = 2.0 * superimposed_image.to(self.device)
+            #target_sum = 2.0 * superimposed_image.to(self.device)
 
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
@@ -77,10 +76,10 @@ class Diffusion:
                     anchor_A = torch.where(swap_mask_A, best_pred_A.clone(), anchor_A)
                     anchor_B = torch.where(swap_mask_B, best_pred_B.clone(), anchor_B)
                 
-                pred_sum = best_pred_A + best_pred_B
-                error_pred = target_sum - pred_sum
-                best_pred_A = (best_pred_A + error_pred / 2.0).clamp(-1.0, 1.0)
-                best_pred_B = (best_pred_B + error_pred / 2.0).clamp(-1.0, 1.0)
+                #pred_sum = best_pred_A + best_pred_B
+                #error_pred = target_sum - pred_sum
+                #best_pred_A = (best_pred_A + error_pred / 2.0).clamp(-1.0, 1.0)
+                #best_pred_B = (best_pred_B + error_pred / 2.0).clamp(-1.0, 1.0)
 
                 extracted_B_from_A = (superimposed_image - best_pred_A * (1. - actual_alpha_init)) / actual_alpha_init
                 extracted_A_from_B = (superimposed_image - best_pred_B * (1. - actual_alpha_init)) / actual_alpha_init
@@ -91,10 +90,10 @@ class Diffusion:
                 x_A = x_A - self.noise_images(best_pred_A, extracted_B_from_A, t) + self.noise_images(best_pred_A, extracted_B_from_A, t-1)
                 x_B = x_B - self.noise_images(best_pred_B, extracted_A_from_B, t) + self.noise_images(best_pred_B, extracted_A_from_B, t-1)
                 
-                current_sum = x_A + x_B
-                error_x = target_sum - current_sum
-                x_A = x_A + error_x / 2.0
-                x_B = x_B + error_x / 2.0
+                #current_sum = x_A + x_B
+                #error_x = target_sum - current_sum
+                #x_A = x_A + error_x / 2.0
+                #x_B = x_B + error_x / 2.0
         
         model.train()
 
