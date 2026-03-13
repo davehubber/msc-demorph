@@ -1,0 +1,16 @@
+Size of test: 1000
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+--- Image 1 Metrics ---
+SSIM: 0.6467
+PSNR: 18.4515
+LPIPS: 0.1386
+Success Rate: 88.20%
+
+--- Image 2 Metrics ---
+SSIM: 0.6491
+PSNR: 18.4833
+LPIPS: 0.1400
+Success Rate: 87.80%
