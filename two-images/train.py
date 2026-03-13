@@ -32,11 +32,11 @@ class Diffusion:
         actual_alpha_init = self.alteration_per_t * init_timestep
 
         with torch.no_grad():
-            noise_A = torch.randn_like(superimposed_image) * 0.002
-            noise_B = torch.randn_like(superimposed_image) * 0.002
+            #noise_A = torch.randn_like(superimposed_image) * 0.002
+            #noise_B = torch.randn_like(superimposed_image) * 0.002
             
-            x_A = (superimposed_image.clone() + noise_A).clamp(-1.0, 1.0).to(self.device)
-            x_B = (superimposed_image.clone() + noise_B).clamp(-1.0, 1.0).to(self.device)
+            x_A = superimposed_image.clone().to(self.device) #(superimposed_image.clone() + noise_A).clamp(-1.0, 1.0).to(self.device)
+            x_B = superimposed_image.clone().to(self.device) #(superimposed_image.clone() + noise_B).clamp(-1.0, 1.0).to(self.device)
 
             #target_sum = 2.0 * superimposed_image.to(self.device)
 
