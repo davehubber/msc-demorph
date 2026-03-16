@@ -12,8 +12,7 @@ class Diffusion:
         self.max_timesteps = max_timesteps
         self.img_size = img_size
         self.device = device
-        self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps      # size of alteration in each timestep
-
+        self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps
         self.lpips_model = lpips.LPIPS(net='alex').to(device).eval()
 
     def noise_images(self, image_1, image_2, t):
@@ -22,44 +21,44 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps + 1, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, alpha_init = 0.5):
+    def sample(self, model, superimposed_image, alpha_init=0.5):
         n = len(superimposed_image)
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
+        
         with torch.no_grad():
             x_t = superimposed_image.to(self.device)
             anchor = None
-
+            
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
 
-                predicted_image = model(x_t, t).to(self.device)
-                other_image = (superimposed_image - (alpha_init) * predicted_image) / (1.-alpha_init)
+                predicted_d = model(x_t, t).to(self.device)
+                
+                predicted_image = superimposed_image + predicted_d / 2.0
+                other_image = superimposed_image - predicted_d / 2.0
 
                 if anchor is None:
                     anchor = predicted_image.clone().detach()
                 else:
                     dist_pred = self.lpips_model(predicted_image, anchor).flatten()
                     dist_other = self.lpips_model(other_image, anchor).flatten()
-
+                    
                     switched = dist_other < dist_pred
-
+                    
                     if switched.any():
                         switched_view = switched.view(-1, 1, 1, 1)
-
-                        new_predicted = torch.where(switched_view, other_image, predicted_image)
-                        new_other = torch.where(switched_view, predicted_image, other_image)
-
-                        predicted_image = new_predicted
-                        other_image = new_other
-
+                        
+                        predicted_d = torch.where(switched_view, -predicted_d, predicted_d)
+                        predicted_image = superimposed_image + predicted_d / 2.0
+                        other_image = superimposed_image - predicted_d / 2.0
+                        
                     anchor = predicted_image.clone().detach()
 
                 x_t = x_t - self.noise_images(predicted_image, other_image, t) + self.noise_images(predicted_image, other_image, t-1)
         
         model.train()
 
-        other_image = ((superimposed_image - (1 - alpha_init) * x_t) / alpha_init).to(self.device)
         other_image = (other_image.clamp(-1, 1) + 1) / 2
         other_image = (other_image * 255).type(torch.uint8)
 
@@ -96,10 +95,13 @@ def train(args):
 
             with torch.amp.autocast("cuda"):
                 x_t = diffusion.noise_images(images, images_add, t)
-                predicted_image = model(x_t, t)
-
-                loss_1 = mse(images, predicted_image).mean(dim=[1, 2, 3])
-                loss_2 = mse(images_add, predicted_image).mean(dim=[1, 2, 3])
+                predicted_d = model(x_t, t)
+                
+                target_d = images - images_add
+                target_neg_d = images_add - images
+                
+                loss_1 = mse(target_d, predicted_d).mean(dim=[1, 2, 3])
+                loss_2 = mse(target_neg_d, predicted_d).mean(dim=[1, 2, 3])
                 loss = torch.minimum(loss_1, loss_2).mean()
 
             optimizer.zero_grad(set_to_none=True)
@@ -161,7 +163,7 @@ def eval(args):
         images = images.to(device)
         images_add = images_add.to(device)
         
-        superimposed = images * (1 - args.alpha_init) + images_add * args.alpha_init
+        superimposed = images * 0.5 + images_add * 0.5
         
         sampled_images, sampled_other_image = diffusion.sample(model, superimposed, args.alpha_init)
         
@@ -274,15 +276,15 @@ def one_shot_eval(args):
     sample_dir = os.path.join("samples", args.sampling_name)
     os.makedirs(sample_dir, exist_ok=True)
     
-    S = images * (1 - args.alpha_init) + images_add * args.alpha_init
+    S = images * 0.5 + images_add * 0.5
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     t = (torch.ones(n) * init_timestep).long().to(device)
     
     with torch.no_grad():
-        predicted_image = model(S, t)
+        predicted_d = model(S, t)
 
-        sampled_images = predicted_image
-        sampled_other_image = (S - (1 - args.alpha_init) * sampled_images) / args.alpha_init
+        sampled_images = S + predicted_d / 2.0
+        sampled_other_image = S - predicted_d / 2.0
 
     images = (images.clamp(-1, 1) + 1) / 2
     images = (images * 255).type(torch.uint8)
