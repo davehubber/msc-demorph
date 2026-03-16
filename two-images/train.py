@@ -390,7 +390,7 @@ def launch():
     args.image_size = (args.image_size, args.image_size)
     args.sampling_name = args.run_name
 
-    train(args)
+    #train(args)
     eval(args)
     one_shot_eval(args)
 
