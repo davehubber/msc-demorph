@@ -14,6 +14,8 @@ class Diffusion:
         self.device = device
         self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps      # size of alteration in each timestep
 
+        self.lpips_model = lpips.LPIPS(net='alex').to(device).eval()
+
     def noise_images(self, image_1, image_2, t):
         return image_1 * (1. - self.alteration_per_t * t)[:, None, None, None] + image_2 * (self.alteration_per_t * t)[:, None, None, None]
 
@@ -26,11 +28,32 @@ class Diffusion:
         model.eval()
         with torch.no_grad():
             x_t = superimposed_image.to(self.device)
+            anchor = None
+
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
 
                 predicted_image = model(x_t, t).to(self.device)
                 other_image = (superimposed_image - (alpha_init) * predicted_image) / (1.-alpha_init)
+
+                if anchor is None:
+                    anchor = predicted_image.clone().detach()
+                else:
+                    dist_pred = self.lpips_model(predicted_image, anchor).flatten()
+                    dist_other = self.lpips_model(other_image, anchor).flatten()
+
+                    switched = dist_other < dist_pred
+
+                    if switched.any():
+                        switched_view = switched.view(-1, 1, 1, 1)
+
+                        new_predicted = torch.where(switched_view, other_image, predicted_image)
+                        new_other = torch.where(switched_view, predicted_image, other_image)
+
+                        predicted_image = new_predicted
+                        other_image = new_other
+
+                    anchor = predicted_image.clone().detach()
 
                 x_t = x_t - self.noise_images(predicted_image, other_image, t) + self.noise_images(predicted_image, other_image, t-1)
         
@@ -53,7 +76,7 @@ def train(args):
 
     model = UNet(device=device).to(device)
     optimizer = optim.AdamW(model.parameters(), lr=args.lr)
-    mse = nn.MSELoss()
+    mse = nn.MSELoss(reduction='none')
     diffusion = Diffusion(img_size=args.image_size, device=device)
 
     wandb.init(
@@ -74,7 +97,10 @@ def train(args):
             with torch.amp.autocast("cuda"):
                 x_t = diffusion.noise_images(images, images_add, t)
                 predicted_image = model(x_t, t)
-                loss = mse(images, predicted_image)
+
+                loss_1 = mse(images, predicted_image).mean(dim=[1, 2, 3])
+                loss_2 = mse(images_add, predicted_image).mean(dim=[1, 2, 3])
+                loss = torch.minimum(loss_1, loss_2).mean()
 
             optimizer.zero_grad(set_to_none=True)
             scaler.scale(loss).backward()
