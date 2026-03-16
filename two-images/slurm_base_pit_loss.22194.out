@@ -1,0 +1,29 @@
+Size of test: 1000
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+
+Metrics organized by original images:
+SSIM Original: 0.6471899276314368
+SSIM Added: 0.6498949746108483
+PSNR Original: 18.565837160235247
+PSNR Added: 18.564561998875117
+LPIPS Original: 0.14557577669620514
+LPIPS Added: 0.1472775936126709
+Success Rate of Reversal (%S): 88.35%
+Size of test: 1000
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+
+--- One-Shot Evaluation Metrics (First Batch) ---
+SSIM Original: 0.6401
+SSIM Added: 0.6448
+PSNR Original: 18.4889
+PSNR Added: 18.4850
+LPIPS Original: 0.1501
+LPIPS Added: 0.1527
+Success Rate of Reversal (%S): 87.30%
+
