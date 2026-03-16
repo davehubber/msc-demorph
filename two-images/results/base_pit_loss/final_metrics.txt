@@ -1,8 +1,0 @@
-Metrics organized by original images:
-SSIM Original: 0.6415108169350183
-SSIM Added: 0.6455647082780248
-PSNR Original: 18.422622791166145
-PSNR Added: 18.4218424848933
-LPIPS Original: 0.15237174928188324
-LPIPS Added: 0.15280844271183014
-Success Rate of Reversal (%S): 85.60%

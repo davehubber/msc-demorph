@@ -175,7 +175,6 @@ def eval(args):
         superimposed = (superimposed * 255).type(torch.uint8)
         
         sampled_images.to(device)
-        save_images(sampled_images, sampled_other_image, images, images_add, os.path.join("samples", args.sampling_name, f"{i}.jpg"))
 
         images_np = images.to('cpu').permute(0, 2, 3, 1).numpy()
         sampled_images_np = sampled_images.to('cpu').permute(0, 2, 3, 1).numpy()
@@ -185,10 +184,15 @@ def eval(args):
         
         with torch.no_grad():
             for k in range(len(images_np)):
-                ssim_1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
-                ssim_2 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+                ssim_orig_to_sample1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+                ssim_add_to_sample2 = structural_similarity(images_add_np[k], sampled_other_image_np[k], data_range=255, channel_axis=-1)
+                ssim_orig_to_sample2 = structural_similarity(images_np[k], sampled_other_image_np[k], data_range=255, channel_axis=-1)
+                ssim_add_to_sample1 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
                 
-                if ssim_1 > ssim_2:
+                score_scenario_A = ssim_orig_to_sample1 + ssim_add_to_sample2
+                score_scenario_B = ssim_orig_to_sample2 + ssim_add_to_sample1
+                
+                if score_scenario_A >= score_scenario_B:
                     so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_images_np[k], sampled_other_image_np[k])
                     lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
                     la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
@@ -196,6 +200,10 @@ def eval(args):
                     so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_other_image_np[k], sampled_images_np[k])
                     lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
                     la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
+                    
+                    temp = sampled_images[k].clone()
+                    sampled_images[k] = sampled_other_image[k]
+                    sampled_other_image[k] = temp
                 
                 ssim_s_o = structural_similarity(images_np[k], superimposed_np[k], data_range=255, channel_axis=-1)
                 ssim_s_a = structural_similarity(images_add_np[k], superimposed_np[k], data_range=255, channel_axis=-1)
@@ -212,6 +220,8 @@ def eval(args):
                 psnr_a.append(pa)
                 lpips_o.append(lo.detach().cpu().numpy())
                 lpips_a.append(la.detach().cpu().numpy())
+
+        save_images(sampled_images, sampled_other_image, images, images_add, os.path.join("samples", args.sampling_name, f"{i}.jpg"))
 
     avg_ssim_o = np.average(ssim_o)
     avg_ssim_a = np.average(ssim_a)
@@ -286,10 +296,6 @@ def one_shot_eval(args):
     S_formatted = (S.clamp(-1, 1) + 1) / 2
     S_formatted = (S_formatted * 255).type(torch.uint8)
 
-    save_dir = os.path.join("samples", args.run_name)
-    os.makedirs(save_dir, exist_ok=True)
-    save_images(sampled_images, sampled_other_image, images, images_add, os.path.join(save_dir, "one_shot_batch_0.jpg"))
-
     images_np = images.cpu().permute(0, 2, 3, 1).numpy()
     sampled_images_np = sampled_images.cpu().permute(0, 2, 3, 1).numpy()
     images_add_np = images_add.cpu().permute(0, 2, 3, 1).numpy()
@@ -302,10 +308,15 @@ def one_shot_eval(args):
     
     with torch.no_grad():
         for k in range(n):
-            ssim_1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
-            ssim_2 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+            ssim_orig_to_sample1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
+            ssim_add_to_sample2 = structural_similarity(images_add_np[k], sampled_other_image_np[k], data_range=255, channel_axis=-1)
+            ssim_orig_to_sample2 = structural_similarity(images_np[k], sampled_other_image_np[k], data_range=255, channel_axis=-1)
+            ssim_add_to_sample1 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
             
-            if ssim_1 > ssim_2:
+            score_scenario_A = ssim_orig_to_sample1 + ssim_add_to_sample2
+            score_scenario_B = ssim_orig_to_sample2 + ssim_add_to_sample1
+            
+            if score_scenario_A >= score_scenario_B:
                 so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_images_np[k], sampled_other_image_np[k])
                 lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
                 la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
@@ -313,6 +324,10 @@ def one_shot_eval(args):
                 so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_other_image_np[k], sampled_images_np[k])
                 lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
                 la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
+                
+                temp = sampled_images[k].clone()
+                sampled_images[k] = sampled_other_image[k]
+                sampled_other_image[k] = temp
             
             ssim_s_o = structural_similarity(images_np[k], S_np[k], data_range=255, channel_axis=-1)
             ssim_s_a = structural_similarity(images_add_np[k], S_np[k], data_range=255, channel_axis=-1)
@@ -329,6 +344,10 @@ def one_shot_eval(args):
             psnr_a.append(pa)
             lpips_o.append(lo.detach().cpu().numpy())
             lpips_a.append(la.detach().cpu().numpy())
+
+    save_dir = os.path.join("samples", args.run_name)
+    os.makedirs(save_dir, exist_ok=True)
+    save_images(sampled_images, sampled_other_image, images, images_add, os.path.join(save_dir, "one_shot_batch_0.jpg"))
 
     avg_ssim_o, avg_ssim_a = np.average(ssim_o), np.average(ssim_a)
     avg_psnr_o, avg_psnr_a = np.average(psnr_o), np.average(psnr_a)
