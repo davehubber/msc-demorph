@@ -14,106 +14,36 @@ class Diffusion:
         self.device = device
         self.alteration_per_t = (alpha_max - alpha_start) / max_timesteps      # size of alteration in each timestep
 
-    def noise_images(self, original_image, added_image, t):
-        return original_image * (1. - self.alteration_per_t * t)[:, None, None, None] + added_image * (self.alteration_per_t * t)[:, None, None, None]
+    def noise_images(self, image_1, image_2, t):
+        return image_1 * (1. - self.alteration_per_t * t)[:, None, None, None] + image_2 * (self.alteration_per_t * t)[:, None, None, None]
 
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps + 1, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, alpha_init = 0.5, prediction="original", sampling_method="with_error"):
+    def sample(self, model, superimposed_image, alpha_init = 0.5):
         n = len(superimposed_image)
         init_timestep = math.ceil(alpha_init / self.alteration_per_t)
         model.eval()
         with torch.no_grad():
-            x = superimposed_image.to(self.device)
+            x_t = superimposed_image.to(self.device)
             for i in reversed(range(1, init_timestep + 1)):
                 t = (torch.ones(n) * i).long().to(self.device)
-                predicted_image = model(x, t).to(self.device)
-                
-                if (prediction == "original" or prediction == "added") and sampling_method == "one_step":
-                    x = predicted_image
-                    break
 
-                elif prediction == "differences" and sampling_method == "one_step":
-                    x = x + predicted_image * t[:, None, None, None]
-                    break
-            
-                elif prediction == "differences":
-                    x = x + predicted_image
+                predicted_image = model(x_t, t).to(self.device)
+                other_image = (superimposed_image - (alpha_init) * predicted_image) / (1.-alpha_init)
 
-                elif prediction == "original" and sampling_method == "with_error_removal":
-                    alpha_t = (self.alteration_per_t * t)[:, None, None, None]
-                    
-                    other_image = (x - (1 - alpha_t) * predicted_image) / alpha_t 
-                    
-                    error = 0
-                    if i != init_timestep:
-                        error = ((1. - alpha_init) * predicted_image + alpha_init * other_image) - superimposed_image
-                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (alpha_init - self.alteration_per_t * t))[:, None, None, None]
-                    
-                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
-                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image - error
-                
-                elif prediction == "added" and sampling_method == "with_error_removal":
-                    other_image = (x - (self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (1-self.alteration_per_t * t)[:, None, None, None] 
-                
-                    error = 0
-                    if i != init_timestep:
-                        error = (alpha_init * predicted_image + (1.-alpha_init) * other_image) - superimposed_image
-                        error = error * ((self.alteration_per_t * (t-1) - self.alteration_per_t * t) / (alpha_init - self.alteration_per_t * t))[:, None, None, None]
-                    
-                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
-                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image - error
-                
-                elif sampling_method == "cold_diffusion":
-                    alpha_t = (self.alteration_per_t * t)[:, None, None, None]
-                    other_image_i = (superimposed_image - (alpha_init) * predicted_image) / (1.-alpha_init)
-                    
-                    if prediction == "added":
-                        other_image = (x - alpha_t * predicted_image) / (1. - alpha_t)
-                        
-                        x_t = self.noise_images(other_image_i, predicted_image, t-1) + x - self.noise_images(other_image_i, predicted_image, t)
-                        
-                    elif prediction == "original":
-                        other_image = (x - (1. - alpha_t) * predicted_image) / alpha_t
-                        
-                        x_t = self.noise_images(predicted_image, other_image_i, t-1) + x - self.noise_images(predicted_image, other_image_i, t)
-                        
-                    else:
-                        print("Invalid prediction/sampling_method combination.")
-                        exit(-1)
-
-                elif prediction == 'added' and sampling_method == "without_error_removal":
-                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
-                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * predicted_image
-                elif prediction == 'original' and sampling_method == "without_error_removal":
-                    other_image = (x - (1-self.alteration_per_t * t)[:, None, None, None] * predicted_image) / (self.alteration_per_t * t)[:, None, None, None]
-                    delta = (1 - self.alteration_per_t * (t - 1)) / ((1 - self.alteration_per_t * t))
-                    x_t = delta[:, None, None, None] * x - (delta - 1)[:, None, None, None] * other_image
-                elif prediction == 'added' and sampling_method == "residual_step":
-                    alpha_t = (self.alteration_per_t * t)[:, None, None, None]
-                    alpha_t_minus_1 = (self.alteration_per_t * (t - 1))[:, None, None, None]
-                    
-                    residual = predicted_image * alpha_t
-                    
-                    c1 = (1. - alpha_t_minus_1) / (1. - alpha_t)
-                    c2 = (alpha_t_minus_1 / alpha_t) - c1
-                    
-                    x_t = x * c1 + residual * c2
-                    x_t = torch.clamp(x_t, min=-1.0, max=1.0)
-                else:
-                    print(f"Invalid prediction - {prediction} - and sampling_method - {sampling_method} - combination.")
-                    exit(-1)
-                
-                x = x_t
+                x_t = x_t - self.noise_images(predicted_image, other_image, t) + self.noise_images(predicted_image, other_image, t-1)
         
         model.train()
-        other_image = ((superimposed_image - (1 - alpha_init) * x) / alpha_init).to(self.device)
+
+        other_image = ((superimposed_image - (1 - alpha_init) * x_t) / alpha_init).to(self.device)
         other_image = (other_image.clamp(-1, 1) + 1) / 2
         other_image = (other_image * 255).type(torch.uint8)
-        x = (x.clamp(-1, 1) + 1) / 2
-        x = (x * 255).type(torch.uint8)
-        return x, other_image
+
+        x_t = (x_t.clamp(-1, 1) + 1) / 2
+        x_t = (x_t * 255).type(torch.uint8)
+
+        return x_t, other_image
 
 def train(args):
     setup_logging(args.run_name)
@@ -144,16 +74,7 @@ def train(args):
             with torch.amp.autocast("cuda"):
                 x_t = diffusion.noise_images(images, images_add, t)
                 predicted_image = model(x_t, t)
-                if args.prediction == "added":
-                    loss = mse(images_add, predicted_image)
-                elif args.prediction == "original":
-                    loss = mse(images, predicted_image)
-                elif args.prediction == "differences":
-                    x_diff = diffusion.noise_images(images, images_add, t-1) - x_t
-                    loss = mse(x_diff, predicted_image)
-                else:
-                    print("Invalid model prediction.")
-                    exit(-1)
+                loss = mse(images, predicted_image)
 
             optimizer.zero_grad(set_to_none=True)
             scaler.scale(loss).backward()
@@ -167,13 +88,12 @@ def train(args):
                     "epoch": epoch
                 })
 
-        # Sample and save images every 10 epochs (No metric calculation)
         if (epoch + 1) % 50 == 0:
             for _, (images, images_add) in enumerate(test_dataloader):
                 images = images.to(device)
                 images_add = images_add.to(device)
 
-                sampled_images, other_images = diffusion.sample(model, (images + images_add) / 2., prediction=args.prediction, sampling_method=args.sampling_method)
+                sampled_images, other_images = diffusion.sample(model, (images + images_add) / 2.)
 
                 images = (images.clamp(-1, 1) + 1) / 2
                 images = (images * 255).type(torch.uint8)
@@ -215,12 +135,10 @@ def eval(args):
         images = images.to(device)
         images_add = images_add.to(device)
         
-        # Explicitly define the superimposed image so we can use it for the %S metric
         superimposed = images * (1 - args.alpha_init) + images_add * args.alpha_init
         
-        sampled_images, sampled_other_image = diffusion.sample(model, superimposed, args.alpha_init, prediction=args.prediction, sampling_method=args.sampling_method)
+        sampled_images, sampled_other_image = diffusion.sample(model, superimposed, args.alpha_init)
         
-        # Scale all images to 0-255 uint8
         images = (images.clamp(-1, 1) + 1) / 2
         images = (images * 255).type(torch.uint8)
         
@@ -233,7 +151,6 @@ def eval(args):
         sampled_images.to(device)
         save_images(sampled_images, sampled_other_image, images, images_add, os.path.join("samples", args.sampling_name, f"{i}.jpg"))
 
-        # Convert to numpy for skimage metrics
         images_np = images.to('cpu').permute(0, 2, 3, 1).numpy()
         sampled_images_np = sampled_images.to('cpu').permute(0, 2, 3, 1).numpy()
         images_add_np = images_add.to('cpu').permute(0, 2, 3, 1).numpy()
@@ -245,7 +162,6 @@ def eval(args):
                 ssim_1 = structural_similarity(images_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
                 ssim_2 = structural_similarity(images_add_np[k], sampled_images_np[k], data_range=255, channel_axis=-1)
                 
-                # Identify which prediction belongs to which ground truth
                 if ssim_1 > ssim_2:
                     so, sa, po, pa = calculate_metrics(images_np[k], images_add_np[k], sampled_images_np[k], sampled_other_image_np[k])
                     lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
@@ -255,8 +171,6 @@ def eval(args):
                     lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
                     la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
                 
-                # --- NEW: Success Rate of Reversal (%S) ---
-                # Calculate SSIM between the input superimposed image and both ground truths
                 ssim_s_o = structural_similarity(images_np[k], superimposed_np[k], data_range=255, channel_axis=-1)
                 ssim_s_a = structural_similarity(images_add_np[k], superimposed_np[k], data_range=255, channel_axis=-1)
                 
@@ -265,7 +179,6 @@ def eval(args):
                 if sa > ssim_s_a:
                     success_count += 1
                 total_count += 2
-                # ------------------------------------------
 
                 ssim_o.append(so)
                 ssim_a.append(sa)
@@ -331,23 +244,9 @@ def one_shot_eval(args):
     
     with torch.no_grad():
         predicted_image = model(S, t)
-        
-        if args.prediction == "original":
-            sampled_images = predicted_image
-            sampled_other_image = (S - (1 - args.alpha_init) * sampled_images) / args.alpha_init
-        elif args.prediction == "added":
-            sampled_other_image = predicted_image
-            sampled_images = (S - args.alpha_init * sampled_other_image) / (1 - args.alpha_init)
-        elif args.prediction == "differences":
-            sampled_images = S + predicted_image * t[:, None, None, None]
-            sampled_other_image = (S - (1 - args.alpha_init) * sampled_images) / args.alpha_init
-        elif args.prediction == "added_residual":
-            alpha_t = (diffusion.alteration_per_t * t)[:, None, None, None]
-            sampled_other_image = predicted_image / alpha_t
-            sampled_images = (S - predicted_image) / (1. - alpha_t)
-        else:
-            print("Invalid model prediction argument.")
-            return
+
+        sampled_images = predicted_image
+        sampled_other_image = (S - (1 - args.alpha_init) * sampled_images) / args.alpha_init
 
     images = (images.clamp(-1, 1) + 1) / 2
     images = (images * 255).type(torch.uint8)
@@ -358,7 +257,6 @@ def one_shot_eval(args):
     sampled_other_image = (sampled_other_image.clamp(-1, 1) + 1) / 2
     sampled_other_image = (sampled_other_image * 255).type(torch.uint8)
     
-    # Format initial superimposed image
     S_formatted = (S.clamp(-1, 1) + 1) / 2
     S_formatted = (S_formatted * 255).type(torch.uint8)
 
@@ -390,7 +288,6 @@ def one_shot_eval(args):
                 lo = lpips_model((images[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_other_image[k].unsqueeze(0).float() - 127.5) / 127.5)
                 la = lpips_model((images_add[k].unsqueeze(0).float() - 127.5) / 127.5, (sampled_images[k].unsqueeze(0).float() - 127.5) / 127.5)
             
-            # --- Success Rate of Reversal (%S) ---
             ssim_s_o = structural_similarity(images_np[k], S_np[k], data_range=255, channel_axis=-1)
             ssim_s_a = structural_similarity(images_add_np[k], S_np[k], data_range=255, channel_axis=-1)
             
@@ -407,7 +304,6 @@ def one_shot_eval(args):
             lpips_o.append(lo.detach().cpu().numpy())
             lpips_a.append(la.detach().cpu().numpy())
 
-    # Calculate averages
     avg_ssim_o, avg_ssim_a = np.average(ssim_o), np.average(ssim_a)
     avg_psnr_o, avg_psnr_a = np.average(psnr_o), np.average(psnr_a)
     avg_lpips_o, avg_lpips_a = np.average(lpips_o), np.average(lpips_a)
@@ -426,7 +322,6 @@ def one_shot_eval(args):
     
     print(f"\n{metrics_report}")
     
-    # Save the text file
     results_dir = os.path.join("results", args.run_name)
     os.makedirs(results_dir, exist_ok=True)
     with open(os.path.join(results_dir, "one_shot_metrics.txt"), "w") as f:
@@ -438,8 +333,6 @@ def launch():
     parser.add_argument('--dataset_path', help='Path to dataset', required=True)
     parser.add_argument('--run_name', help='Name of the experiment for saving models and results', required=True)
     parser.add_argument('--partition_file', help='CSV file with test indexes', required=True)
-    parser.add_argument('--prediction', default='original', help='The prediction of the model, choose between [added, original, differences, added_residual]', required=False)
-    parser.add_argument('--sampling_method', default='with_error_removal', help='Choose between [cold_diffusion, with_error_removal, one_step, without_error_removal, differences, residual_step]', required=False)
     parser.add_argument('--alpha_max', default=0.5, type=float, help='Maximum weight of the added image at the last time step of the forward diffusion process: alpha_max', required=False)
     parser.add_argument('--alpha_init', default=0.5, type=float, help='Weight of the added image: alpha_init', required=False)
     parser.add_argument('--image_size', default=64, type=int, help='Dimension of the images', required=False)
