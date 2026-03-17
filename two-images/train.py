@@ -21,51 +21,91 @@ class Diffusion:
     def sample_timesteps(self, n):
         return torch.randint(low=1, high=self.max_timesteps + 1, size=(n,), device=self.device)
 
-    def sample(self, model, superimposed_image, alpha_init=0.5):
-        n = len(superimposed_image)
-        init_timestep = math.ceil(alpha_init / self.alteration_per_t)
-        model.eval()
-        
-        with torch.no_grad():
-            x_t = superimposed_image.to(self.device)
-            anchor = None
-            
-            for i in reversed(range(1, init_timestep + 1)):
-                t = (torch.ones(n) * i).long().to(self.device)
+    def sample(self, model, superimposed_image, alpha_init=0.5, step_scale=1.0):
+        """
+        Single-branch reverse process:
+        - iteratively refine only one image estimate
+        - recover the companion image only once at the end
 
-                predicted_d = model(x_t, t).to(self.device)
+        Assumptions:
+        x_t = (1 - alpha_t) * A + alpha_t * B
+        d = A - B
+        => x_t = A - alpha_t * d
+        => A = x_t + alpha_t * d
+        => x_{t-1} = x_t + (alpha_t - alpha_{t-1}) * d
+                = x_t + alteration_per_t * d
+        """
+        n = len(superimposed_image)
+
+        # Map alpha_init to the nearest discrete timestep used by training
+        init_timestep = int(round(alpha_init / self.alteration_per_t))
+        init_timestep = max(1, min(init_timestep, self.max_timesteps))
+
+        model.eval()
+
+        with torch.no_grad():
+            mixed_init = superimposed_image.to(self.device)   # keep the original mixture fixed
+            x_t = mixed_init.clone()                          # evolving state that should converge to one image
+            anchor = None                                     # used only to keep sign/orientation consistent
+
+            for i in reversed(range(1, init_timestep + 1)):
+                t = torch.full((n,), i, device=self.device, dtype=torch.long)
+                alpha_t = self.alteration_per_t * i
+
+                predicted_d = model(x_t, t)
+
+                # Two possible primary-image estimates because training is sign-symmetric
+                primary_pos = x_t + alpha_t * predicted_d
+                primary_neg = x_t - alpha_t * predicted_d
 
                 if anchor is None:
-                    anchor = predicted_d.clone().detach()
+                    # First step: pick one branch arbitrarily.
+                    # With the current symmetric training loss, there is no principled
+                    # way to know which identity is "the correct one" here.
+                    signed_d = predicted_d
+                    primary = primary_pos
                 else:
-                    pred_img = superimposed_image + predicted_d / 2.0
-                    other_img = superimposed_image - predicted_d / 2.0
-                    anchor_img = superimposed_image + anchor / 2.0
-                    
-                    dist_pred = self.lpips_model(pred_img, anchor_img).flatten()
-                    dist_other = self.lpips_model(other_img, anchor_img).flatten()
-                    
-                    switched = dist_other < dist_pred
-                    
-                    if switched.any():
-                        switched_view = switched.view(-1, 1, 1, 1)
-                        predicted_d = torch.where(switched_view, -predicted_d, predicted_d)
-                        
-                    anchor = predicted_d.clone().detach()
+                    # Keep following the same branch across steps
+                    dist_pos = self.lpips_model(
+                        primary_pos.clamp(-1, 1),
+                        anchor.clamp(-1, 1)
+                    ).flatten()
 
-                x_t = x_t + predicted_d * self.alteration_per_t
-        
+                    dist_neg = self.lpips_model(
+                        primary_neg.clamp(-1, 1),
+                        anchor.clamp(-1, 1)
+                    ).flatten()
+
+                    use_neg = dist_neg < dist_pos
+                    use_neg_view = use_neg.view(-1, 1, 1, 1)
+
+                    signed_d = torch.where(use_neg_view, -predicted_d, predicted_d)
+                    primary = torch.where(use_neg_view, primary_neg, primary_pos)
+
+                anchor = primary.detach()
+
+                # Direct reverse update:
+                # x_{t-1} = x_t + alteration_per_t * d
+                x_t = x_t + (self.alteration_per_t * step_scale) * signed_d
+                x_t = x_t.clamp(-1, 1)
+
+            primary_image = x_t
+
+            # Recover the companion image only once, from the ORIGINAL mixture.
+            # For x_init = (1 - alpha_init) * A + alpha_init * B:
+            # B = (x_init - (1 - alpha_init) * A) / alpha_init
+            if alpha_init <= 0.0:
+                raise ValueError("alpha_init must be > 0 to recover the companion image.")
+
+            other_image = (mixed_init - (1.0 - alpha_init) * primary_image) / alpha_init
+            other_image = other_image.clamp(-1, 1)
+
         model.train()
 
-        other_image = 2.0 * superimposed_image - x_t
+        primary_image = ((primary_image + 1) / 2 * 255).type(torch.uint8)
+        other_image = ((other_image + 1) / 2 * 255).type(torch.uint8)
 
-        other_image = (other_image.clamp(-1, 1) + 1) / 2
-        other_image = (other_image * 255).type(torch.uint8)
-
-        x_t = (x_t.clamp(-1, 1) + 1) / 2
-        x_t = (x_t * 255).type(torch.uint8)
-
-        return x_t, other_image
+        return primary_image, other_image
 
 def train(args):
     setup_logging(args.run_name)
