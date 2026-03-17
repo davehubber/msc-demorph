@@ -1,7 +1,8 @@
-import os, numpy as np, pandas as pd
+import os
+import numpy as np
+import pandas as pd
 import torch
 import torchvision
-import copy
 from PIL import Image
 from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader, Dataset
@@ -9,67 +10,83 @@ from torch.utils.data import DataLoader, Dataset
 
 def plot_images(images):
     plt.figure(figsize=(32, 32))
-    plt.imshow(torch.cat([
-        torch.cat([i for i in images.cpu()], dim=-1),
-    ], dim=-2).permute(1, 2, 0).cpu())
+    plt.imshow(
+        torch.cat([
+            torch.cat([i for i in images.cpu()], dim=-1),
+        ], dim=-2).permute(1, 2, 0).cpu()
+    )
     plt.show()
 
 
-def save_images(images, obtained_images, original_images, added_images, path, **kwargs):
-    input_images = (original_images*0.5 + added_images*0.5).type(torch.uint8)
-    all_images = torch.cat((original_images, added_images, input_images, images, obtained_images), axis=0)
+def tensor_to_uint8(images: torch.Tensor) -> torch.Tensor:
+    return ((images.clamp(-1, 1) + 1.0) / 2.0 * 255.0).round().to(torch.uint8)
+
+
+def save_images(images, obtained_images, original_images, added_images, path, input_images=None, **kwargs):
+    if input_images is None:
+        input_images = ((original_images.float() + added_images.float()) / 2.0).round().to(torch.uint8)
+    all_images = torch.cat((original_images, added_images, input_images, images, obtained_images), dim=0)
     grid = torchvision.utils.make_grid(all_images, nrow=len(images), **kwargs)
-    ndarr = grid.permute(1, 2, 0).to('cpu').numpy()
+    ndarr = grid.permute(1, 2, 0).to("cpu").numpy()
     im = Image.fromarray(ndarr)
     im.save(path)
 
+
 def save_image_sampling(images, path, **kwargs):
     grid = torchvision.utils.make_grid(images, nrow=8, **kwargs)
-    ndarr = grid.permute(1, 2, 0).to('cpu').numpy()
+    ndarr = grid.permute(1, 2, 0).to("cpu").numpy()
     im = Image.fromarray(ndarr)
     im.save(path)
+
 
 class TheDataset(Dataset):
     def __init__(self, dataset_path, partition, csv_file, transform=None):
         self.dataset_path = dataset_path
         self.partition = partition
-        
+
         csv_file = pd.read_csv(csv_file, sep=",")
 
-        if 'partition' in csv_file.columns:
-            csv_file = csv_file[csv_file['partition'] == partition]
+        if "partition" in csv_file.columns:
+            csv_file = csv_file[csv_file["partition"] == partition]
 
-        self.image_paths_1 = np.asarray(csv_file['Image1'].values)
-        self.image_paths_2 = np.asarray(csv_file['Image2'].values)
+        self.image_paths_1 = np.asarray(csv_file["Image1"].values)
+        self.image_paths_2 = np.asarray(csv_file["Image2"].values)
 
         self.transform = transform
-        print('Size of ' + partition + ': ' + str(len(self.image_paths_1)))
-        
+        print("Size of " + partition + ": " + str(len(self.image_paths_1)))
+
     def __getitem__(self, index):
-        x1 = Image.open(os.path.join(self.dataset_path, self.image_paths_1[index]))
-        x2 = Image.open(os.path.join(self.dataset_path, self.image_paths_2[index]))
+        x1 = Image.open(os.path.join(self.dataset_path, self.image_paths_1[index])).convert("RGB")
+        x2 = Image.open(os.path.join(self.dataset_path, self.image_paths_2[index])).convert("RGB")
         if self.transform is not None:
             x1 = self.transform(x1)
             x2 = self.transform(x2)
         return x1, x2
-    
+
     def __len__(self):
         return len(self.image_paths_1)
+
 
 def get_data(args, partition):
     transforms = torchvision.transforms.Compose([
         torchvision.transforms.Resize(args.image_size),
         torchvision.transforms.ToTensor(),
-        torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
 
     dataset = TheDataset(args.dataset_path, partition, args.partition_file, transform=transforms)
     batch_size = args.batch_size
-    shuffle = True
-    if partition == 'test':
-        shuffle = False
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, num_workers=32, pin_memory=True)
+    shuffle = partition == "train"
+    num_workers = getattr(args, "num_workers", min(8, os.cpu_count() or 1))
+    dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        pin_memory=torch.cuda.is_available(),
+    )
     return dataloader
+
 
 def setup_logging(run_name):
     os.makedirs("models", exist_ok=True)
@@ -78,6 +95,7 @@ def setup_logging(run_name):
     os.makedirs(os.path.join("models", run_name), exist_ok=True)
     os.makedirs(os.path.join("results", run_name), exist_ok=True)
     os.makedirs(os.path.join("samples", run_name), exist_ok=True)
+
 
 class EMA:
     def __init__(self, beta=0.995):
