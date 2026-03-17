@@ -276,7 +276,7 @@ def one_shot_eval(args):
     sample_dir = os.path.join("samples", args.sampling_name)
     os.makedirs(sample_dir, exist_ok=True)
     
-    S = images * 0.5 + images_add * 0.5
+    S = images * 0.8 + images_add * 0.2
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     t = (torch.ones(n) * init_timestep).long().to(device)
     
@@ -469,10 +469,10 @@ def launch():
     args.image_size = (args.image_size, args.image_size)
     args.sampling_name = args.run_name
 
-    visualize_sampling_transition(args)
+    #visualize_sampling_transition(args)
     #train(args)
     #eval(args)
-    #one_shot_eval(args)
+    one_shot_eval(args)
 
 if __name__ == '__main__':
     launch()
