@@ -34,30 +34,30 @@ class Diffusion:
                 t = (torch.ones(n) * i).long().to(self.device)
 
                 predicted_d = model(x_t, t).to(self.device)
-                
-                predicted_image = superimposed_image + predicted_d / 2.0
-                other_image = superimposed_image - predicted_d / 2.0
 
                 if anchor is None:
-                    anchor = predicted_image.clone().detach()
+                    anchor = predicted_d.clone().detach()
                 else:
-                    dist_pred = self.lpips_model(predicted_image, anchor).flatten()
-                    dist_other = self.lpips_model(other_image, anchor).flatten()
+                    pred_img = superimposed_image + predicted_d / 2.0
+                    other_img = superimposed_image - predicted_d / 2.0
+                    anchor_img = superimposed_image + anchor / 2.0
+                    
+                    dist_pred = self.lpips_model(pred_img, anchor_img).flatten()
+                    dist_other = self.lpips_model(other_img, anchor_img).flatten()
                     
                     switched = dist_other < dist_pred
                     
                     if switched.any():
                         switched_view = switched.view(-1, 1, 1, 1)
-                        
                         predicted_d = torch.where(switched_view, -predicted_d, predicted_d)
-                        predicted_image = superimposed_image + predicted_d / 2.0
-                        other_image = superimposed_image - predicted_d / 2.0
                         
-                    anchor = predicted_image.clone().detach()
+                    anchor = predicted_d.clone().detach()
 
-                x_t = x_t - self.noise_images(predicted_image, other_image, t) + self.noise_images(predicted_image, other_image, t-1)
+                x_t = x_t + predicted_d * self.alteration_per_t
         
         model.train()
+
+        other_image = 2.0 * superimposed_image - x_t
 
         other_image = (other_image.clamp(-1, 1) + 1) / 2
         other_image = (other_image * 255).type(torch.uint8)
@@ -276,7 +276,7 @@ def one_shot_eval(args):
     sample_dir = os.path.join("samples", args.sampling_name)
     os.makedirs(sample_dir, exist_ok=True)
     
-    S = images * 0.8 + images_add * 0.2
+    S = images * 0.5 + images_add * 0.5
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     t = (torch.ones(n) * init_timestep).long().to(device)
     
@@ -471,7 +471,7 @@ def launch():
 
     #visualize_sampling_transition(args)
     #train(args)
-    #eval(args)
+    eval(args)
     one_shot_eval(args)
 
 if __name__ == '__main__':
