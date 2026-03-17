@@ -1,8 +1,8 @@
 --- One-Shot Evaluation Metrics (First Batch) ---
-SSIM Original: 0.6106
-SSIM Added: 0.6158
-PSNR Original: 17.5424
-PSNR Added: 17.5481
-LPIPS Original: 0.1714
-LPIPS Added: 0.1732
-Success Rate of Reversal (%S): 74.71%
+SSIM Original: 0.7874
+SSIM Added: 0.3134
+PSNR Original: 20.3805
+PSNR Added: 13.0123
+LPIPS Original: 0.0754
+LPIPS Added: 0.3804
+Success Rate of Reversal (%S): 53.03%
