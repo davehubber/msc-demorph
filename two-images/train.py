@@ -397,11 +397,6 @@ def visualize_sampling_transition(args):
     S = img * 0.5 + img_add * 0.5
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
     
-    # Fading noise seed
-    z = torch.randn_like(S).to(device)
-    noise_fade = init_timestep / diffusion.max_timesteps
-    x_t = S + z * diffusion.noise_scale * noise_fade
-    
     anchor = None
     
     with torch.no_grad():
@@ -448,8 +443,8 @@ def visualize_sampling_transition(args):
             im.save(os.path.join(save_dir, f"step_{i:03d}.jpg"))
             
             # Update x_t for the next step
-            deg_t = diffusion.noise_images(predicted_image, other_image, t, z)
-            deg_t_prev = diffusion.noise_images(predicted_image, other_image, t-1, z)
+            deg_t = diffusion.noise_images(predicted_image, other_image, t)
+            deg_t_prev = diffusion.noise_images(predicted_image, other_image, t-1)
             x_t = x_t - deg_t + deg_t_prev
             
     print(f"Saved {init_timestep} transition images to {save_dir}")
