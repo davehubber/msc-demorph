@@ -1,2 +1,28 @@
 Size of train: 7189
 Size of test: 1000
+Size of test: 1000
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+
+Metrics organized by canonical image order:
+SSIM Image1: 0.6044603002935424
+SSIM Image2: 0.49451585480828475
+PSNR Image1: 16.305005681788057
+PSNR Image2: 16.30528088086765
+LPIPS Image1: 0.16876668199431152
+LPIPS Image2: 0.24929709079861642
+Success Rate of Reversal (%S): 51.20%
+
+Size of test: 1000
+Setting up [LPIPS] perceptual loss: trunk [alex], v[0.1], spatial [off]
+Loading model from: /nas-ctm01/homes/dacordeiro/.conda/envs/demorph/lib/python3.10/site-packages/lpips/weights/v0.1/alex.pth
+
+One-Shot Evaluation Metrics:
+SSIM Image1: 0.5879232229802979
+SSIM Image2: 0.49368875782805255
+PSNR Image1: 16.171447319538753
+PSNR Image2: 16.17249976104894
+LPIPS Image1: 0.17281450467184187
+LPIPS Image2: 0.24659387229382992
+Success Rate of Reversal (%S): 46.25%
+
