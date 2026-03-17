@@ -58,9 +58,9 @@ class Diffusion:
 
     def sample(self, model, superimposed_image, alpha_init=0.5, step_scale=1.0):
         """
-        Canonical-order sampler.
-        The model always predicts d = Image1 - Image2.
-        The reverse process only refines Image1, and Image2 is recovered once at the end.
+        Cold Diffusion Tacos sampler.
+        The model predicts the clean Image1.
+        The other image is extracted using the ground truth average, and x_t is refined.
         """
         n = len(superimposed_image)
         init_timestep = self.alpha_to_timestep(alpha_init)
@@ -72,11 +72,21 @@ class Diffusion:
 
             for i in reversed(range(1, init_timestep + 1)):
                 t = torch.full((n,), i, device=self.device, dtype=torch.long)
-                predicted_d = model(x_t, t)
-                x_t = x_t + (self.alteration_per_t * step_scale) * predicted_d
-                x_t = x_t.clamp(-1, 1)
+                t_minus_1 = torch.full((n,), i - 1, device=self.device, dtype=torch.long)
+                
+                # Predict the clean image (Image1)
+                predicted_image = model(x_t, t)
+                predicted_image = predicted_image.clamp(-1, 1)
+                
+                # Extract the other image mathematically using the initial superimposed image
+                other_image = (mixed_init - (1.0 - alpha_init) * predicted_image) / alpha_init
+                other_image = other_image.clamp(-1, 1)
 
-            primary_image = x_t
+                # Update x_t with cold diffusion tacos sampling
+                x_t = x_t - self.noise_images(predicted_image, other_image, t) + \
+                      self.noise_images(predicted_image, other_image, t_minus_1)
+
+            primary_image = x_t.clamp(-1, 1)
             other_image = (mixed_init - (1.0 - alpha_init) * primary_image) / alpha_init
             other_image = other_image.clamp(-1, 1)
 
@@ -91,9 +101,12 @@ class Diffusion:
         model.eval()
         with torch.no_grad():
             mixed_init = superimposed_image.to(self.device)
-            predicted_d = model(mixed_init, t)
-            primary_image = mixed_init + alpha_init * predicted_d
-            primary_image = primary_image.clamp(-1, 1)
+            
+            # Predict the clean image
+            predicted_image = model(mixed_init, t)
+            primary_image = predicted_image.clamp(-1, 1)
+            
+            # Extract the other image mathematically
             other_image = (mixed_init - (1.0 - alpha_init) * primary_image) / alpha_init
             other_image = other_image.clamp(-1, 1)
 
@@ -180,9 +193,9 @@ def train(args):
             optimizer.zero_grad(set_to_none=True)
             with torch.amp.autocast(device_type="cuda", enabled=amp_enabled) if amp_enabled else nullcontext():
                 x_t = diffusion.noise_images(images, images_add, t)
-                predicted_d = model(x_t, t)
-                target_d = images - images_add
-                loss = mse(predicted_d, target_d)
+                predicted_img = model(x_t, t)
+                target_img = images
+                loss = mse(predicted_img, target_img)
 
             scaler.scale(loss).backward()
             scaler.step(optimizer)
