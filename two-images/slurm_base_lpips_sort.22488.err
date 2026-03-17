@@ -1,0 +1,9 @@
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /nas-ctm01/homes/dacordeiro/.netrc.
+wandb: Currently logged in as: davcordeiro03 (davcordeiro03-inesc-tec) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run l3zvywn9
+wandb: Tracking run with wandb version 0.25.0
+wandb: Run data is saved locally in /nas-ctm01/homes/dacordeiro/msc-demorph/two-images/wandb/run-20260317_160528-l3zvywn9
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run base_lpips_sort
+wandb: ⭐️ View project at https://wandb.ai/davcordeiro03-inesc-tec/demorph
+wandb: 🚀 View run at https://wandb.ai/davcordeiro03-inesc-tec/demorph/runs/l3zvywn9
