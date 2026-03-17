@@ -396,6 +396,8 @@ def visualize_sampling_transition(args):
     
     S = img * 0.5 + img_add * 0.5
     init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+
+    x_t = S
     
     anchor = None
     
