@@ -374,6 +374,86 @@ def one_shot_eval(args):
     with open(os.path.join(results_dir, "one_shot_metrics.txt"), "w") as f:
         f.write(metrics_report)
 
+def visualize_sampling_transition(args):
+    device = args.device
+    test_dataloader = get_data(args, 'test')
+    
+    # Get first batch
+    images, images_add = next(iter(test_dataloader))
+    
+    # Extract only the 4th pair (index 3) and keep the batch dimension
+    img = images[3:4].to(device)
+    img_add = images_add[3:4].to(device)
+    
+    model = UNet().to(device)
+    model.load_state_dict(torch.load(os.path.join("models", args.run_name, f"ckpt.pt"), map_location=torch.device(device)))
+    model.eval()
+    
+    diffusion = Diffusion(img_size=args.image_size, device=device)
+    
+    save_dir = os.path.join("samples", args.run_name, "transition")
+    os.makedirs(save_dir, exist_ok=True)
+    
+    S = img * 0.5 + img_add * 0.5
+    init_timestep = math.ceil(args.alpha_init / diffusion.alteration_per_t)
+    
+    # Fading noise seed
+    z = torch.randn_like(S).to(device)
+    noise_fade = init_timestep / diffusion.max_timesteps
+    x_t = S + z * diffusion.noise_scale * noise_fade
+    
+    anchor = None
+    
+    with torch.no_grad():
+        for i in reversed(range(1, init_timestep + 1)):
+            t = (torch.ones(1) * i).long().to(device)
+            
+            predicted_d = model(x_t, t)
+            
+            predicted_image = S + predicted_d / 2.0
+            other_image = S - predicted_d / 2.0
+            
+            # Anchor logic to prevent flipping during the visualization
+            if anchor is None:
+                anchor = predicted_image.clone().detach()
+            else:
+                dist_pred = diffusion.lpips_model(predicted_image, anchor).flatten()
+                dist_other = diffusion.lpips_model(other_image, anchor).flatten()
+                
+                if (dist_other < dist_pred).any():
+                    predicted_d = -predicted_d
+                    predicted_image = S + predicted_d / 2.0
+                    other_image = S - predicted_d / 2.0
+                    
+                anchor = predicted_image.clone().detach()
+
+            # Format images to [0, 1] range for saving
+            def format_img(tensor):
+                return (tensor.clamp(-1, 1) + 1) / 2
+
+            gt1_vis = format_img(img)
+            gt2_vis = format_img(img_add)
+            S_vis = format_img(S)
+            x_t_vis = format_img(x_t)
+            pred1_vis = format_img(predicted_image)
+            pred2_vis = format_img(other_image)
+            
+            # Concatenate into a single batch and make a grid (1 row, 6 columns)
+            grid_tensor = torch.cat([gt1_vis, gt2_vis, S_vis, x_t_vis, pred1_vis, pred2_vis], dim=0)
+            grid = torchvision.utils.make_grid(grid_tensor, nrow=6, padding=2)
+            
+            # Convert to numpy and save
+            ndarr = grid.permute(1, 2, 0).mul(255).clamp(0, 255).byte().cpu().numpy()
+            im = Image.fromarray(ndarr)
+            im.save(os.path.join(save_dir, f"step_{i:03d}.jpg"))
+            
+            # Update x_t for the next step
+            deg_t = diffusion.noise_images(predicted_image, other_image, t, z)
+            deg_t_prev = diffusion.noise_images(predicted_image, other_image, t-1, z)
+            x_t = x_t - deg_t + deg_t_prev
+            
+    print(f"Saved {init_timestep} transition images to {save_dir}")
+
 def launch():
     import argparse
     parser = argparse.ArgumentParser()
@@ -392,9 +472,10 @@ def launch():
     args.image_size = (args.image_size, args.image_size)
     args.sampling_name = args.run_name
 
-    train(args)
-    eval(args)
-    one_shot_eval(args)
+    visualize_sampling_transition(args)
+    #train(args)
+    #eval(args)
+    #one_shot_eval(args)
 
 if __name__ == '__main__':
     launch()
